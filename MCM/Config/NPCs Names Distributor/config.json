@@ -1,0 +1,59 @@
+{
+    "modName": "NPCs Names Distributor",
+    "displayName": "$NPCs Names Distributor",
+    "cursorFillMode": "topToBottom",
+    "content": [
+        {
+            "id": "iRenamingEnabled:General",
+            "type": "stepper",
+            "text": "$Names Distribution",
+            "help": "$NamesDistributionHelp",
+            "valueOptions": {
+                "options": ["$Enabled", "$Disabled"],
+                "sourceType": "ModSettingInt"
+            }
+        },
+        {
+            "id": "iTitleStyle:General",
+            "type": "enum",
+            "text": "$Title Style",
+            "help": "$TitleStyleHelp",
+            "valueOptions": {
+                "options": [
+                    "$Agnar Stormheart", 
+                    "$Agnar Stormheart | Next line: Whiterun Guard",
+                    "$Agnar Stormheart - Whiterun Guard",
+                    "$Agnar Stormheart (Whiterun Guard)",
+                    "$Agnar Stormheart [Whiterun Guard]",
+                    "$Agnar Stormheart, Whiterun Guard",
+                    "$Agnar Stormheart; Whiterun Guard",
+                    "$Agnar Stormheart. Whiterun Guard"
+                ],
+                "shortNames": [
+                    "$None",
+                    "$New Line",
+                    "$Hyphen",
+                    "$Round Brackets",
+                    "$Square Brackets",
+                    "$Comma",
+                    "$Semicolon",
+                    "$Full Stop"
+                ],
+                "sourceType": "ModSettingInt"
+            }
+        },
+        {
+            "type": "empty"
+        },
+        {
+            "id": "RegenerateAction",
+            "type": "text",
+            "text": "$Regenerate all names",
+            "help": "$RegenerateHelp",
+            "action": {
+                "type": "CallFunction",
+                "function": "RegenerateNames"
+            }
+        }
+	]
+}
