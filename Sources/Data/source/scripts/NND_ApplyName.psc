@@ -1,11 +1,14 @@
 Scriptname NND_ApplyName extends activemagiceffect  
 
-Keyword Property NNDUnique Auto
 Keyword Property NNDTitleless Auto
 
 NND_Settings Property NNDSettings Auto
 
 import Debug
+import Utility
+import JsonUtil
+import StringUtil
+import PapyrusUtil
 
 ;Store the original name of the NPCs that it had before renaming, so renaming could be disabled.
 String originalName = ""
@@ -13,39 +16,48 @@ String originalName = ""
 ; Store generated name of the NPCs, so it can be re-enabled later.
 String generatedName = ""
 
-; Id of the last generation instances.
+; Id of the last generation instance.
 ; When this value mismatches the one from NNDSettings, a new name will be generated regardless.
 Int lastGeneratationId = -1
 
 Event OnEffectStart(Actor akTarget, Actor akCaster)
     parent.OnEffectStart(akTarget, akCaster)
-    If  akTarget == None
-        Trace("Failed to rename an actor. akTarget is None", 2)
+    If akTarget == None
+        NNDTrace("Failed to rename an actor. akTarget is None", 2)
         Return
     EndIf
 
-    Trace("Effect starting... Original name for actor " + akTarget + ": " + originalName)
-    Trace("Effect starting... Generated name for actor " + akTarget + ": " + generatedName)
+    String[] keywords = GetNNDKeywords(akTarget.GetLeveledActorBase())
+    If keywords.Length == 0
+        ; No applicable configs, so we don't need to do anything.
+        Return
+    EndIf
+    
+    ; Read previous values if any.
+    originalName = StorageUtil.GetStringValue(akTarget, "NNDOriginalName")
+    generatedName = StorageUtil.GetStringValue(akTarget, "NNDGeneratedName")
+    lastGeneratationId = StorageUtil.GetIntValue(akTarget, "NNDGenerationId", -1)
+    
+    ; NNDTrace("Effect starting... Original name for actor " + akTarget + ": " + originalName)
+    ; NNDTrace("Effect starting... Generated name for actor " + akTarget + ": " + generatedName)
     ; Pick original name only once in an effect lifetime.
     If originalName == "" && lastGeneratationId == -1
         originalName = akTarget.GetDisplayName()
+        StorageUtil.SetStringValue(akTarget, "NNDOriginalName", originalName)
     EndIf
-
+    
     ; If id is -1, then this effect is attempting to generate the name for the first time,
     ; so we should assign current GenerationId to make it up-to-date.
     If lastGeneratationId == -1
         lastGeneratationId = NNDSettings.GenerationId
+        StorageUtil.SetIntValue(akTarget, "NNDGenerationId", lastGeneratationId)
     EndIf
-       
+    
     If generatedName == "" || lastGeneratationId != NNDSettings.GenerationId
-        String[] keywords = GetNNDKeywords(akTarget.GetLeveledActorBase())
-        If keywords.Length == 0
-            ; No applicable configs.
-            Return
-        EndIf
         generatedName = PickNameFor(akTarget, keywords)
+        StorageUtil.SetStringValue(akTarget, "NNDGeneratedName", generatedName)
     EndIf
-
+    
     String displayedName = generatedName
     If !akTarget.GetLeveledActorBase().HasKeyword(NNDTitleless)
         displayedName = FormattedTitle(displayedName, originalName)
@@ -54,24 +66,27 @@ Event OnEffectStart(Actor akTarget, Actor akCaster)
     If generatedName != "" && akTarget.SetDisplayName(displayedName, true)
         ; Update lastGenerationId only if it was successful, as otherwise the old name will be kept.
         lastGeneratationId = NNDSettings.GenerationId
-        Trace("Renaming " + originalName + " => " + displayedName)
-        
+        StorageUtil.SetIntValue(akTarget, "NNDGenerationId", lastGeneratationId)
+        NNDTrace("Renaming " + originalName + " => " + displayedName) 
     Else
-        Trace("Failed to pick a name for actor " + akTarget + " (" + akTarget.GetDisplayName() + ") ", 1)
+        NNDTrace("Failed to pick a name for actor " + akTarget + " (" + akTarget.GetDisplayName() + "). Falling back to original name", 1)
+        If originalName != ""
+            akTarget.SetDisplayName(originalName, true)
+        EndIf
     EndIf
 EndEvent
 
 Event OnEffectFinish(Actor akTarget, Actor akCaster)
     
     If !isLoaded
-        Trace("Effect finishing... Tried to restore name original name, but effect was already unloaded along with actor", 1)
+        ; NNDTrace("Effect finishing... Tried to restore name original name, but effect was already unloaded along with actor", 1)
         ; Prevent any renamings in cases when OnEffectFinish fired from unloaing
         ; See notes in https://www.creationkit.com/index.php?title=OnEffectFinish_-_ActiveMagicEffect
         Return
     EndIf
     
     If generatedName != "" && originalName != "" && akTarget != None
-        Trace("Effect finishing... Trying to restore name of " + akTarget + " to " + originalName)
+        ; NNDTrace("Effect finishing... Trying to restore name of " + akTarget + " to " + originalName)
         akTarget.SetDisplayName(originalName, true)
     EndIf
     parent.OnEffectFinish(akTarget, akCaster)
@@ -81,36 +96,33 @@ Bool isLoaded = true
 
 Event OnCellAttach()
     parent.OnCellAttach()
-    Trace("Effect attached")
+    ; NNDTrace("Effect attached")
     isLoaded = true
 EndEvent
 
 Event OnCellDetach()
     isLoaded = false
-    Trace("Effect unloaded")
+    ; NNDTrace("Effect detached")
     parent.OnCellDetach()
 EndEvent
 
 Event OnLoad()
     parent.OnLoad()
-    Trace("Effect loaded")
+    ; NNDTrace("Effect loaded")
     isLoaded = true
 EndEvent
 
 Event OnUnload()
     isLoaded = false
-    Trace("Effect unloaded")
+    ; NNDTrace("Effect unloaded")
     parent.OnUnload()
 EndEvent
 
-;;; Below is where all the magic happens
+;;; Below is where all the magic happens ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-import Utility
-import JsonUtil
-import StringUtil
-import PapyrusUtil
 
-;;; Keys used in config files.
+
+;;; Keys used in config files. ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 String NNDGivenKey = "NND_Given"
 String NNDFamilyKey = "NND_Family"
@@ -161,7 +173,7 @@ String Function PickNameFor(Actor person, String[] NNDKeywords)
                 conjunction = " "
             EndIf
         Else
-            Trace("Config " + NNDKeyword + ".json is either missing or malformed. Check that it is present in Data/SKSE/Plugins/NPCsNamesDistributor/ and contains a valid JSON")
+            NNDTrace("Config " + NNDKeyword + ".json is either missing or malformed. Check that it is present in Data/SKSE/Plugins/NPCsNamesDistributor/ and contains a valid JSON")
         EndIf
         index += 1
     EndWhile
@@ -178,8 +190,13 @@ String Function PickNameFor(Actor person, String[] NNDKeywords)
     Endif
 EndFunction
 
-; Applies title style according to selected option in NNDSettings.
+; Applies title style according to selected options in NNDSettings.
 String Function FormattedTitle(String name, String title)
+    If NNDSettings.IsInvertedTitleStyle
+        String tmp = name
+        name = title
+        title = tmp
+    EndIf
     If NNDSettings.TitleStyle == 1
         Return name + "\n" + title
     ElseIf NNDSettings.TitleStyle == 2
@@ -216,7 +233,7 @@ String Function GetNameForKey(String nameKey, String genderKey, String config)
     
     ; If definition for specific gender was not found or has no names in it try to find default "Any" definition
     If namesCount <= 0
-        Trace("No " + nameKey + " names were found specific for " + genderKey + " in " + config + ". Falling back to " + NNDAnyKey)
+        NNDTrace("No " + nameKey + " names were found specific for " + genderKey + " in " + config + ". Falling back to " + NNDAnyKey)
         genderKeyPath = CreateKeyPath(nameKey, NNDAnyKey)
         namesKeyPath = CreateKeyPath(genderKeyPath, NNDNamesKey)
         namesCount = NamesCountInList(config, namesKeyPath)
@@ -234,10 +251,10 @@ String Function GetNameForKey(String nameKey, String genderKey, String config)
         If result != ""
             result = GetNameDecorationForKey(NNDPrefixKey, nameKey, genderKey, config) + result + GetNameDecorationForKey(NNDSuffixKey, nameKey, genderKey, config)
         Else
-            Trace(nameKey + " name was randomly skipped, so prefixes and suffixes will be skipped as well")
+            NNDTrace(nameKey + " name was randomly skipped")
         EndIf
     Else
-        Trace("Couldn't find appropriate names list in " + config + ". Both " + CreateKeyPath(nameKey, genderKey, NNDNamesKey) + " and " + CreateKeyPath(nameKey, NNDAnyKey, NNDNamesKey) + " are missing or empty.", 1)
+        NNDTrace("Couldn't find appropriate names list in " + config + ". Both " + CreateKeyPath(nameKey, genderKey, NNDNamesKey) + " and " + CreateKeyPath(nameKey, NNDAnyKey, NNDNamesKey) + " are missing or empty", 1)
     EndIf
     Return result
 EndFunction
@@ -254,21 +271,21 @@ String Function GetNameDecorationForKey(String decorKey, String nameKey, String 
     String genderKeyPath = CreateKeyPath(nameKey, genderKey)
     String decorNamesKeyPath = CreateKeyPath(genderKeyPath, decorKey, NNDNamesKey)
     Int decorsCount = NamesCountInList(config, decorNamesKeyPath)
-
+    
     If decorsCount <= 0
-        Trace("No " + decorKey + " names were found specific for " + genderKey + ". Falling back to " + NNDAnyKey)
+        NNDTrace("No " + decorKey + " names were found specific for " + genderKey + ". Falling back to " + NNDAnyKey)
         genderKeyPath = CreateKeyPath(nameKey, NNDAnyKey)
         decorNamesKeyPath = CreateKeyPath(genderKeyPath, decorKey, NNDNamesKey)
         decorsCount = NamesCountInList(config, decorNamesKeyPath)
     EndIf
-
+    
     If decorsCount > 0
         Int decorChance = GetChanceForList(config, CreateKeyPath(genderKeyPath, decorKey, NNDChanceKey))
         If decorChance > RandomChance()
             Int index = RandomIndex(decorsCount)
             Return GetPathStringValue(config, CreateIndexPath(decorNamesKeyPath, index))
         Else
-            Trace(decorKey + " for " + genderKeyPath + " name was randomly skipped")
+            NNDTrace(decorKey + " for " + genderKeyPath + " name was randomly skipped")
         EndIf
     EndIf
     
@@ -276,8 +293,7 @@ String Function GetNameDecorationForKey(String decorKey, String nameKey, String 
 EndFunction
 
 ; Finds all NND keywords that represent name categories.
-; Returned array is sorted base on priorities of these categories if there are more than on.
-; So NNDCategory_Forced will be the first one and NNDOtherCategory will be the last.
+; Returned array is sorted base on priorities of these categories if there are more than one.
 ;
 ; There are only 4 types of Keywords priorities that can be set. Here is the list:
 ; - NNDKeyword_Forced
@@ -289,15 +305,17 @@ String[] Function GetNNDKeywords(Form person)
     ; Create a placeholder for building up the queue.
     String[] keywordsQueue = CreateStringArray(4, "")
     
-    Int index = person.GetNumKeywords()   
-    While index > 0
-        index -= 1
+    Int kwLength = person.GetNumKeywords()
+    Int index = 0
+    While index < kwLength
         Keyword kw = person.GetNthKeyword(index)
+        ; NNDTrace("Analyzing keyword " + kw)
         If kw != None
             String kwName = kw.GetString()
             ; Find the first NND keyword that represents a category with appropriate names for the actor.
-            If kw != NNDUnique && kw != NNDTitleless && Find(kwName, "NND") == 0
+            If kw != NNDTitleless && Find(kwName, "NND") == 0
                 
+                ; NNDTrace(kwName + " is a configuration keyword")
                 Int forcedIndex = -1
                 Int factionIndex = -1
                 Int classIndex = -1
@@ -305,56 +323,63 @@ String[] Function GetNNDKeywords(Form person)
                 
                 If keywordsQueue[0] == ""
                     forcedIndex = Find(kwName, "_Forced")
+                    ; NNDTrace("_Forced suffix index is " + forcedIndex)
                 EndIf
                 If keywordsQueue[1] == ""
                     factionIndex = Find(kwName, "_Faction")
+                    ; NNDTrace("_Faction suffix index is " + factionIndex)
                 EndIf
                 If keywordsQueue[2] == ""
                     classIndex = Find(kwName, "_Class")
+                    ; NNDTrace("_Class suffix index is " + classIndex)
                 EndIf
                 If keywordsQueue[3] == ""
                     raceIndex = Find(kwName, "_Race")
+                    ; NNDTrace("_Race suffix index is " + raceIndex)
+                    
                     ; If race not found use whole keyword as default race priority.
                     ; Other priorities will be handled before checking the race priority, so no conflict there.
-                    If raceIndex == -1
+                    If forcedIndex == -1 && factionIndex == -1 && classIndex == -1 && raceIndex == -1
                         raceIndex = 0
+                        ; NNDTrace("Keyword " + kwName + " doesn't have any supported suffixes, it will be considered a Race keyword")
                     EndIf
                 EndIf
                 
                 If forcedIndex != -1
                     keywordsQueue[0] = Substring(kwName, 0, forcedIndex)
+                    ; NNDTrace("Setting Forced NNDKeyword" + keywordsQueue[0])
                 ElseIf factionIndex != -1
                     keywordsQueue[1] = Substring(kwName, 0, factionIndex) 
+                    ; NNDTrace("Setting Faction NNDKeyword" + keywordsQueue[1])
                 ElseIf classIndex != -1
                     keywordsQueue[2] = Substring(kwName, 0, classIndex) 
+                    ; NNDTrace("Setting Class NNDKeyword" + keywordsQueue[2])
                 ElseIf raceIndex != -1
                     keywordsQueue[3] = Substring(kwName, 0, raceIndex)
-                Else
-                    ; If all incides are -1 it means that all spots in the queue have been set, so there is no need to continue the search.
+                    ; NNDTrace("Setting Race NNDKeyword" + keywordsQueue[3])
+                ElseIf keywordsQueue[0] != "" && keywordsQueue[1] != "" && keywordsQueue[2] != "" && keywordsQueue[3] != ""
+                    ; NNDTrace("All supported overwrites found: " + keywordsQueue)
+                    
+                    ; If all all spots in the queue have been set there is no need to continue the search.
                     Return keywordsQueue
                 EndIf            
             EndIf
         EndIf
+        index += 1
     EndWhile
     
     ; Return only unique keywords that are present in the queue, so
     ; ["NNDKeyword1", "", "NNDKeyword3", "NNDKeyword1"] will become ["NNDKeyword1", "NNDKeyword3"]
-    
     Return RemoveDupeString(ClearEmpty(keywordsQueue))
 EndFunction
 
 ;;; Utility functions used to make life easier while writing this sciprt.
 
-; Create a JSON path using given keys. Empty keys are ignored. (e.g. ".key1.key2.key3.key4")
+; Creates a JSON path using given keys.
+; First key is considered to be the root's key and will be prepended with "." if it's not already. (e.g. ".key1.key2.key3.key4")
+; Empty keys are ignored.
 String Function CreateKeyPath(String key1, String key2, String key3 = "", String key4 = "")
-    String result = ""
-    If key1 != ""
-        ; Prepend the key with a dot to indicate the root object
-        If Find(key1, ".") != 0
-            result += "."
-        EndIf
-        result += key1
-    EndIf
+    String result = key1
     If key2 != ""
         result += "." + key2
     EndIf
@@ -367,15 +392,17 @@ String Function CreateKeyPath(String key1, String key2, String key3 = "", String
     Return result
 EndFunction
 
-; Create an indexed JSON path (e.g. "my.key.path[0]").
+; Creates an indexed JSON path (e.g. "my.key.path[0]").
 String Function CreateIndexPath(String keyPath, Int index)
     Return keyPath + "[" + index + "]"
 EndFunction
 
+; Reads Chance value at specified keyPath and automatically sanitizes invalid values, by enforcing 0-100 boundaries.
 Int Function GetChanceForList(String config, String keyPath)
     Return Clamp(GetPathIntValue(config, keyPath, 100), 0, 100)
 EndFunction
 
+; Reads count of entries in the array located at specified keyPath.
 Int Function NamesCountInList(String config, String keyPath)
     Int count = PathCount(config, keyPath)
     If count > 0
@@ -414,4 +441,9 @@ EndFunction
 ; Returns an index randomly picked for an array of given size.
 Int Function RandomIndex(Int size)
     Return RandomInt(0, size - 1)
+EndFunction
+
+; Logs trace with a distincive prefix for easier reading through logs.
+Function NNDTrace(String sMessage, Int level = 0)
+    Trace("NNDApplyName: " + sMessage + ".", level)
 EndFunction

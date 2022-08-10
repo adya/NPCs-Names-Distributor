@@ -1,0 +1,117 @@
+{
+    "modName": "NPCs Names Distributor",
+    "displayName": "$NPCs Names Distributor",
+    "cursorFillMode": "topToBottom",
+    "content": [
+        {
+            "type": "header",
+            "text": "$General Settings"
+        },
+        {
+            "type": "toggle",
+            "text": "$Distribute Names",
+            "help": "$NamesDistributionHelp",
+            "groupControl": 1,
+            "groupBehavior": "hide",
+            "valueOptions": {
+                "sourceType": "GlobalValue",
+                "sourceForm": "NPCs Names Distributor.esp|A06"
+            }
+        },
+        {
+            "type": "empty"
+        },
+        {
+            "type": "header",
+            "text": "$Title Settings",
+            "groupCondition": 1,
+            "groupBehavior": "hide"
+        },
+        {
+            "id": "iTitleStyle:General",
+            "type": "enum",
+            "text": "$Title Style",
+            "help": "$TitleStyleHelp",
+            "groupCondition": 1,
+            "groupBehavior": "hide",
+            "valueOptions": {
+                "options": [
+                    "$TitleExampleNone", 
+                    "$TitleExampleNewLine",
+                    "$TitleExampleHyphen",
+                    "$TitleExampleRoundBrackets",
+                    "$TitleExampleSquareBrackets",
+                    "$TitleExampleComma",
+                    "$TitleExampleSemicolon",
+                    "$TitleExampleFullStop",
+                    "$TitleExampleStop"
+                ],
+                "shortNames": [
+                    "$TitleStyleNone",
+                    "$TitleStyleNewLine",
+                    "$TitleStyleHyphen",
+                    "$TitleStyleRound",
+                    "$TitleStyleSquare",
+                    "$TitleStyleComma",
+                    "$TitleStyleSemicolon",
+                    "$TitleStyleFullStop",
+                    "$TitleStyleSpace"
+                ],
+                "sourceType": "ModSettingInt"
+            }
+        },
+        {
+            "id": "bTitleInvert:General",
+            "type": "toggle",
+            "text": "$Invert Title",
+            "help": "$InvertTitleHelp",
+            "groupCondition": 1,
+            "groupBehavior": "hide",
+            "valueOptions": {
+                "sourceType": "ModSettingBool"
+            }
+        },
+        {
+            "type": "header",
+            "text": "$RegenerateHeader",
+            "position": 1,
+            "groupCondition": 1,
+            "groupBehavior": "hide"
+        },
+        {
+            "position": 3,
+            "type": "text",
+            "text": "",
+            "help": "$RegenerateHelp",
+            "groupCondition": { "ONLY" : 1 },
+            "groupBehavior": "hide",
+            "valueOptions": {
+                "value": "$Regenerate"
+              },
+            "action": {
+                "type": "CallFunction",
+                "function": "RegenerateNames"
+            }
+        },
+        {
+            "position": 5,
+            "type": "text",
+            "text": "",
+            "help": "$GeneratedHelp",
+            "groupCondition": { "AND" : [1, 2] },
+            "groupBehavior": "hide",
+            "valueOptions": {
+                "value": "$Generated"
+              }
+        },
+        {
+            "type": "hiddenToggle",
+            "position": 7,
+            "groupControl": 2,
+            "valueOptions": {
+              "sourceType": "PropertyValueBool",
+              "propertyName": "bGenerationQueued"
+            }
+          }
+        ]
+    }
