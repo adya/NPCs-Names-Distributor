@@ -41,21 +41,6 @@
                 ],
                 "sourceType": "ModSettingInt"
             }
-        },
-        {
-            "type": "empty"
-        },
-        {
-            "type": "text",
-            "text": "$Regenerate all names",
-            "help": "$RegenerateHelp",
-            "valueOptions": {
-                "value": "$Regenerate"
-              },
-            "action": {
-                "type": "CallFunction",
-                "function": "RegenerateNames"
-            }
         }
         ]
     }

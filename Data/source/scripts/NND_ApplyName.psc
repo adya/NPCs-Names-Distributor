@@ -13,10 +13,6 @@ String originalName = ""
 ; Store generated name of the NPCs, so it can be re-enabled later.
 String generatedName = ""
 
-; Id of the last generation instances.
-; When this value mismatches the one from NNDSettings, a new name will be generated regardless.
-Int lastGeneratationId = -1
-
 Event OnEffectStart(Actor akTarget, Actor akCaster)
     parent.OnEffectStart(akTarget, akCaster)
     If  akTarget == None
@@ -27,17 +23,11 @@ Event OnEffectStart(Actor akTarget, Actor akCaster)
     Trace("Effect starting... Original name for actor " + akTarget + ": " + originalName)
     Trace("Effect starting... Generated name for actor " + akTarget + ": " + generatedName)
     ; Pick original name only once in an effect lifetime.
-    If originalName == "" && lastGeneratationId == -1
+    If originalName == ""
         originalName = akTarget.GetDisplayName()
     EndIf
 
-    ; If id is -1, then this effect is attempting to generate the name for the first time,
-    ; so we should assign current GenerationId to make it up-to-date.
-    If lastGeneratationId == -1
-        lastGeneratationId = NNDSettings.GenerationId
-    EndIf
-       
-    If generatedName == "" || lastGeneratationId != NNDSettings.GenerationId
+    If generatedName == ""
         String[] keywords = GetNNDKeywords(akTarget.GetLeveledActorBase())
         If keywords.Length == 0
             ; No applicable configs.
@@ -52,10 +42,7 @@ Event OnEffectStart(Actor akTarget, Actor akCaster)
     EndIf
     
     If generatedName != "" && akTarget.SetDisplayName(displayedName, true)
-        ; Update lastGenerationId only if it was successful, as otherwise the old name will be kept.
-        lastGeneratationId = NNDSettings.GenerationId
-        Trace("Renaming " + originalName + " => " + displayedName)
-        
+        Trace("Renaming " + originalName + " => " + displayedName) 
     Else
         Trace("Failed to pick a name for actor " + akTarget + " (" + akTarget.GetDisplayName() + ") ", 1)
     EndIf
