@@ -9,7 +9,7 @@
             "text": "$Names Distribution",
             "help": "$NamesDistributionHelp",
             "valueOptions": {
-                "options": ["$Enabled", "$Disabled"],
+                "options": ["$Disabled", "$Enabled"],
                 "sourceType": "ModSettingInt"
             }
         },
@@ -46,14 +46,16 @@
             "type": "empty"
         },
         {
-            "id": "RegenerateAction",
             "type": "text",
             "text": "$Regenerate all names",
             "help": "$RegenerateHelp",
+            "valueOptions": {
+                "value": "$Regenerate"
+              },
             "action": {
                 "type": "CallFunction",
                 "function": "RegenerateNames"
             }
         }
-	]
-}
+        ]
+    }

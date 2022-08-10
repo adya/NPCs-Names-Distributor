@@ -1,0 +1,19 @@
+{
+    "NND_Given": {
+        "NND_Female": {
+            "NND_Names": ["Lydia"],
+            "NND_Prefix": {
+                "NND_Chance": 50,
+                "NND_Names": ["Cunning ", "Tricky ", "Inventive "]
+            }
+        }
+    },
+    "NND_Family": {
+        "NND_Female": {
+            "NND_Names": ["Impostor", "Pretender", "Deceiver"]
+        }
+    },
+    "NND_Conjunctions": {
+        "NND_Female": [" the "]
+    }
+}

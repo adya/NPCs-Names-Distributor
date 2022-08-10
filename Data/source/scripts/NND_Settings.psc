@@ -25,20 +25,30 @@ GlobalVariable Property NNDRenamingEnabled Auto
 ; Global that will make all NNDApplyName effects restart.
 GlobalVariable Property NNDNeedsRefresh Auto
 
-Bool Property ShouldRegenerateNames Auto
+; An arbitrary number used to identify generation instances.
+Int Property GenerationId
+    Int Function Get()
+        return GetModSettingInt("iGenerationId:Utility")
+    EndFunction
+    Function Set(Int id)
+        SetModSettingInt("iGenerationId:Utility", id)
+    EndFunction
+EndProperty
 
 ; Array that holds list of valid configs.
 String[] validConfigs
 
 Event OnConfigInit()
-    parent.OnConfigInit()
+   parent.OnConfigInit()
+    GenerationId = 0
+    NNDRenamingEnabled.SetValueInt(GetModSettingInt("iRenamingEnabled:General"))
     NNDNeedsRefresh.SetValueInt(0)
-    ShouldRegenerateNames = false
     ValidateConfigs()
 EndEvent
 
 Event OnGameReload()
     parent.OnGameReload()
+    NNDRenamingEnabled.SetValueInt(GetModSettingInt("iRenamingEnabled:General"))
     ReloadConfigs()
 EndEvent
 
@@ -48,22 +58,22 @@ Event OnSettingChange(string a_ID)
         NNDRenamingEnabled.SetValueInt(GetModSettingInt(a_ID))
     ElseIf a_ID == "iTitleStyle:General"
         TitleStyle = GetModSettingInt(a_ID)
-        RefreshNames()
     EndIf
+    RefreshNames()
 EndEvent
 
 Function RefreshNames()
     NNDNeedsRefresh.SetValueInt(1)
-    Utility.Wait(100)
+    Utility.Wait(1)
     NNDNeedsRefresh.SetValueInt(0)
 EndFunction
 
+; This action is linked to the entry in MCM config.
 Function RegenerateNames()
     Debug.Trace("Queueing names regeneration")
-    ShouldRegenerateNames = true
+    GenerationId += 1
     ReloadConfigs()
     RefreshNames()
-    ShouldRegenerateNames = false
 EndFunction
 
 Function ReloadConfigs()
