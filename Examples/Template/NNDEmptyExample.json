@@ -3,7 +3,7 @@
     "commentInfo2": "You can use NNDDefaults.json as a starting point without any comments.",
     "commentNaming": "All keys should be prefixed with NND_ to make strings unique, so that Skyrim won't mess with their case",
     "commentOptionality": "All keys are optional and can be skipped if not applicable. This file shows all default values for keys.",
-
+    
     "commentGiven": "This section defines rules for Given (First) names.",
     "NND_Given": {
         "commentMale": "Rules specific to Male. If omitted mod will fallback to NND_Any if present, otherwise Male NPCs won't get a Given name.",
@@ -48,6 +48,11 @@
                 "NND_Chance": 100,
                 "NND_Names": []
             }
+        },
+        "commentBehavior": "Behaviors are a list of options to customize how this Name Definition handles missing name parts",
+        "NND_Behavior": {
+            "commentCombine": "When enabled and Given name was not picked, it allows the framework to look for Given name in the next Name Definition",
+            "NND_Combine": false
         }
     },
     
@@ -88,9 +93,12 @@
                 "NND_Chance": 100,
                 "NND_Names": []
             }
+        },
+        "NND_Behavior": {
+            "NND_Combine": false
         }
     },
-
+    
     "commentConjunctions": "This section defines how Given and Family names get connected. Same gender rules apply as in other sections.",
     "NND_Conjunctions": {
         "NND_Male": [],

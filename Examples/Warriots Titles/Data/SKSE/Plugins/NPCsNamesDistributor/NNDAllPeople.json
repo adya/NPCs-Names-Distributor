@@ -1,0 +1,15 @@
+{
+    "NND_Given": {
+        "NND_Male": {
+            "NND_Names": ["Torvar","Torygg","Trilf","Tsun","Tulvur"]
+        },
+        "NND_Female": {
+            "NND_Names": ["Birna","Bjartur","Bjernild","Bjertha","Bodil","Bolfrida"]
+        }
+    },
+    "NND_Family": {
+        "NND_Any": {
+            "NND_Names": ["Abello","Abor","Acidinus","Acilius","Afronia"]
+        }
+    }
+}

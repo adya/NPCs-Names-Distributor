@@ -130,6 +130,8 @@ String NNDConjunctionsKey = "NND_Conjunctions"
 String NNDFemaleKey = "NND_Female"
 String NNDMaleKey = "NND_Male"
 String NNDAnyKey = "NND_Any"
+String NNDBehavior = "NND_Behavior"
+String NNDCombineKey = "NND_Combine"
 
 String NNDNamesKey = "NND_Names"
 String NNDChanceKey = "NND_Chance"
@@ -144,19 +146,42 @@ String Function PickNameFor(Actor person, String[] NNDKeywords)
     String familyName = ""
     String conjunction = ""
     
+    Bool allowCombineFamily = false
+    Bool allowCombineGiven = false
+
     ; Go through all found keywords in the priority order
     ; until we were able to pick the name (at least one part of it).
     ; Having both Given and Family names empty is considered a failure of the config file,
     ; so it will be skipped and the next one (if any) will attempt to get the name.
     Int index = 0
-    While givenName == "" && familyName == "" && index < NNDKeywords.Length
+
+    ; The condition here might look a bit complex, but it is derived from the following table of possible states:
+    ; G - Given, F - Family, B - Both;
+    ; "skip" means that we should go to next definition to find missing name, hence we check conditions where skip is present.
+    ;
+    ;         | not combine G |   combine G   | not combine F |   combine F   |
+    ; empty G |   use F only  | skip G, use F |   use F only  |  use F only   |
+    ; empty F |   use G only  |  use G only   |   use G Only  | use G, skip F |
+    ; empty B |    skip B     |    skip B     |    skip B     |    skip B     |
+
+    While (givenName == "" && familyName == "") || (givenName == "" && allowCombineGiven) || (familyName == "" && allowCombineFamily) && index < NNDKeywords.Length
         String NNDKeyword = NNDKeywords[index]
         If NNDSettings.KeywordHasValidConfig(NNDKeyword)
             String config = NNDSettings.ConfigFileForKeyword(NNDKeyword)
             String genderKey = Either(person.GetLeveledActorBase().GetSex() == 1, NNDFemaleKey, NNDMaleKey)
+    
+            allowCombineGiven = GetPathBoolValue(config, CreateKeyPath(NNDGivenKey, NNDBehavior, NNDCombineKey))
+            allowCombineFamily = GetPathBoolValue(config, CreateKeyPath(NNDFamilyKey, NNDBehavior, NNDCombineKey))
+
+            ; Since we allow combining multiple configs we should now check if name has been already picked before attempting to read another one.
+
+            If givenName == ""
+                givenName = GetNameForKey(NNDGivenKey, genderKey, config)
+            EndIf
             
-            givenName = GetNameForKey(NNDGivenKey, genderKey, config)
-            familyName = GetNameForKey(NNDFamilyKey, genderKey, config)
+            If familyName == ""
+                familyName = GetNameForKey(NNDFamilyKey, genderKey, config)
+            EndIf
             
             String conjunctionsKeyPath = CreateKeyPath(NNDConjunctionsKey, genderKey)
             Int conjunctionsCount = NamesCountInList(config, conjunctionsKeyPath)
