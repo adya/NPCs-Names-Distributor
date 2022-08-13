@@ -104,5 +104,12 @@
         "NND_Male": [],
         "NND_Female": [],
         "NND_Any": [" "]
+    },
+
+    "commentBehavior": "Name Definition itself also has Behavior that controls whole definition",
+    "NND_Behavior": {
+        "commentChance": "Name Definition can have a chance of being skipped. By default Definition is never skipped.",
+        "commentChance2": "This option is ignored if the Name Definition is the last in queue, as othwerise NPC might not get a name at all.",
+        "NND_Chance": 100
     }
 }

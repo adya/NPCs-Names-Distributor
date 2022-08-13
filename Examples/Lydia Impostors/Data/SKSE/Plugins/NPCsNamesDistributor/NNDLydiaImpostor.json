@@ -15,5 +15,8 @@
     },
     "NND_Conjunctions": {
         "NND_Female": [" the "]
+    },
+    "NND_Behavior": {
+        "NND_Chance": 80
     }
 }

@@ -52,15 +52,15 @@ Int Property GenerationId
     EndFunction
 EndProperty
 
-; Checks whether config for given keyword is valid and can be used to generate.
-Bool Function KeywordHasValidConfig(String NNDKeyword)
-    String config = NNDKeyword + ".json"
-    Return validConfigs.Find(config) >= 0
+; Checks whether Name Definition for given keyword is valid and can be used to generate names.
+Bool Function KeywordHasValidDefinition(String NNDKeyword)
+    String definition = NNDKeyword + ".json"
+    Return validDefinitions.Find(definition) >= 0
 EndFunction
 
-; Returns a path to JSON config file associated with specified NNDKeyword.
-String Function ConfigFileForKeyword(String NNDKeyword)
-    Return "../" + configsDirectory + "/" + NNDKeyword + ".json"
+; Returns a path to JSON file associated with specified NNDKeyword.
+String Function NameDefinitionFileForKeyword(String NNDKeyword)
+    Return "../" + nameDefinitionsDirectory + "/" + NNDKeyword + ".json"
 EndFunction
 
 ;;; Config Events ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -68,12 +68,12 @@ EndFunction
 Event OnConfigInit()
     parent.OnConfigInit()
     NNDNeedsRefresh.SetValueInt(0)
-    ValidateConfigs()
+    ValidateDefinitions()
 EndEvent
 
 Event OnGameReload()
     parent.OnGameReload()
-    ReloadConfigs()
+    ReloadDefinitions()
     RefreshNames()
 EndEvent
 
@@ -100,14 +100,14 @@ GlobalVariable Property NNDNeedsRefresh Auto
 ; to avoid unnecessary calls and provide UI feedback that action was performed.
 Bool Property bGenerationQueued Auto
 
-; Array that holds a list of valid configs that were detected since last reload.
-String[] validConfigs
+; Array that holds a list of valid Name Definitions that were detected since last reload.
+String[] validDefinitions
 
 String sTitleStyleKey = "iTitleStyle:General"
 String sTitleInversionKey = "bTitleInvert:General"
 
-; Default configs directory.
-String configsDirectory = "NPCsNamesDistributor"
+; Default directory contianing Name Definitions.
+String nameDefinitionsDirectory = "NPCsNamesDistributor"
 
 Function RefreshNames()
     If NNDNeedsRefresh.GetValueInt() == 1
@@ -128,52 +128,52 @@ Function RegenerateNames()
     RefreshMenu()
     
     GenerationId += 1
-    ReloadConfigs()
+    ReloadDefinitions()
     RefreshNames()
     
     bGenerationQueued = false
 EndFunction
 
-Function ReloadConfigs()
-    String[] configs = JsonInFolder("../" + configsDirectory + "/")
+Function ReloadDefinitions()
+    String[] definitions = JsonInFolder("../" + nameDefinitionsDirectory + "/")
     Int index = 0
-    While index < configs.Length
-        Unload(configs[index], false)
+    While index < definitions.Length
+        Unload(definitions[index], false)
         index += 1
     EndWhile
-    ValidateConfigs()
+    ValidateDefinitions()
 EndFunction
 
-; Function that goes through all configs present in configs directory and validates them.
-; Once they validated KeywordHasValidConfig can be used to check if config can be processed.
-Function ValidateConfigs()
-    String[] configs = JsonInFolder("../" + configsDirectory + "/")
-    NNDTrace("Found " + configs.Length + " configs for NND:")
+; Function that goes through all Name Definitions present in Name Definitions directory and validates them.
+; Once they validated KeywordHasValidDefinition can be used to check if Name Definition can be processed.
+Function ValidateDefinitions()
+    String[] definitions = JsonInFolder("../" + nameDefinitionsDirectory + "/")
+    NNDTrace("Found " + definitions.Length + " Name Definitions for NND:")
     Int index = 0
-    While index < configs.Length
-        NNDTrace(configs[index])
+    While index < definitions.Length
+        NNDTrace(definitions[index])
         index += 1
     EndWhile
 
     String NNDGivenKey = "NND_Given"
     String NNDFamilyKey = "NND_Family"
 
-    NNDTrace("Validating NND configs...")
+    NNDTrace("Validating Name Definitions...")
     index = 0
-    While index < configs.Length
-        String config = "../" + configsDirectory + "/" + configs[index]
-        If !IsGood(config)
-            NNDTrace(configs[index] + " is malformed.", 1)
-            configs[index] = ""
-        ElseIf !CanResolvePath(config, NNDGivenKey) && !CanResolvePath(config, NNDFamilyKey)
-            NNDTrace(configs[index] + " doesn't define any names.", 1)
-            configs[index] = ""
+    While index < definitions.Length
+        String definition = "../" + nameDefinitionsDirectory + "/" + definitions[index]
+        If !IsGood(definition)
+            NNDTrace(definitions[index] + " is malformed.", 1)
+            definitions[index] = ""
+        ElseIf !CanResolvePath(definition, NNDGivenKey) && !CanResolvePath(definition, NNDFamilyKey)
+            NNDTrace(definitions[index] + " doesn't define any names.", 1)
+            definitions[index] = ""
         EndIf
 
         index += 1
     EndWhile
 
-    validConfigs = PapyrusUtil.ClearEmpty(configs)
+    validDefinitions = PapyrusUtil.ClearEmpty(definitions)
 EndFunction
 
 ; Sets correct Title Style options that correspond to currently inversion state.
@@ -196,10 +196,22 @@ EndFunction
 
 ; Returns a list of title style short names to display in the menu.
 String[] Function GetTitleStyleShortNamesOptions()
-    Return StringSplit("$TitleStyleNone,$TitleStyleNewLine,$TitleStyleHyphen,$TitleStyleRound,$TitleStyleSquare,$TitleStyleComma,$TitleStyleSemicolon,$TitleStyleFullStop,$TitleStylespace")
+    Return StringSplit("$TitleStyleNone,$TitleStyleNewLine,$TitleStyleHyphen,$TitleStyleRound,$TitleStyleSquare,$TitleStyleComma,$TitleStyleSemicolon,$TitleStyleFullStop,$TitleStyleSpace")
 EndFunction
 
-; Logs NNDTrace with a distincive prefix for easier reading through logs.
+; Logs trace with a distincive prefix for easier reading through logs.
+; Severity is one of the following:
+; 0 - Info
+; 1 - Warning
+; 2 - Error
 Function NNDTrace(String sMessage, Int level = 0)
-    Trace("NNDSettings: " + sMessage + ".", level)
+    String msg = "NNDSettings: "
+    If level == 1
+        msg += "[WARNING] "
+    ElseIf level == 2
+        msg += "[ERROR] "
+    Endif
+    msg += sMessage + "."
+    Trace(msg, level)
 EndFunction
+; I was lazy to create a separate utility script, so I just copied NNDTrace from ApplyName :D I'll have to live with it.

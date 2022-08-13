@@ -27,12 +27,6 @@ Event OnEffectStart(Actor akTarget, Actor akCaster)
         Return
     EndIf
 
-    String[] keywords = GetNNDKeywords(akTarget.GetLeveledActorBase())
-    If keywords.Length == 0
-        ; No applicable configs, so we don't need to do anything.
-        Return
-    EndIf
-    
     ; Read previous values if any.
     originalName = StorageUtil.GetStringValue(akTarget, "NNDOriginalName")
     generatedName = StorageUtil.GetStringValue(akTarget, "NNDGeneratedName")
@@ -40,6 +34,7 @@ Event OnEffectStart(Actor akTarget, Actor akCaster)
     
     ; NNDTrace("Effect starting... Original name for actor " + akTarget + ": " + originalName)
     ; NNDTrace("Effect starting... Generated name for actor " + akTarget + ": " + generatedName)
+   
     ; Pick original name only once in an effect lifetime.
     If originalName == "" && lastGeneratationId == -1
         originalName = akTarget.GetDisplayName()
@@ -51,6 +46,12 @@ Event OnEffectStart(Actor akTarget, Actor akCaster)
     If lastGeneratationId == -1
         lastGeneratationId = NNDSettings.GenerationId
         StorageUtil.SetIntValue(akTarget, "NNDGenerationId", lastGeneratationId)
+    EndIf
+
+    String[] keywords = GetNNDKeywords(akTarget.GetLeveledActorBase())
+    If keywords.Length == 0
+        ; No applicable Name Definitions, so we don't need to do anything.
+        Return
     EndIf
     
     If generatedName == "" || lastGeneratationId != NNDSettings.GenerationId
@@ -122,7 +123,7 @@ EndEvent
 
 
 
-;;; Keys used in config files. ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Keys used in Name Definition files. ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 String NNDGivenKey = "NND_Given"
 String NNDFamilyKey = "NND_Family"
@@ -130,7 +131,7 @@ String NNDConjunctionsKey = "NND_Conjunctions"
 String NNDFemaleKey = "NND_Female"
 String NNDMaleKey = "NND_Male"
 String NNDAnyKey = "NND_Any"
-String NNDBehavior = "NND_Behavior"
+String NNDBehaviorKey = "NND_Behavior"
 String NNDCombineKey = "NND_Combine"
 
 String NNDNamesKey = "NND_Names"
@@ -139,7 +140,7 @@ String NNDChanceKey = "NND_Chance"
 String NNDPrefixKey = "NND_Prefix"
 String NNDSuffixKey = "NND_Suffix"
 
-; Finds a name for the actor in one of defined NND config files based on NND Keywords applied to that actor.
+; Finds a name for the actor in one of the valid Name Definition files based on NND Keywords applied to that actor.
 ; If Name couldn't be picked an empty string will be returned.
 String Function PickNameFor(Actor person, String[] NNDKeywords)
     String givenName = ""
@@ -151,7 +152,7 @@ String Function PickNameFor(Actor person, String[] NNDKeywords)
 
     ; Go through all found keywords in the priority order
     ; until we were able to pick the name (at least one part of it).
-    ; Having both Given and Family names empty is considered a failure of the config file,
+    ; Having both Given and Family names empty is considered a failure of the Name Definition,
     ; so it will be skipped and the next one (if any) will attempt to get the name.
     Int index = 0
 
@@ -166,43 +167,54 @@ String Function PickNameFor(Actor person, String[] NNDKeywords)
 
     While (givenName == "" && familyName == "") || (givenName == "" && allowCombineGiven) || (familyName == "" && allowCombineFamily) && index < NNDKeywords.Length
         String NNDKeyword = NNDKeywords[index]
-        If NNDSettings.KeywordHasValidConfig(NNDKeyword)
-            String config = NNDSettings.ConfigFileForKeyword(NNDKeyword)
+        traceForKeyword = NNDKeyword
+        String definition = NNDSettings.NameDefinitionFileForKeyword(NNDKeyword)
+        
+        ; If there is at least one more pending Name Definitions in queue
+        ; then we check definition's behavior to see if it allows skipping and evaluate the chance of it being skipped.
+        Bool skipDefinition = false
+        If (index < NNDKeywords.Length - 1)
+            skipDefinition = GetChanceForList(definition, CreateKeyPath(NNDBehaviorKey, NNDChanceKey)) <= RandomChance()
+        EndIf   
+
+        If !skipDefinition   
             String genderKey = Either(person.GetLeveledActorBase().GetSex() == 1, NNDFemaleKey, NNDMaleKey)
-    
-            allowCombineGiven = GetPathBoolValue(config, CreateKeyPath(NNDGivenKey, NNDBehavior, NNDCombineKey))
-            allowCombineFamily = GetPathBoolValue(config, CreateKeyPath(NNDFamilyKey, NNDBehavior, NNDCombineKey))
-
-            ; Since we allow combining multiple configs we should now check if name has been already picked before attempting to read another one.
-
+            
+            allowCombineGiven = GetPathBoolValue(definition, CreateKeyPath(NNDGivenKey, NNDBehaviorKey, NNDCombineKey))
+            allowCombineFamily = GetPathBoolValue(definition, CreateKeyPath(NNDFamilyKey, NNDBehaviorKey, NNDCombineKey))
+            
+            ; Since we allow combining multiple Name Definitions we should now check if name has been already picked before attempting to read another one.
+            
             If givenName == ""
-                givenName = GetNameForKey(NNDGivenKey, genderKey, config)
+                givenName = GetNameForKey(NNDGivenKey, genderKey, definition)
             EndIf
             
             If familyName == ""
-                familyName = GetNameForKey(NNDFamilyKey, genderKey, config)
+                familyName = GetNameForKey(NNDFamilyKey, genderKey, definition)
             EndIf
             
             String conjunctionsKeyPath = CreateKeyPath(NNDConjunctionsKey, genderKey)
-            Int conjunctionsCount = NamesCountInList(config, conjunctionsKeyPath)
+            Int conjunctionsCount = NamesCountInList(definition, conjunctionsKeyPath)
             If conjunctionsCount <= 0
                 conjunctionsKeyPath = CreateKeyPath(NNDConjunctionsKey, NNDAnyKey)
-                conjunctionsCount = NamesCountInList(config, conjunctionsKeyPath)
+                conjunctionsCount = NamesCountInList(definition, conjunctionsKeyPath)
             EndIf
             
             If conjunctionsCount > 0
                 Int conjunctionIndex = RandomIndex(conjunctionsCount)
-                conjunction = GetPathStringValue(config, CreateIndexPath(conjunctionsKeyPath, conjunctionIndex))
+                conjunction = GetPathStringValue(definition, CreateIndexPath(conjunctionsKeyPath, conjunctionIndex))
             Else
                 ; Default conjunction is a simple whitespace :) 
                 conjunction = " "
             EndIf
         Else
-            NNDTrace("Config " + NNDKeyword + ".json is either missing or malformed. Check that it is present in Data/SKSE/Plugins/NPCsNamesDistributor/ and contains a valid JSON")
+            NNDTrace("Name Definition was randomly skipped")
         EndIf
+            
         index += 1
     EndWhile
-    
+    traceForKeyword = ""
+
     ; Build a full name, connecting given and family names only if both were picked.
     If givenName != ""
         If familyName != ""
@@ -242,44 +254,44 @@ String Function FormattedTitle(String name, String title)
 EndFunction
 
 ; Gets either Given or Family name (depending on nameKey) for specified gender.
-; If config does not define names for specified genderKey, this function will attempt to pick a name in default "Any" category.
+; If definition does not define names for specified genderKey, this function will attempt to pick a name in default "Any" category.
 ;
 ; - Parameter nameKey: Either NNDGivenKey or NNDFamilyKey
 ; - Parameter genderKey: One of NNDMaleKey, NNDFemaleKey or NNDAnyKey
-; - Parameter config: Filename of the config
+; - Parameter definition: Filename of the Name Definition to be used.
 ;
 ; Returns empty string if name wasn't picked.
-String Function GetNameForKey(String nameKey, String genderKey, String config)
+String Function GetNameForKey(String nameKey, String genderKey, String definition)
     String result = ""
     
     String genderKeyPath = CreateKeyPath(nameKey, genderKey)
     String namesKeyPath = CreateKeyPath(genderKeyPath, NNDNamesKey)
-    Int namesCount = NamesCountInList(config, namesKeyPath)
+    Int namesCount = NamesCountInList(definition, namesKeyPath)
     
     ; If definition for specific gender was not found or has no names in it try to find default "Any" definition
     If namesCount <= 0
-        NNDTrace("No " + nameKey + " names were found specific for " + genderKey + " in " + config + ". Falling back to " + NNDAnyKey)
+        NNDTrace("No " + nameKey + " names were found specific for " + genderKey + " in " + definition + ". Falling back to " + NNDAnyKey)
         genderKeyPath = CreateKeyPath(nameKey, NNDAnyKey)
         namesKeyPath = CreateKeyPath(genderKeyPath, NNDNamesKey)
-        namesCount = NamesCountInList(config, namesKeyPath)
+        namesCount = NamesCountInList(definition, namesKeyPath)
     EndIf
     
     If namesCount > 0
-        Int chance = GetChanceForList(config, CreateKeyPath(genderKeyPath, NNDChanceKey))
+        Int chance = GetChanceForList(definition, CreateKeyPath(genderKeyPath, NNDChanceKey))
         
         If chance > RandomChance()
             Int index = RandomIndex(namesCount)
-            result = GetPathStringValue(config, CreateIndexPath(namesKeyPath, index))
+            result = GetPathStringValue(definition, CreateIndexPath(namesKeyPath, index))
         EndIf
         
         ; Process prefixes and suffixes only if the base name was picked.
         If result != ""
-            result = GetNameDecorationForKey(NNDPrefixKey, nameKey, genderKey, config) + result + GetNameDecorationForKey(NNDSuffixKey, nameKey, genderKey, config)
+            result = GetNameDecorationForKey(NNDPrefixKey, nameKey, genderKey, definition) + result + GetNameDecorationForKey(NNDSuffixKey, nameKey, genderKey, definition)
         Else
             NNDTrace(nameKey + " name was randomly skipped")
         EndIf
     Else
-        NNDTrace("Couldn't find appropriate names list in " + config + ". Both " + CreateKeyPath(nameKey, genderKey, NNDNamesKey) + " and " + CreateKeyPath(nameKey, NNDAnyKey, NNDNamesKey) + " are missing or empty", 1)
+        NNDTrace("Couldn't find appropriate names list in " + definition + ". Both " + CreateKeyPath(nameKey, genderKey, NNDNamesKey) + " and " + CreateKeyPath(nameKey, NNDAnyKey, NNDNamesKey) + " are missing or empty", 1)
     EndIf
     Return result
 EndFunction
@@ -289,26 +301,26 @@ EndFunction
 ; - Parameter decorKey: Either NNDPrefixKey or NNDSuffixKey
 ; - Parameter nameKey: Either NNDGivenKey or NNDFamilyKey
 ; - Parameter genderKey: One of NNDMaleKey, NNDFemaleKey or NNDAnyKey
-; - Parameter config: Filename of the config
+; - Parameter definition: Filename of the Name Definition to be used.
 ;
 ; Returns empty string if prefix or suffix wasn't picked.
-String Function GetNameDecorationForKey(String decorKey, String nameKey, String genderKey, String config)
+String Function GetNameDecorationForKey(String decorKey, String nameKey, String genderKey, String definition)
     String genderKeyPath = CreateKeyPath(nameKey, genderKey)
     String decorNamesKeyPath = CreateKeyPath(genderKeyPath, decorKey, NNDNamesKey)
-    Int decorsCount = NamesCountInList(config, decorNamesKeyPath)
+    Int decorsCount = NamesCountInList(definition, decorNamesKeyPath)
     
     If decorsCount <= 0
         NNDTrace("No " + decorKey + " names were found specific for " + genderKey + ". Falling back to " + NNDAnyKey)
         genderKeyPath = CreateKeyPath(nameKey, NNDAnyKey)
         decorNamesKeyPath = CreateKeyPath(genderKeyPath, decorKey, NNDNamesKey)
-        decorsCount = NamesCountInList(config, decorNamesKeyPath)
+        decorsCount = NamesCountInList(definition, decorNamesKeyPath)
     EndIf
     
     If decorsCount > 0
-        Int decorChance = GetChanceForList(config, CreateKeyPath(genderKeyPath, decorKey, NNDChanceKey))
+        Int decorChance = GetChanceForList(definition, CreateKeyPath(genderKeyPath, decorKey, NNDChanceKey))
         If decorChance > RandomChance()
             Int index = RandomIndex(decorsCount)
-            Return GetPathStringValue(config, CreateIndexPath(decorNamesKeyPath, index))
+            Return GetPathStringValue(definition, CreateIndexPath(decorNamesKeyPath, index))
         Else
             NNDTrace(decorKey + " for " + genderKeyPath + " name was randomly skipped")
         EndIf
@@ -317,8 +329,10 @@ String Function GetNameDecorationForKey(String decorKey, String nameKey, String 
     Return ""
 EndFunction
 
-; Finds all NND keywords that represent name categories.
-; Returned array is sorted base on priorities of these categories if there are more than one.
+; Finds all NND keywords that are associated with valid Name Definitions.
+; Returned array is sorted base on priorities defined for these keywords if there are more than one.
+;
+; Note that NND Keywords that are associated with invalid Name Definitions will be skipped.
 ;
 ; There are only 4 types of Keywords priorities that can be set. Here is the list:
 ; - NNDKeyword_Forced
@@ -326,7 +340,8 @@ EndFunction
 ; - NNDKeyword_Class
 ; - NNDKeyword_Race (_Race can be ommitted as it is the default)
 String[] Function GetNNDKeywords(Form person)
-    
+    traceForKeyword = ""
+
     ; Create a placeholder for building up the queue.
     String[] keywordsQueue = CreateStringArray(4, "")
     
@@ -334,13 +349,13 @@ String[] Function GetNNDKeywords(Form person)
     Int index = 0
     While index < kwLength
         Keyword kw = person.GetNthKeyword(index)
-        ; NNDTrace("Analyzing keyword " + kw)
+        NNDTrace("Analyzing keyword " + kw)
         If kw != None
             String kwName = kw.GetString()
+            traceForKeyword = kwName
             ; Find the first NND keyword that represents a category with appropriate names for the actor.
             If kw != NNDTitleless && Find(kwName, "NND") == 0
                 
-                ; NNDTrace(kwName + " is a configuration keyword")
                 Int forcedIndex = -1
                 Int factionIndex = -1
                 Int classIndex = -1
@@ -348,51 +363,66 @@ String[] Function GetNNDKeywords(Form person)
                 
                 If keywordsQueue[0] == ""
                     forcedIndex = Find(kwName, "_Forced")
-                    ; NNDTrace("_Forced suffix index is " + forcedIndex)
+                    NNDTrace("_Forced suffix index is " + forcedIndex)
                 EndIf
                 If keywordsQueue[1] == ""
                     factionIndex = Find(kwName, "_Faction")
-                    ; NNDTrace("_Faction suffix index is " + factionIndex)
+                    NNDTrace("_Faction suffix index is " + factionIndex)
                 EndIf
                 If keywordsQueue[2] == ""
                     classIndex = Find(kwName, "_Class")
-                    ; NNDTrace("_Class suffix index is " + classIndex)
+                    NNDTrace("_Class suffix index is " + classIndex)
                 EndIf
                 If keywordsQueue[3] == ""
                     raceIndex = Find(kwName, "_Race")
-                    ; NNDTrace("_Race suffix index is " + raceIndex)
+                    NNDTrace("_Race suffix index is " + raceIndex)
                     
                     ; If race not found use whole keyword as default race priority.
                     ; Other priorities will be handled before checking the race priority, so no conflict there.
                     If forcedIndex == -1 && factionIndex == -1 && classIndex == -1 && raceIndex == -1
                         raceIndex = 0
-                        ; NNDTrace("Keyword " + kwName + " doesn't have any supported suffixes, it will be considered a Race keyword")
+                        NNDTrace("Keyword doesn't have any supported priorities, it will be considered a Race keyword")
                     EndIf
                 EndIf
                 
+                Int queueIndex = -1
+
                 If forcedIndex != -1
-                    keywordsQueue[0] = Substring(kwName, 0, forcedIndex)
-                    ; NNDTrace("Setting Forced NNDKeyword" + keywordsQueue[0])
+                    queueIndex = 0
+                    kwName = Substring(kwName, 0, forcedIndex)
+                    NNDTrace("Setting Forced NNDKeyword")
                 ElseIf factionIndex != -1
-                    keywordsQueue[1] = Substring(kwName, 0, factionIndex) 
-                    ; NNDTrace("Setting Faction NNDKeyword" + keywordsQueue[1])
+                    queueIndex = 1
+                    kwName = Substring(kwName, 0, factionIndex)
+                    NNDTrace("Setting Faction NNDKeyword")
                 ElseIf classIndex != -1
-                    keywordsQueue[2] = Substring(kwName, 0, classIndex) 
-                    ; NNDTrace("Setting Class NNDKeyword" + keywordsQueue[2])
+                    queueIndex = 2
+                    kwName = Substring(kwName, 0, classIndex)
+                    NNDTrace("Setting Class NNDKeyword")
                 ElseIf raceIndex != -1
-                    keywordsQueue[3] = Substring(kwName, 0, raceIndex)
-                    ; NNDTrace("Setting Race NNDKeyword" + keywordsQueue[3])
+                    queueIndex = 3
+                    kwName = Substring(kwName, 0, raceIndex)
+                    NNDTrace("Setting Race NNDKeyword")
                 ElseIf keywordsQueue[0] != "" && keywordsQueue[1] != "" && keywordsQueue[2] != "" && keywordsQueue[3] != ""
-                    ; NNDTrace("All supported overwrites found: " + keywordsQueue)
+                    NNDTrace("All supported overwrites found: " + keywordsQueue)
                     
                     ; If all all spots in the queue have been set there is no need to continue the search.
                     Return keywordsQueue
-                EndIf            
+                EndIf  
+                
+                If !NNDSettings.KeywordHasValidDefinition(kwName)
+                    NNDTrace("Name Definition " + kwName + ".json is either missing or malformed. Check that it is present in Data/SKSE/Plugins/NPCsNamesDistributor/ and contains a valid JSON", 2)
+                ElseIf queueIndex != -1
+                    keywordsQueue[queueIndex] = kwName
+                Else
+                    NNDTrace("Another NNDKeyword with the same priority is already added to queue. " + kwName + " will be skipped.", 1)
+                EndIf
             EndIf
         EndIf
         index += 1
     EndWhile
-    
+
+    traceForKeyword = ""
     ; Return only unique keywords that are present in the queue, so
     ; ["NNDKeyword1", "", "NNDKeyword3", "NNDKeyword1"] will become ["NNDKeyword1", "NNDKeyword3"]
     Return RemoveDupeString(ClearEmpty(keywordsQueue))
@@ -423,13 +453,13 @@ String Function CreateIndexPath(String keyPath, Int index)
 EndFunction
 
 ; Reads Chance value at specified keyPath and automatically sanitizes invalid values, by enforcing 0-100 boundaries.
-Int Function GetChanceForList(String config, String keyPath)
-    Return Clamp(GetPathIntValue(config, keyPath, 100), 0, 100)
+Int Function GetChanceForList(String definition, String keyPath)
+    Return Clamp(GetPathIntValue(definition, keyPath, 100), 0, 100)
 EndFunction
 
 ; Reads count of entries in the array located at specified keyPath.
-Int Function NamesCountInList(String config, String keyPath)
-    Int count = PathCount(config, keyPath)
+Int Function NamesCountInList(String definition, String keyPath)
+    Int count = PathCount(definition, keyPath)
     If count > 0
         Return count
     Else
@@ -468,7 +498,31 @@ Int Function RandomIndex(Int size)
     Return RandomInt(0, size - 1)
 EndFunction
 
+; Assign a keyword that is currently being processed to this property,
+; so that NNDTrace would add it as a tag for easier understanding.
+;
+; Remember to clear its value as soon as you're done with keywords, so NNDTrace wouldn't tag irrelevant messages.
+String traceForKeyword = ""
+
 ; Logs trace with a distincive prefix for easier reading through logs.
+; Severity is one of the following:
+; 0 - Info
+; 1 - Warning
+; 2 - Error
 Function NNDTrace(String sMessage, Int level = 0)
-    Trace("NNDApplyName: " + sMessage + ".", level)
+    String msg = "NNDApplyName: "
+    If level == 1
+        msg += "[WARNING] "
+    ElseIf level == 2
+        msg += "[ERROR] "
+    Endif
+
+    If originalName != ""
+        msg += "[" + originalName + "] "
+    EndIf
+    If traceForKeyword != ""
+        msg += "[" + traceForKeyword + "] "
+    EndIf
+    msg += sMessage + "."
+    Trace(msg, level)
 EndFunction
