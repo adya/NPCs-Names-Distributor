@@ -2,6 +2,8 @@ Scriptname NND_ApplyName extends activemagiceffect
 
 Keyword Property NNDTitleless Auto
 
+Keyword Property NNDExcludedUnique Auto
+
 NND_Settings Property NNDSettings Auto
 
 import Debug
@@ -354,7 +356,7 @@ String[] Function GetNNDKeywords(Form person)
             String kwName = kw.GetString()
             traceForKeyword = kwName
             ; Find the first NND keyword that represents a category with appropriate names for the actor.
-            If kw != NNDTitleless && Find(kwName, "NND") == 0
+            If kw != NNDTitleless && kw != NNDExcludedUnique && Find(kwName, "NND") == 0
                 
                 Int forcedIndex = -1
                 Int factionIndex = -1
