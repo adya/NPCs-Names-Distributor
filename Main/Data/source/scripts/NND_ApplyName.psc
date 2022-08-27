@@ -333,6 +333,7 @@ EndFunction
 
 ; Finds all NND keywords that are associated with valid Name Definitions.
 ; Returned array is sorted base on priorities defined for these keywords if there are more than one.
+; Within each priority group keywords are sorted alphabetically.
 ;
 ; Note that NND Keywords that are associated with invalid Name Definitions will be skipped.
 ;
@@ -344,10 +345,14 @@ EndFunction
 String[] Function GetNNDKeywords(Form person)
     traceForKeyword = ""
 
-    ; Create a placeholder for building up the queue.
-    String[] keywordsQueue = CreateStringArray(4, "")
-    
     Int kwLength = person.GetNumKeywords()
+
+    ; Create placeholders for building up the queue for each priority.
+    String[] forcedKeywordsQueue = CreateStringArray(kwLength, "")
+    String[] factionKeywordsQueue = CreateStringArray(kwLength, "")
+    String[] classKeywordsQueue = CreateStringArray(kwLength, "")
+    String[] raceKeywordsQueue = CreateStringArray(kwLength, "")
+ 
     Int index = 0
     While index < kwLength
         Keyword kw = person.GetNthKeyword(index)
@@ -358,76 +363,61 @@ String[] Function GetNNDKeywords(Form person)
             ; Find the first NND keyword that represents a category with appropriate names for the actor.
             If kw != NNDTitleless && kw != NNDExcludedUnique && Find(kwName, "NND") == 0
                 
-                Int forcedIndex = -1
-                Int factionIndex = -1
-                Int classIndex = -1
-                Int raceIndex = -1
+                Int forcedIndex = Find(kwName, "_Forced")
+                Int factionIndex = Find(kwName, "_Faction")
+                Int classIndex = Find(kwName, "_Class")
+                Int raceIndex = Find(kwName, "_Race")
                 
-                If keywordsQueue[0] == ""
-                    forcedIndex = Find(kwName, "_Forced")
-                    NNDTrace("_Forced suffix index is " + forcedIndex)
-                EndIf
-                If keywordsQueue[1] == ""
-                    factionIndex = Find(kwName, "_Faction")
-                    NNDTrace("_Faction suffix index is " + factionIndex)
-                EndIf
-                If keywordsQueue[2] == ""
-                    classIndex = Find(kwName, "_Class")
-                    NNDTrace("_Class suffix index is " + classIndex)
-                EndIf
-                If keywordsQueue[3] == ""
-                    raceIndex = Find(kwName, "_Race")
-                    NNDTrace("_Race suffix index is " + raceIndex)
-                    
-                    ; If race not found use whole keyword as default race priority.
-                    ; Other priorities will be handled before checking the race priority, so no conflict there.
-                    If forcedIndex == -1 && factionIndex == -1 && classIndex == -1 && raceIndex == -1
-                        raceIndex = 0
-                        NNDTrace("Keyword doesn't have any supported priorities, it will be considered a Race keyword")
-                    EndIf
+                ; If race not found use whole keyword as default race priority.
+                ; Other priorities will be handled before checking the race priority, so no conflict there.
+                If forcedIndex == -1 && factionIndex == -1 && classIndex == -1 && raceIndex == -1
+                    raceIndex = 0
+                    NNDTrace("Keyword doesn't have any supported priorities, it will be considered a Race keyword")
                 EndIf
                 
-                Int queueIndex = -1
-
                 If forcedIndex != -1
-                    queueIndex = 0
                     kwName = Substring(kwName, 0, forcedIndex)
+                    forcedKeywordsQueue[index] = kwName
                     NNDTrace("Setting Forced NNDKeyword")
                 ElseIf factionIndex != -1
-                    queueIndex = 1
                     kwName = Substring(kwName, 0, factionIndex)
+                    factionKeywordsQueue[index] = kwName
                     NNDTrace("Setting Faction NNDKeyword")
                 ElseIf classIndex != -1
-                    queueIndex = 2
                     kwName = Substring(kwName, 0, classIndex)
+                    classKeywordsQueue[index] = kwName
                     NNDTrace("Setting Class NNDKeyword")
                 ElseIf raceIndex != -1
-                    queueIndex = 3
                     kwName = Substring(kwName, 0, raceIndex)
+                    raceKeywordsQueue[index] = kwName
                     NNDTrace("Setting Race NNDKeyword")
-                ElseIf keywordsQueue[0] != "" && keywordsQueue[1] != "" && keywordsQueue[2] != "" && keywordsQueue[3] != ""
-                    NNDTrace("All supported overwrites found: " + keywordsQueue)
-                    
-                    ; If all all spots in the queue have been set there is no need to continue the search.
-                    Return keywordsQueue
                 EndIf  
                 
-                If !NNDSettings.KeywordHasValidDefinition(kwName)
-                    NNDTrace("Name Definition " + kwName + ".json is either missing or malformed. Check that it is present in Data/SKSE/Plugins/NPCsNamesDistributor/ and contains a valid JSON", 2)
-                ElseIf queueIndex != -1
-                    keywordsQueue[queueIndex] = kwName
-                Else
-                    NNDTrace("Another NNDKeyword with the same priority is already added to queue. " + kwName + " will be skipped.", 1)
-                EndIf
+                
             EndIf
         EndIf
         index += 1
     EndWhile
 
     traceForKeyword = ""
+
+    forcedKeywordsQueue = SortStringArray(ClearEmpty(forcedKeywordsQueue))
+    factionKeywordsQueue = SortStringArray(ClearEmpty(factionKeywordsQueue))
+    classKeywordsQueue = SortStringArray(ClearEmpty(classKeywordsQueue))
+    raceKeywordsQueue = SortStringArray(ClearEmpty(raceKeywordsQueue))
+
     ; Return only unique keywords that are present in the queue, so
     ; ["NNDKeyword1", "", "NNDKeyword3", "NNDKeyword1"] will become ["NNDKeyword1", "NNDKeyword3"]
-    Return RemoveDupeString(ClearEmpty(keywordsQueue))
+    Return MergeStringArray(MergeStringArray(forcedKeywordsQueue, factionKeywordsQueue), MergeStringArray(classKeywordsQueue, raceKeywordsQueue), true)
+EndFunction
+
+; Checks whether given keyword has a valid associated Name Definition and can be used.
+Bool Function IsValidKeyword(String kwName)
+    If !NNDSettings.KeywordHasValidDefinition(kwName)
+        NNDTrace("Name Definition " + kwName + ".json is either missing or malformed. Check that it is present in Data/SKSE/Plugins/NPCsNamesDistributor/ and contains a valid JSON", 2)
+        Return false
+    EndIf
+    Return true
 EndFunction
 
 ;;; Utility functions used to make life easier while writing this sciprt.
