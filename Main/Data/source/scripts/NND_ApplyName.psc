@@ -24,7 +24,7 @@ Int lastGeneratationId = -1
 
 Event OnEffectStart(Actor akTarget, Actor akCaster)
     parent.OnEffectStart(akTarget, akCaster)
-    If akTarget == None
+    If akTarget == None || akTarget.GetLeveledActorBase() == None
         NNDTrace("Failed to rename an actor. akTarget is None", 2)
         Return
     EndIf
@@ -167,7 +167,7 @@ String Function PickNameFor(Actor person, String[] NNDKeywords)
     ; empty F |   use G only  |  use G only   |   use G Only  | use G, skip F |
     ; empty B |    skip B     |    skip B     |    skip B     |    skip B     |
 
-    While (givenName == "" && familyName == "") || (givenName == "" && allowCombineGiven) || (familyName == "" && allowCombineFamily) && index < NNDKeywords.Length
+    While ((givenName == "" && familyName == "") || (givenName == "" && allowCombineGiven) || (familyName == "" && allowCombineFamily)) && index < NNDKeywords.Length
         String NNDKeyword = NNDKeywords[index]
         traceForKeyword = NNDKeyword
         String definition = NNDSettings.NameDefinitionFileForKeyword(NNDKeyword)
@@ -343,9 +343,11 @@ EndFunction
 ; - NNDKeyword_Class
 ; - NNDKeyword_Race (_Race can be ommitted as it is the default)
 String[] Function GetNNDKeywords(Form person)
-    traceForKeyword = ""
-
     Int kwLength = person.GetNumKeywords()
+
+    If kwLength == 0
+        Return CreateStringArray(0)
+    EndIf
 
     ; Create placeholders for building up the queue for each priority.
     String[] forcedKeywordsQueue = CreateStringArray(kwLength, "")
@@ -355,6 +357,7 @@ String[] Function GetNNDKeywords(Form person)
  
     Int index = 0
     While index < kwLength
+        traceForKeyword = ""
         Keyword kw = person.GetNthKeyword(index)
         NNDTrace("Analyzing keyword " + kw)
         If kw != None
@@ -401,14 +404,13 @@ String[] Function GetNNDKeywords(Form person)
 
     traceForKeyword = ""
 
-    forcedKeywordsQueue = SortStringArray(ClearEmpty(forcedKeywordsQueue))
-    factionKeywordsQueue = SortStringArray(ClearEmpty(factionKeywordsQueue))
-    classKeywordsQueue = SortStringArray(ClearEmpty(classKeywordsQueue))
-    raceKeywordsQueue = SortStringArray(ClearEmpty(raceKeywordsQueue))
+    forcedKeywordsQueue = ClearKeywordsQueue(forcedKeywordsQueue)
+    factionKeywordsQueue = ClearKeywordsQueue(factionKeywordsQueue)
+    classKeywordsQueue = ClearKeywordsQueue(classKeywordsQueue)
+    raceKeywordsQueue = ClearKeywordsQueue(raceKeywordsQueue)
 
-    ; Return only unique keywords that are present in the queue, so
-    ; ["NNDKeyword1", "", "NNDKeyword3", "NNDKeyword1"] will become ["NNDKeyword1", "NNDKeyword3"]
-    Return MergeStringArray(MergeStringArray(forcedKeywordsQueue, factionKeywordsQueue), MergeStringArray(classKeywordsQueue, raceKeywordsQueue), true)
+    ; Merge all queues together.
+    Return MergeStringArraySafe(MergeStringArraySafe(forcedKeywordsQueue, factionKeywordsQueue), MergeStringArraySafe(classKeywordsQueue, raceKeywordsQueue), true)
 EndFunction
 
 ; Checks whether given keyword has a valid associated Name Definition and can be used.
@@ -422,8 +424,65 @@ EndFunction
 
 ;;; Utility functions used to make life easier while writing this sciprt.
 
-; Creates a JSON path using given keys.
-; First key is considered to be the root's key and will be prepended with "." if it's not already. (e.g. ".key1.key2.key3.key4")
+; Finalizes keywords queue by removing empty placeholders and duplicates.
+; The resulting array is a sorted queue of unique keywords that were present in the original queue.
+; For example, ["NNDKeyword1", "", "NNDKeyword3", "NNDKeyword1"] will become ["NNDKeyword1", "NNDKeyword3"]
+String[] Function ClearKeywordsQueue(String[] queue)
+    queue = ClearEmptySafe(queue)
+    If queue.Length == 0
+        Return queue
+    EndIf
+    queue = RemoveDupeString(queue)
+    SortStringArray(queue)
+    Return queue
+EndFunction
+
+; This is a "safe" implementation of ClearEmpty function from PapyrusUtil.
+; Unfortunately, ClearEmpty from PapyrusUtil seems to return None when all values in the array were empty.
+; This breaks papyrus, as it cannot cast None back to String[] and there is nothing to be done on my side.
+; For example, ClearEmpty(["", "", ""]) would return None, rather than an empty array: [].
+String[] Function ClearEmptySafe(String[] stringArray)
+    Int arrSize = stringArray.Length
+
+    If arrSize == 0
+        Return stringArray
+    EndIf
+
+    Int index = 0
+    Int emptyCount = 0
+    ; Count empty strings in the array
+    While index < arrSize
+        If stringArray[index] == ""
+            emptyCount += 1
+        EndIf
+        index += 1
+    EndWhile
+
+    ; If all are empty then simply return an empty array
+    If emptyCount == arrSize
+        Return CreateStringArray(0)
+    EndIf
+
+    ; Otherwise it is safe to call ClearEmpty
+    Return ClearEmpty(stringArray)
+EndFunction
+
+; This is a "safe" implementation of MergeStringArray function from PapyrusUtil.
+; Unfortunately, MergeStringArray from PapyrusUtil doesn't play well with empty arrays that might be passed into it.
+; In such cases it returns None and this breaks papyrus, as it cannot cast None back to String[] and there is nothing to be done on my side.
+String[] Function MergeStringArraySafe(String[] first, String[] second, Bool removeDupes = false)
+    If first.Length == 0
+        Return second
+    EndIf
+
+    If second.Length == 0
+        Return first
+    EndIf
+
+    Return MergeStringArray(first, second, removeDupes)
+EndFunction
+
+; Creates a JSON path using given keys (e.g. "key1.key2.key3.key4")
 ; Empty keys are ignored.
 String Function CreateKeyPath(String key1, String key2, String key3 = "", String key4 = "")
     String result = key1
