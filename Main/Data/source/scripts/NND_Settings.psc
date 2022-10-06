@@ -41,6 +41,20 @@ Bool Property IsInvertedTitleStyle
     EndFunction
 EndProperty
 
+; Default obscurity text to be displayed if name is unknown. Possible values are:
+; 0 - Original name
+; 1 - "Stranger"
+; 2 - "???"
+; 3 - Race
+Int Property ObscurityStyle
+    Int Function Get()
+        Return GetModSettingInt(sTitleStyleKey)
+    EndFunction
+    Function Set(Int iStyle)
+        SetModSettingInt(sTitleStyleKey, iStyle)
+    EndFunction
+EndProperty
+
 ; An arbitrary number used to identify current generation instance.
 ; Every time use clicks "Regenerate" action this id will increment, forcins all NNDApplyName effects to generate new names upon next refresh.
 Int Property GenerationId
@@ -86,6 +100,8 @@ Event OnSettingChange(string a_ID)
     parent.OnSettingChange(a_ID)
     If a_ID == sTitleStyleKey
         RefreshNames()
+    ElseIf a_ID == sObscurityStyleKey
+        RefreshNames()
     ElseIf a_ID == sTitleInversionKey
         SetMenuOptions(sTitleStyleKey, GetTitleStyleOptions(IsInvertedTitleStyle), GetTitleStyleShortNamesOptions())
     EndIf    
@@ -105,6 +121,7 @@ String[] validDefinitions
 
 String sTitleStyleKey = "iTitleStyle:General"
 String sTitleInversionKey = "bTitleInvert:General"
+String sObscurityStyleKey = "iObscurityStyle:General"
 
 ; Default directory contianing Name Definitions.
 String nameDefinitionsDirectory = "NPCsNamesDistributor"

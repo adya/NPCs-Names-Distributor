@@ -1,0 +1,94 @@
+Scriptname NND_ObscureName extends NND_RenamingEffect  
+{ 
+    The gist :)
+    OnEffectStart
+        1. Try read known flag from storage for the actor
+        2. If set, then immediately remove the perk
+        3. Otherwise proceed with applying obscure name
+        4. Generate one from NND definitions
+            4.1. Save the obscure name
+        5. If no custom obscured name was generated then fall back to preferred default obscure title.
+
+    OnActivate
+        1. Set known flag to storage    
+        2. Remove the perk
+
+    OnEffectFinish
+        1. Restore originalName ?? this might conflict with the regular naming tracker as it will kick in right after perk removal
+        As a workaround we might want to check if actor has name tracked on it and if renaming is enabled. 
+        If both of this true then don't restore the name.
+}
+
+Perk Property NNDObscurityTracker Auto
+
+Perk Property NNDNameTracker Auto
+
+GlobalVariable Property NNDRenamingEnabled Auto
+
+import Debug
+import Utility
+import JsonUtil
+import StringUtil
+import PapyrusUtil
+
+; Flag that tracks whether Player has talked to the NPCs at least once. If `0` then NPC is considered to be known.
+Int isObscured = 1
+
+Event OnActivate(ObjectReference akActionRef)
+    parent.OnActivate(akActionRef)
+    Actor akActor = akActionRef as Actor
+    Actor akTarget = GetTargetActor()
+    If isObscured == 1 && akActor == Game.GetPlayer()
+        NNDTrace("Talking to a guy")
+        isObscured = 0
+        StorageUtil.SetIntValue(akTarget, "NNDIsObscured", isObscured)
+        NNDTrace("Removing obscurity")
+        akTarget.RemovePerk(NNDObscurityTracker)
+    EndIf
+EndEvent
+
+Event OnInit()
+    InitKeys(generatedName = "NNDObscuredName", generationId = "NNDObscuredGenerationId")
+EndEvent
+
+; Here we check for whether this actor is already known and immediately finish. Otherwise, proceed to general renaming logic.
+Event OnEffectStart(Actor akTarget, Actor akCaster)
+    If akTarget == None || akTarget.GetLeveledActorBase() == None
+        NNDTrace("Failed to obscure an actor's name. akTarget is None", 2)
+        Return
+    EndIf
+
+    NNDTrace("Starting on " + akTarget.GetDisplayName())
+    isObscured = StorageUtil.GetIntValue(akTarget, "NNDIsObscured", 1)
+
+    If isObscured == 0
+        NNDTrace("Already known. Removing obscurity")
+        akTarget.RemovePerk(NNDObscurityTracker)
+        Return
+    EndIf
+
+    parent.OnEffectStart(akTarget, akCaster)
+EndEvent
+
+String Function GenerateName(Actor akTarget, String[] keywords)
+    Return PickNameFor(akTarget, keywords, true)
+EndFunction
+
+Bool Function NeedsKeywords(Actor akTarget)
+    Return false
+EndFunction
+
+String Function DecorateName(Actor akTraget, String generatedName, String originalName)
+; We will use this fucntion to provide a default obscure name if custom one wasn't generated.
+    If generatedName != ""
+        Return generatedName
+    EndIf
+    
+    Return "Who are you???"
+EndFunction
+
+Bool Function ShouldRevertOnFinish(Actor akTarget)
+    ; Rename only if Actor doesn't have regular name tracker and renaming is enabled.
+    ; In this case tracker will automatically apply correct name.
+    Return !akTarget.HasPerk(NNDNameTracker) && NNDRenamingEnabled.GetValueInt() == 1
+EndFunction

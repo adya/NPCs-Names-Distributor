@@ -19,6 +19,17 @@
             }
         },
         {
+            "type": "toggle",
+            "text": "$Obscure Names",
+            "help": "$ObscureNamesHelp",
+            "groupControl": 2,
+            "groupBehavior": "hide",
+            "valueOptions": {
+                "sourceType": "GlobalValue",
+                "sourceForm": "NPCs Names Distributor.esp|F0D"
+            }
+        },
+        {
             "type": "empty"
         },
         {
@@ -69,6 +80,38 @@
             "groupBehavior": "hide",
             "valueOptions": {
                 "sourceType": "ModSettingBool"
+            }
+        },
+        {
+            "type": "empty"
+        },
+        {
+            "type": "header",
+            "text": "$Obscurity Settings",
+            "groupCondition": 2,
+            "groupBehavior": "hide"
+        },
+        {
+            "id": "iTitleStyle:General",
+            "type": "enum",
+            "text": "$Default Obscure Name",
+            "help": "$ObscureNameHelp",
+            "groupCondition": 2,
+            "groupBehavior": "hide",
+            "valueOptions": {
+                "options": [
+                    "$ObscureNameExampleNone", 
+                    "$ObscureNameExampleStranger",
+                    "$ObscureNameExampleQuestionMarks",
+                    "$ObscureNameExampleRace"
+                ],
+                "shortNames": [
+                    "$ObscureNameNone", 
+                    "$ObscureNameStranger",
+                    "$ObscureNameQuestionMarks",
+                    "$ObscureNameRace"
+                ],
+                "sourceType": "ModSettingInt"
             }
         },
         {
