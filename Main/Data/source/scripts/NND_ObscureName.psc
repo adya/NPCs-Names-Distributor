@@ -19,17 +19,13 @@ Scriptname NND_ObscureName extends NND_RenamingEffect
         If both of this true then don't restore the name.
 }
 
-Perk Property NNDObscurityTracker Auto
+Keyword Property NNDKnown Auto
 
 Perk Property NNDNameTracker Auto
 
 GlobalVariable Property NNDRenamingEnabled Auto
 
-import Debug
-import Utility
-import JsonUtil
-import StringUtil
-import PapyrusUtil
+import PO3_SKSEFunctions
 
 ; Flag that tracks whether Player has talked to the NPCs at least once. If `0` then NPC is considered to be known.
 Int isObscured = 1
@@ -43,7 +39,7 @@ Event OnActivate(ObjectReference akActionRef)
         isObscured = 0
         StorageUtil.SetIntValue(akTarget, "NNDIsObscured", isObscured)
         NNDTrace("Removing obscurity")
-        akTarget.RemovePerk(NNDObscurityTracker)
+        AddKeywordToRef(akTarget, NNDKnown)
     EndIf
 EndEvent
 
@@ -62,13 +58,17 @@ Event OnEffectStart(Actor akTarget, Actor akCaster)
     isObscured = StorageUtil.GetIntValue(akTarget, "NNDIsObscured", 1)
 
     If isObscured == 0
-        NNDTrace("Already known. Removing obscurity")
-        akTarget.RemovePerk(NNDObscurityTracker)
+        NNDTrace("Already known.")
+        AddKeywordToForm(akTarget, NNDKnown)
         Return
     EndIf
 
     parent.OnEffectStart(akTarget, akCaster)
 EndEvent
+
+String Function RenamingScriptName()
+    Return "NNDObscureName"
+EndFunction
 
 String Function GenerateName(Actor akTarget, String[] keywords)
     Return PickNameFor(akTarget, keywords, true)
@@ -90,5 +90,5 @@ EndFunction
 Bool Function ShouldRevertOnFinish(Actor akTarget)
     ; Rename only if Actor doesn't have regular name tracker and renaming is enabled.
     ; In this case tracker will automatically apply correct name.
-    Return !akTarget.HasPerk(NNDNameTracker) && NNDRenamingEnabled.GetValueInt() == 1
+    Return !akTarget.HasPerk(NNDNameTracker) || NNDRenamingEnabled.GetValueInt() == 0
 EndFunction

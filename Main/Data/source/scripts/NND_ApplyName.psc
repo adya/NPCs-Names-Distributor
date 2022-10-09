@@ -2,8 +2,12 @@ Scriptname NND_ApplyName extends NND_RenamingEffect
 
 Keyword Property NNDTitleless Auto
 
+String Function RenamingScriptName()
+    Return "NNDApplyName"
+EndFunction
+
 String Function DecorateName(Actor akTarget, String generatedName, String originalName)
-    If !akTarget.GetLeveledActorBase().HasKeyword(NNDTitleless)
+    If generatedName != "" && !akTarget.GetLeveledActorBase().HasKeyword(NNDTitleless)
         Return FormattedTitle(generatedName, originalName)
     Else
         Return generatedName

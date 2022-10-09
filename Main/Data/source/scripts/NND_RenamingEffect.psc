@@ -54,6 +54,11 @@ Bool Function NeedsKeywords(Actor akTarget)
     Return true
 EndFunction
 
+; Utility function that provides more accurate logging by asking subclass its name.
+String Function RenamingScriptName()
+    Return "NNDRenamingEffect"
+EndFunction
+
 ; Decorates newly generated name. Default implementation does nothing.
 ; Subclasses might override to provide customizations.
 ; Note: If `DecorateName` returns empty string then name is considered discarded and renaming terminates.
@@ -90,8 +95,8 @@ Event OnEffectStart(Actor akTarget, Actor akCaster)
     _generatedName = StorageUtil.GetStringValue(akTarget, generatedNameKey)
     _lastGeneratationId = StorageUtil.GetIntValue(akTarget, generationIdKey, -1)
     
-    ; NNDTrace("Effect starting... Original name for actor " + akTarget + ": " + originalName)
-    ; NNDTrace("Effect starting... Generated name for actor " + akTarget + ": " + generatedName)
+    NNDTrace("Effect starting... Original name for actor " + akTarget + ": " + _originalName)
+    NNDTrace("Effect starting... Generated name for actor " + akTarget + ": " + _generatedName)
    
     ; Pick original name only once in an effect lifetime.
     If _originalName == "" && _lastGeneratationId == -1
@@ -148,7 +153,7 @@ Event OnEffectFinish(Actor akTarget, Actor akCaster)
         ; Rename only if Actor doesn't have regular name tracker and renaming is enabled.
         ; In this case tracker will automatically apply correct name.
         If ShouldRevertOnFinish(akTarget)
-        ; NNDTrace("Effect finishing... Trying to restore name of " + akTarget + " to " + originalName)
+            NNDTrace("Effect finishing... Trying to restore name of " + akTarget + " to " + _originalName)
             akTarget.SetDisplayName(_originalName, true)
         EndIf
     EndIf
@@ -414,7 +419,7 @@ String[] Function GetNNDKeywords(Form person)
             String kwName = kw.GetString()
             traceForKeyword = kwName
             ; Find the first NND keyword that represents a category with appropriate names for the actor.
-            If NNDSystemKeywords.HasForm(kw) && Find(kwName, "NND") == 0
+            If !NNDSystemKeywords.HasForm(kw) && Find(kwName, "NND") == 0
                 
                 Int forcedIndex = Find(kwName, "_Forced")
                 Int factionIndex = Find(kwName, "_Faction")
@@ -624,7 +629,7 @@ String traceForKeyword = ""
 ; 1 - Warning
 ; 2 - Error
 Function NNDTrace(String sMessage, Int level = 0)
-    String msg = "NNDApplyName: "
+    String msg = RenamingScriptName() + ": "
     If level == 1
         msg += "[WARNING] "
     ElseIf level == 2
