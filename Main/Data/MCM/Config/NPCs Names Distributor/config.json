@@ -101,13 +101,11 @@
             "valueOptions": {
                 "options": [
                     "$ObscureNameExampleNone", 
-                    "$ObscureNameExampleStranger",
                     "$ObscureNameExampleQuestionMarks",
                     "$ObscureNameExampleRace"
                 ],
                 "shortNames": [
                     "$ObscureNameNone", 
-                    "$ObscureNameStranger",
                     "$ObscureNameQuestionMarks",
                     "$ObscureNameRace"
                 ],

@@ -347,6 +347,7 @@ String Function GetNameForKey(String nameKey, String genderKey, String definitio
     Else
         NNDTrace("Couldn't find appropriate names list in " + definition + ". Both " + CreateKeyPath(nameKey, genderKey, NNDNamesKey) + " and " + CreateKeyPath(nameKey, NNDAnyKey, NNDNamesKey) + " are missing or empty", 1)
     EndIf
+
     Return result
 EndFunction
 
