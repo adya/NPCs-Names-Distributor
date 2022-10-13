@@ -112,7 +112,7 @@ Event OnEffectStart(Actor akTarget, Actor akCaster)
     EndIf
 
     String[] keywords = GetNNDKeywords(akTarget.GetLeveledActorBase())
-    Bool hasKeywords = keywords.Length == 0
+    Bool hasKeywords = keywords.Length > 0
 
     If hasKeywords
         If _generatedName == "" || _lastGeneratationId != NNDSettings.GenerationId
@@ -126,7 +126,7 @@ Event OnEffectStart(Actor akTarget, Actor akCaster)
 
     String displayedName = DecorateName(akTarget, _generatedName, _originalName)
 
-    If displayedName != "" && akTarget.SetDisplayName(displayedName, false)
+    If displayedName != "" && akTarget.SetDisplayName(displayedName, true)
         ; Update lastGenerationId only if it was successful, as otherwise the old name will be kept.
         _lastGeneratationId = NNDSettings.GenerationId
         StorageUtil.SetIntValue(akTarget, generationIdKey, _lastGeneratationId)
@@ -134,7 +134,7 @@ Event OnEffectStart(Actor akTarget, Actor akCaster)
     Else
         NNDTrace("Failed to pick a name for actor " + akTarget + " (" + akTarget.GetDisplayName() + "). Falling back to original name", 1)
         If _originalName != ""
-            akTarget.SetDisplayName(_originalName, false)
+            akTarget.SetDisplayName(_originalName, true)
         EndIf
     EndIf
 EndEvent
