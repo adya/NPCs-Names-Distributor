@@ -126,7 +126,7 @@
             "type": "text",
             "text": "",
             "help": "$RegenerateHelp",
-            "groupCondition": { "ONLY" : 1 },
+            "groupCondition": { "NOT" : 2 },
             "groupBehavior": "hide",
             "valueOptions": {
                 "value": "$Regenerate"
@@ -141,7 +141,7 @@
             "type": "text",
             "text": "",
             "help": "$GeneratedHelp",
-            "groupCondition": { "AND" : [1, 2] },
+            "groupCondition": 2,
             "groupBehavior": "hide",
             "valueOptions": {
                 "value": "$Generated"
