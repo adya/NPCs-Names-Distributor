@@ -1,0 +1,12 @@
+{
+    "NND_Given": {
+        "NND_Any": {
+            "NND_Names": [
+               "Stranger", "Guy", "Who is this?"
+            ]
+        }
+    },
+    "NND_Behavior": {
+        "NND_Obscuring": true        
+    }
+}
