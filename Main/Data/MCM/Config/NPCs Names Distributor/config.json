@@ -22,7 +22,7 @@
             "type": "toggle",
             "text": "$Obscure Names",
             "help": "$ObscureNamesHelp",
-            "groupControl": 2,
+            "groupControl": 3,
             "groupBehavior": "hide",
             "valueOptions": {
                 "sourceType": "GlobalValue",
@@ -39,7 +39,7 @@
             "groupBehavior": "hide"
         },
         {
-            "id": "iTitleStyle:General",
+            "id": "iTitleStyle:Title",
             "type": "enum",
             "text": "$Title Style",
             "help": "$TitleStyleHelp",
@@ -72,7 +72,7 @@
             }
         },
         {
-            "id": "bTitleInvert:General",
+            "id": "bTitleInvert:Title",
             "type": "toggle",
             "text": "$Invert Title",
             "help": "$InvertTitleHelp",
@@ -88,15 +88,15 @@
         {
             "type": "header",
             "text": "$Obscurity Settings",
-            "groupCondition": 2,
+            "groupCondition": 3,
             "groupBehavior": "hide"
         },
         {
-            "id": "iTitleStyle:General",
+            "id": "iObscurityStyle:Obscurity",
             "type": "enum",
             "text": "$Default Obscure Name",
             "help": "$ObscureNameHelp",
-            "groupCondition": 2,
+            "groupCondition": 3,
             "groupBehavior": "hide",
             "valueOptions": {
                 "options": [

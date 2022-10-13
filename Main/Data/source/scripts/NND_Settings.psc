@@ -48,10 +48,10 @@ EndProperty
 ; 3 - Race
 Int Property ObscurityStyle
     Int Function Get()
-        Return GetModSettingInt(sTitleStyleKey)
+        Return GetModSettingInt(sObscurityStyleKey)
     EndFunction
     Function Set(Int iStyle)
-        SetModSettingInt(sTitleStyleKey, iStyle)
+        SetModSettingInt(sObscurityStyleKey, iStyle)
     EndFunction
 EndProperty
 
@@ -119,9 +119,9 @@ Bool Property bGenerationQueued Auto
 ; Array that holds a list of valid Name Definitions that were detected since last reload.
 String[] validDefinitions
 
-String sTitleStyleKey = "iTitleStyle:General"
-String sTitleInversionKey = "bTitleInvert:General"
-String sObscurityStyleKey = "iObscurityStyle:General"
+String sTitleStyleKey = "iTitleStyle:Title"
+String sTitleInversionKey = "bTitleInvert:Title"
+String sObscurityStyleKey = "iObscurityStyle:Obscurity"
 
 ; Default directory contianing Name Definitions.
 String nameDefinitionsDirectory = "NPCsNamesDistributor"

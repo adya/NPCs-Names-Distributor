@@ -84,7 +84,15 @@ String Function DecorateName(Actor akTraget, String generatedName, String origin
         Return generatedName
     EndIf
     
-    Return "Who are you???"
+    If NNDSettings.ObscurityStyle == 1
+        Return "Stranger"
+    ElseIf NNDSettings.ObscurityStyle == 2
+        Return "???"
+    ElseIf NNDSettings.ObscurityStyle == 3
+        Return akTraget.GetRace().GetName()
+    Else
+        Return originalName
+    EndIf
 EndFunction
 
 Bool Function ShouldRevertOnFinish(Actor akTarget)
