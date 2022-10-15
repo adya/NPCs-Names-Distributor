@@ -61,8 +61,8 @@
                     "$TitleStyleNone",
                     "$TitleStyleNewLine",
                     "$TitleStyleHyphen",
-                    "$TitleStyleRound",
-                    "$TitleStyleSquare",
+                    "$TitleStyleRoundBrackets",
+                    "$TitleStyleSquareBrackets",
                     "$TitleStyleComma",
                     "$TitleStyleSemicolon",
                     "$TitleStyleFullStop",
@@ -115,9 +115,7 @@
         {
             "type": "header",
             "text": "$RegenerateHeader",
-            "position": 1,
-            "groupCondition": 1,
-            "groupBehavior": "hide"
+            "position": 1
         },
         {
             "position": 3,
@@ -143,7 +141,7 @@
             "groupBehavior": "hide",
             "valueOptions": {
                 "value": "$Generated"
-              }
+            }
         },
         {
             "type": "hiddenToggle",
