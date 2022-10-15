@@ -212,7 +212,7 @@ EndFunction
 
 ; Returns a list of title style short names to display in the menu.
 String[] Function GetTitleStyleShortNamesOptions()
-    Return StringSplit("$TitleStyleNone,$TitleStyleNewLine,$TitleStyleHyphen,$TitleStyleRound,$TitleStyleSquare,$TitleStyleComma,$TitleStyleSemicolon,$TitleStyleFullStop,$TitleStyleSpace")
+    Return StringSplit("$TitleStyleNone,$TitleStyleNewLine,$TitleStyleHyphen,$TitleStyleRoundBrackets,$TitleStyleSquareBrackets,$TitleStyleComma,$TitleStyleSemicolon,$TitleStyleFullStop,$TitleStyleSpace")
 EndFunction
 
 ; Logs trace with a distincive prefix for easier reading through logs.
