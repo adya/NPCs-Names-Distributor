@@ -110,6 +110,8 @@
     "NND_Behavior": {
         "commentChance": "Name Definition can have a chance of being skipped. By default Definition is never skipped.",
         "commentChance2": "This option is ignored if the Name Definition is the last in queue, as othwerise NPC might not get a name at all.",
-        "NND_Chance": 100
+        "NND_Chance": 100,
+        "commentObscuring": "Obscuring behavior determines what names this definition generates. When set to `true` names in this definition will be used only for unknown NPCs.",
+        "NND_Obscuring": false
     }
 }
