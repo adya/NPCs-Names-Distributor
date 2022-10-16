@@ -480,14 +480,14 @@ EndFunction
 ;;; Utility functions used to make life easier while writing this sciprt.
 
 ; Finalizes keywords queue by removing empty placeholders and duplicates.
-; The resulting array is a sorted queue of unique keywords that were present in the original queue.
-; For example, ["NNDKeyword1", "", "NNDKeyword3", "NNDKeyword1"] will become ["NNDKeyword1", "NNDKeyword3"]
+; The resulting array is a sorted queue of keywords that were present in the original queue.
+; For example, ["NNDKeyword1", "", "NNDKeyword3", "NNDKeyword1"] will become ["NNDKeyword1", "NNDKeyword3", "NNDKeyword1"]
+; Note that unique keywords will be filtered only during Merge stage.
 String[] Function ClearKeywordsQueue(String[] queue)
     queue = ClearEmptySafe(queue)
     If queue.Length == 0
         Return queue
     EndIf
-    queue = RemoveDupeString(queue)
     SortStringArray(queue)
     Return queue
 EndFunction
