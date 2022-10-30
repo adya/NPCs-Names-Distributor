@@ -90,6 +90,8 @@ Event OnEffectStart(Actor akTarget, Actor akCaster)
         Return
     EndIf
 
+    traceForName = akTarget.GetDisplayName()
+
     ; Read previous values if any.
     _originalName = StorageUtil.GetStringValue(akTarget, originalNameKey)
     _generatedName = StorageUtil.GetStringValue(akTarget, generatedNameKey)
@@ -623,12 +625,17 @@ EndFunction
 ; Remember to clear its value as soon as you're done with keywords, so NNDTrace wouldn't tag irrelevant messages.
 String traceForKeyword = ""
 
+; Assign a name of the target actor that is currently being processed to this property,
+; so that NNDTrace would add it as a tag for easier understanding.
+String traceForName = ""
+
 ; Logs trace with a distincive prefix for easier reading through logs.
-; Severity is one of the following:
-; 0 - Info
-; 1 - Warning
-; 2 - Error
-Function NNDTrace(String sMessage, Int level = 0)
+; - Parameter traceName: Specific name of the actor to associate traced log with.
+; - Parameter     level: Severity is one of the following:
+;                           0 - Info
+;                           1 - Warning
+;                           2 - Error
+Function NNDTrace(String sMessage, Int level = 0, String traceName = "")
     String msg = RenamingScriptName() + ": "
     If level == 1
         msg += "[WARNING] "
@@ -636,7 +643,12 @@ Function NNDTrace(String sMessage, Int level = 0)
         msg += "[ERROR] "
     Endif
 
-    If _originalName != ""
+    If traceName != ""
+        msg += "[" + traceName + "] "
+    ElseIf traceForName != ""
+        msg += "[" + traceForName + "] "
+    EndIf
+    If traceForName == "" && _originalName != ""
         msg += "[" + _originalName + "] "
     EndIf
     If traceForKeyword != ""

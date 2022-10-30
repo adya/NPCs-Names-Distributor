@@ -25,19 +25,17 @@ Perk Property NNDNameTracker Auto
 
 GlobalVariable Property NNDRenamingEnabled Auto
 
-import PO3_SKSEFunctions
+String NNDKnownKey = "NNDIsKnown"
 
-; Flag that tracks whether Player has talked to the NPCs at least once. If `0` then NPC is considered to be known.
-Int isObscured = 1
+import PO3_SKSEFunctions
 
 Event OnActivate(ObjectReference akActionRef)
     parent.OnActivate(akActionRef)
     Actor akActor = akActionRef as Actor
     Actor akTarget = GetTargetActor()
-    If isObscured == 1 && akActor == Game.GetPlayer()
-        NNDTrace("Talking to a guy")
-        isObscured = 0
-        StorageUtil.SetIntValue(akTarget, "NNDIsObscured", isObscured)
+    If akActor == Game.GetPlayer()
+        NNDTrace("Talking to " + akTarget)
+        StorageUtil.SetIntValue(akTarget, NNDKnownKey, 1)
         NNDTrace("Removing obscurity")
         AddKeywordToRef(akTarget, NNDKnown)
     EndIf
@@ -54,16 +52,16 @@ Event OnEffectStart(Actor akTarget, Actor akCaster)
         Return
     EndIf
 
-    NNDTrace("Starting on " + akTarget.GetDisplayName())
-    isObscured = StorageUtil.GetIntValue(akTarget, "NNDIsObscured", 1)
+    Int isObscured = StorageUtil.GetIntValue(akTarget, NNDKnownKey)
 
-    If isObscured == 0
-        NNDTrace("Already known.")
-        AddKeywordToForm(akTarget, NNDKnown)
-        Return
+    NNDTrace("Starting obscured naming. " + NNDKnownKey + " = " + isObscured, traceName = akTarget.GetDisplayName())
+
+    If isObscured > 0
+        NNDTrace("Already known", traceName = akTarget.GetDisplayName())
+        AddKeywordToRef(akTarget, NNDKnown)
+    Else
+        parent.OnEffectStart(akTarget, akCaster)
     EndIf
-
-    parent.OnEffectStart(akTarget, akCaster)
 EndEvent
 
 String Function RenamingScriptName()
