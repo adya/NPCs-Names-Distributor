@@ -85,13 +85,12 @@ EndFunction
 ;;;;; Overridable stuff
 
 Event OnEffectStart(Actor akTarget, Actor akCaster)
-    parent.OnEffectStart(akTarget, akCaster)
     If akTarget == None || akTarget.GetLeveledActorBase() == None
         NNDTrace("Failed to rename an actor. akTarget is None", 2)
         Return
     EndIf
 
-    traceForName = akTarget.GetDisplayName()
+    traceForName = _originalName
 
     ; Read previous values if any.
     _originalName = StorageUtil.GetStringValue(akTarget, originalNameKey)
@@ -129,26 +128,30 @@ Event OnEffectStart(Actor akTarget, Actor akCaster)
 
     String displayedName = DecorateName(akTarget, _generatedName, _originalName)
 
-    If displayedName != "" && displayedName != akTarget.GetDisplayName()
-        ; Avoid trying to set display name if it is the same as what's already displayed. This will prevent capitalization issues.
-        If akTarget.SetDisplayName(displayedName, false)
-            ; Update lastGenerationId only if it was successful, as otherwise the old name will be kept.
-            _lastGeneratationId = NNDSettings.GenerationId
-            StorageUtil.SetIntValue(akTarget, generationIdKey, _lastGeneratationId)
-            NNDTrace("Renaming " + _originalName + " => " + displayedName) 
-        NNDTrace("Renaming " + _originalName + " => " + displayedName) 
-            NNDTrace("Renaming " + _originalName + " => " + displayedName) 
-        NNDTrace("Renaming " + _originalName + " => " + displayedName) 
-            NNDTrace("Renaming " + _originalName + " => " + displayedName) 
-        NNDTrace("Renaming " + _originalName + " => " + displayedName) 
-            NNDTrace("Renaming " + _originalName + " => " + displayedName) 
-            Return
-        EndIf
+    If displayedName == ""
+        NNDTrace("Failed to pick a name for actor " + akTarget + " (" + akTarget.GetDisplayName() + ")", 1)
+        Return
     EndIf
-    
-    NNDTrace("Failed to pick a name for actor " + akTarget + " (" + akTarget.GetDisplayName() + "). Falling back to original name", 1)
-    If _originalName != "" && _originalName != akTarget.GetDisplayName()
-        akTarget.SetDisplayName(_originalName, false)
+
+    ; Avoid trying to set display name if it is the same as what's already displayed. This will prevent capitalization issues.
+    If displayedName == akTarget.GetDisplayName()
+        NNDTrace("Actor already has the same display name '" + displayedName + "': " + akTarget + " (" + akTarget.GetDisplayName() + ")", 1)
+        Return
+    EndIf
+
+    If akTarget.SetDisplayName(displayedName, false)
+        ; Update lastGenerationId only if it was successful, as otherwise the old name will be kept.
+        _lastGeneratationId = NNDSettings.GenerationId
+        StorageUtil.SetIntValue(akTarget, generationIdKey, _lastGeneratationId)
+        NNDTrace("Renaming " + _originalName + " => " + displayedName) 
+    Else
+        NNDTrace("Failed to rename an actor " + akTarget + " (" + akTarget.GetDisplayName() + "). Falling back to original name", 1)
+        If _originalName != "" && _originalName != akTarget.GetDisplayName()
+            akTarget.SetDisplayName(_originalName, false)
+            NNDTrace("Reverting " + akTarget.GetDisplayName() + " => " + displayedName)
+        Else
+            NNDTrace("Couldn't revert original name for actor " + akTarget + " (" + akTarget.GetDisplayName() + ")!", 2)
+        EndIf
     EndIf
 EndEvent
 
