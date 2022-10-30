@@ -53,11 +53,12 @@ Event OnEffectStart(Actor akTarget, Actor akCaster)
     EndIf
 
     Int isObscured = StorageUtil.GetIntValue(akTarget, NNDKnownKey)
+    String traceName = akTarget.GetDisplayName()
 
-    NNDTrace("Starting obscured naming. " + NNDKnownKey + " = " + isObscured, traceName = akTarget.GetDisplayName())
+    NNDTrace("Starting obscured naming. " + NNDKnownKey + " = " + isObscured, traceName = traceName)
 
     If isObscured > 0
-        NNDTrace("Already known", traceName = akTarget.GetDisplayName())
+        NNDTrace("Already known", traceName = traceName)
         AddKeywordToRef(akTarget, NNDKnown)
     Else
         parent.OnEffectStart(akTarget, akCaster)
@@ -94,5 +95,5 @@ EndFunction
 Bool Function ShouldRevertOnFinish(Actor akTarget)
     ; Rename only if Actor doesn't have regular name tracker and renaming is enabled.
     ; In this case tracker will automatically apply correct name.
-    Return !akTarget.HasPerk(NNDNameTracker) || NNDRenamingEnabled.GetValueInt() == 0
+    Return parent.ShouldRevertOnFinish(akTarget) && (!akTarget.HasPerk(NNDNameTracker) || NNDRenamingEnabled.GetValueInt() == 0)
 EndFunction

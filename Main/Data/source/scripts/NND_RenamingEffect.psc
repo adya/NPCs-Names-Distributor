@@ -68,8 +68,9 @@ EndFunction
 
 ; Determines whether OnEffectFinish should revert display name to the original one.
 ; This function should be overriden in subclasses to provide custom logic.
+; Note: Call Parent to include common logic.
 Bool Function ShouldRevertOnFinish(Actor akTarget)
-    Return true
+    Return akTarget.GetDisplayName() != _originalName
 EndFunction
 
 ; Proxy function that is called OnEffectStart to determine what name should be generated.
@@ -128,16 +129,26 @@ Event OnEffectStart(Actor akTarget, Actor akCaster)
 
     String displayedName = DecorateName(akTarget, _generatedName, _originalName)
 
-    If displayedName != "" && akTarget.SetDisplayName(displayedName, false)
-        ; Update lastGenerationId only if it was successful, as otherwise the old name will be kept.
-        _lastGeneratationId = NNDSettings.GenerationId
-        StorageUtil.SetIntValue(akTarget, generationIdKey, _lastGeneratationId)
+    If displayedName != "" && displayedName != akTarget.GetDisplayName()
+        ; Avoid trying to set display name if it is the same as what's already displayed. This will prevent capitalization issues.
+        If akTarget.SetDisplayName(displayedName, false)
+            ; Update lastGenerationId only if it was successful, as otherwise the old name will be kept.
+            _lastGeneratationId = NNDSettings.GenerationId
+            StorageUtil.SetIntValue(akTarget, generationIdKey, _lastGeneratationId)
+            NNDTrace("Renaming " + _originalName + " => " + displayedName) 
         NNDTrace("Renaming " + _originalName + " => " + displayedName) 
-    Else
-        NNDTrace("Failed to pick a name for actor " + akTarget + " (" + akTarget.GetDisplayName() + "). Falling back to original name", 1)
-        If _originalName != ""
-            akTarget.SetDisplayName(_originalName, false)
+            NNDTrace("Renaming " + _originalName + " => " + displayedName) 
+        NNDTrace("Renaming " + _originalName + " => " + displayedName) 
+            NNDTrace("Renaming " + _originalName + " => " + displayedName) 
+        NNDTrace("Renaming " + _originalName + " => " + displayedName) 
+            NNDTrace("Renaming " + _originalName + " => " + displayedName) 
+            Return
         EndIf
+    EndIf
+    
+    NNDTrace("Failed to pick a name for actor " + akTarget + " (" + akTarget.GetDisplayName() + "). Falling back to original name", 1)
+    If _originalName != "" && _originalName != akTarget.GetDisplayName()
+        akTarget.SetDisplayName(_originalName, false)
     EndIf
 EndEvent
 
