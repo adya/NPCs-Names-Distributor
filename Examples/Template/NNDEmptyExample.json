@@ -21,6 +21,13 @@
             "NND_Suffix": {
                 "NND_Chance": 100,
                 "NND_Names": []
+            },
+            "commentCircumfix": "Allows to add randomized circumfixes. Note that circumfixes only apply if Given name was picked.",
+            "commentCircumfixDetails": "Circumfix is a pair of prefix and suffix that should be applied together. They are written in form 'pre><pos'",
+            "commentCircumfixDetails2": "For example word 'enlighten' would be split into a name 'light' and circumfix 'en><en'",
+            "NND_Circumfix": {
+                "NND_Chance": 100,
+                "NND_Names": []
             }
         },
         "commentFemale": "Rules specific to Female. If omitted mod will fallback to NND_Any if present, otherwise Female NPCs won't get a Given name.",
@@ -34,6 +41,10 @@
             "NND_Suffix": {
                 "NND_Chance": 100,
                 "NND_Names": []
+            },
+            "NND_Circumfix": {
+                "NND_Chance": 100,
+                "NND_Names": []
             }
         },
         "commentAny": "Generic rules. If omitted mod will only use gender-specific rules if they present, otherwise NPC won't get a Given name",
@@ -45,6 +56,10 @@
                 "NND_Names": []
             },
             "NND_Suffix": {
+                "NND_Chance": 100,
+                "NND_Names": []
+            },
+            "NND_Circumfix": {
                 "NND_Chance": 100,
                 "NND_Names": []
             }
@@ -68,6 +83,10 @@
             "NND_Suffix": {
                 "NND_Chance": 100,
                 "NND_Names": []
+            },
+            "NND_Circumfix": {
+                "NND_Chance": 100,
+                "NND_Names": []
             }
         },
         "NND_Female": {
@@ -80,6 +99,10 @@
             "NND_Suffix": {
                 "NND_Chance": 100,
                 "NND_Names": []
+            },
+            "NND_Circumfix": {
+                "NND_Chance": 100,
+                "NND_Names": []
             }
         },
         "NND_Any": {
@@ -90,6 +113,10 @@
                 "NND_Names": []
             },
             "NND_Suffix": {
+                "NND_Chance": 100,
+                "NND_Names": []
+            },
+            "NND_Circumfix": {
                 "NND_Chance": 100,
                 "NND_Names": []
             }
