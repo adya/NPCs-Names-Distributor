@@ -1,144 +1,149 @@
 {
     "commentInfo": "Every commentXXX key here is not used and serves only one purpose - to describe everything in this file :) You don't need to include these in your custom files.",
     "commentInfo2": "You can use NNDDefaults.json as a starting point without any comments.",
-    "commentNaming": "All keys should be prefixed with NND_ to make strings unique, so that Skyrim won't mess with their case",
+    "commentNaming": "All keys should be prefixed with  to make strings unique, so that Skyrim won't mess with their case",
     "commentOptionality": "All keys are optional and can be skipped if not applicable. This file shows all default values for keys.",
     
     "commentGiven": "This section defines rules for Given (First) names.",
-    "NND_Given": {
-        "commentMale": "Rules specific to Male. If omitted mod will fallback to NND_Any if present, otherwise Male NPCs won't get a Given name.",
-        "NND_Male": {
-            "commentChance": "Chance that Male NPC will get any name picked. If Given name isn't picked, then Family is guaranteed regardless of NND_Chance configured there.",
-            "NND_Chance": 100,
+    "Given": {
+        "commentMale": "Rules specific to Male. If omitted mod will fallback to Any if present, otherwise Male NPCs won't get a Given name.",
+        "Male": {
+            "commentChance": "Chance that Male NPC will get any name picked. If Given name isn't picked, then Family is guaranteed regardless of Chance configured there.",
+            "Chance": 100,
             "commentNames": "List of all availalbe Male names.",
-            "NND_Names": [],
+            "Names": [],
             "commentPrefix": "Allows to add randomized prefixes. Note that prefixes only apply if Given name was picked.",
-            "NND_Prefix": {
-                "NND_Chance": 100,
-                "NND_Names": []
+            "Prefix": {
+                "Chance": 100,
+                "Names": []
             },
             "commentSuffix": "Allows to add randomized suffixes. Note that suffixes only apply if Given name was picked.",
-            "NND_Suffix": {
-                "NND_Chance": 100,
-                "NND_Names": []
+            "Suffix": {
+                "Chance": 100,
+                "Names": []
             },
             "commentCircumfix": "Allows to add randomized circumfixes. Note that circumfixes only apply if Given name was picked.",
             "commentCircumfixDetails": "Circumfix is a pair of prefix and suffix that should be applied together. They are written in form 'pre><pos'",
             "commentCircumfixDetails2": "For example word 'enlighten' would be split into a name 'light' and circumfix 'en><en'",
-            "NND_Circumfix": {
-                "NND_Chance": 100,
-                "NND_Names": []
+            "Circumfix": {
+                "Chance": 100,
+                "Names": []
             }
         },
-        "commentFemale": "Rules specific to Female. If omitted mod will fallback to NND_Any if present, otherwise Female NPCs won't get a Given name.",
-        "NND_Female": {
-            "NND_Chance": 100,
-            "NND_Names": [],
-            "NND_Prefix": {
-                "NND_Chance": 100,
-                "NND_Names": []
+        "commentFemale": "Rules specific to Female. If omitted mod will fallback to Any if present, otherwise Female NPCs won't get a Given name.",
+        "Female": {
+            "Chance": 100,
+            "Names": [],
+            "Prefix": {
+                "Chance": 100,
+                "Names": []
             },
-            "NND_Suffix": {
-                "NND_Chance": 100,
-                "NND_Names": []
+            "Suffix": {
+                "Chance": 100,
+                "Names": []
             },
-            "NND_Circumfix": {
-                "NND_Chance": 100,
-                "NND_Names": []
+            "Circumfix": {
+                "Chance": 100,
+                "Names": []
             }
         },
         "commentAny": "Generic rules. If omitted mod will only use gender-specific rules if they present, otherwise NPC won't get a Given name",
-        "NND_Any": {
-            "NND_Chance": 100,
-            "NND_Names": [],
-            "NND_Prefix": {
-                "NND_Chance": 100,
-                "NND_Names": []
+        "Any": {
+            "Chance": 100,
+            "Names": [],
+            "Prefix": {
+                "Chance": 100,
+                "Names": []
             },
-            "NND_Suffix": {
-                "NND_Chance": 100,
-                "NND_Names": []
+            "Suffix": {
+                "Chance": 100,
+                "Names": []
             },
-            "NND_Circumfix": {
-                "NND_Chance": 100,
-                "NND_Names": []
+            "Circumfix": {
+                "Chance": 100,
+                "Names": []
             }
         },
         "commentBehavior": "Behaviors are a list of options to customize how this Name Definition handles missing name parts",
-        "NND_Behavior": {
+        "Behavior": {
             "commentCombine": "When enabled and Given name was not picked, it allows the framework to look for Given name in the next Name Definition",
-            "NND_Combine": false
+            "Combine": false
         }
     },
     
-    "commentFamily": "This section defines rules for Family (Last) names. See NND_Given for details on each section.",
-    "NND_Family": {
-        "NND_Male": {
-            "NND_Chance": 100,
-            "NND_Names": [],
-            "NND_Prefix": {
-                "NND_Chance": 100,
-                "NND_Names": []
+    "commentFamily": "This section defines rules for Family (Last) names. See Given for details on each section.",
+    "Family": {
+        "Male": {
+            "Chance": 100,
+            "Names": [],
+            "Prefix": {
+                "Chance": 100,
+                "Names": []
             },
-            "NND_Suffix": {
-                "NND_Chance": 100,
-                "NND_Names": []
+            "Suffix": {
+                "Chance": 100,
+                "Names": []
             },
-            "NND_Circumfix": {
-                "NND_Chance": 100,
-                "NND_Names": []
+            "Circumfix": {
+                "Chance": 100,
+                "Names": []
             }
         },
-        "NND_Female": {
-            "NND_Chance": 100,
-            "NND_Names": [],
-            "NND_Prefix": {
-                "NND_Chance": 100,
-                "NND_Names": []
+        "Female": {
+            "Chance": 100,
+            "Names": [],
+            "Prefix": {
+                "Chance": 100,
+                "Names": []
             },
-            "NND_Suffix": {
-                "NND_Chance": 100,
-                "NND_Names": []
+            "Suffix": {
+                "Chance": 100,
+                "Names": []
             },
-            "NND_Circumfix": {
-                "NND_Chance": 100,
-                "NND_Names": []
+            "Circumfix": {
+                "Chance": 100,
+                "Names": []
             }
         },
-        "NND_Any": {
-            "NND_Chance": 100,
-            "NND_Names": [],
-            "NND_Prefix": {
-                "NND_Chance": 100,
-                "NND_Names": []
+        "Any": {
+            "Chance": 100,
+            "Names": [],
+            "Prefix": {
+                "Chance": 100,
+                "Names": []
             },
-            "NND_Suffix": {
-                "NND_Chance": 100,
-                "NND_Names": []
+            "Suffix": {
+                "Chance": 100,
+                "Names": []
             },
-            "NND_Circumfix": {
-                "NND_Chance": 100,
-                "NND_Names": []
+            "Circumfix": {
+                "Chance": 100,
+                "Names": []
             }
         },
-        "NND_Behavior": {
-            "NND_Combine": false
+        "Behavior": {
+            "Combine": false
         }
     },
     
     "commentConjunctions": "This section defines how Given and Family names get connected. Same gender rules apply as in other sections.",
-    "NND_Conjunctions": {
-        "NND_Male": [],
-        "NND_Female": [],
-        "NND_Any": [" "]
+    "Conjunctions": {
+        "Male": [],
+        "Female": [],
+        "Any": [" "]
     },
 
     "commentBehavior": "Name Definition itself also has Behavior that controls whole definition",
-    "NND_Behavior": {
+    "Behavior": {
         "commentChance": "Name Definition can have a chance of being skipped. By default Definition is never skipped.",
         "commentChance2": "This option is ignored if the Name Definition is the last in queue, as othwerise NPC might not get a name at all.",
-        "NND_Chance": 100,
-        "commentObscuring": "Obscuring behavior determines what names this definition generates. When set to `true` names in this definition will be used only for unknown NPCs.",
-        "NND_Obscuring": false
+        "Chance": 100,
+        "commentScopes": "Scopes define where this Name Definition can be applied. Possible values are: Name, Title and Obscuring",
+        "commentScopes2": "Name Definition can have multiple scopes, which make it an eligible pool of names for each scope.",
+        "commentScopes3": "When not specified, it defaults to 'Name' scope. Otherwise you have to explicitly list all scopes",
+        "commentName": "Name scope indicates that Name Definition contains names that should be applied as NPC's main name. This is default scope.",
+        "commentTitle": "Title scope indicates that Name Definition contains names that should be applied as NPC's Title. This would replace default title",
+        "commentObscuring": "Obscuring scope indicates that Name Definition contains names that should be applied as name for unknown NPCs.",
+        "Scopes": ["Name"]
     }
 }
