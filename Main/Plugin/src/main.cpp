@@ -1,9 +1,15 @@
 #include "Hooks.h"
 
-void OnInit(SKSE::MessagingInterface::Message* a_msg)
+void MessageHandler(SKSE::MessagingInterface::Message* a_message)
 {
-	if (a_msg->type == SKSE::MessagingInterface::kPostPostLoad) {
-		NND::Install();
+	switch (a_message->type) {
+	case SKSE::MessagingInterface::kPostLoad:
+		if (NND::LoadNameDefinitions()) {
+			NND::Install();
+		}
+		break;
+	default:
+		break;
 	}
 }
 
@@ -43,7 +49,7 @@ extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Query(const SKSE::QueryInterface* a
 
 void InitializeLog()
 {
-	auto path = logger::log_directory();
+    auto path = logger::log_directory();
 	if (!path) {
 		stl::report_and_fail("Failed to find standard logging directory"sv);
 	}
@@ -70,8 +76,7 @@ extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* a_s
 
 	SKSE::Init(a_skse);
 
-	auto messaging = SKSE::GetMessagingInterface();
-	messaging->RegisterListener("SKSE", OnInit);
+	SKSE::GetMessagingInterface()->RegisterListener(MessageHandler);
 
 	return true;
 }
