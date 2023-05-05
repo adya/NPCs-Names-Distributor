@@ -1,12 +1,11 @@
 {
-  "name": "sky-flip",
-  "version-string": "1.0.0",
-  "description": "",
-  "homepage": "",
+  "name": "nnd",
+  "version-string": "2.0.0",
+  "description": "Framework that allows customizable names distribution",
+  "homepage": "https://github.com/adya/NPCs-Names-Distributor",
   "license": "MIT",
   "dependencies": [
     "boost-stl-interfaces",
-    "clib-util",
     "rsm-binary-io",
     "spdlog",
     "xbyak"

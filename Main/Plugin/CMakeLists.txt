@@ -123,12 +123,13 @@ else ()
 	)
 endif()
 
-find_path(CLIB_UTIL_INCLUDE_DIRS "ClibUtil/utils.hpp")
+set(CLIB_UTIL_INCLUDE_DIRS "extern/CLibUtil/include")
 
 # ---- Add source files ----
 
 include(cmake/headerlist.cmake)
 include(cmake/sourcelist.cmake)
+include_directories(${PROJECT_SOURCE_DIR}/${CLIB_UTIL_INCLUDE_DIRS})
 
 source_group(
 	TREE
@@ -175,7 +176,6 @@ target_include_directories(
 	PRIVATE
 		${CMAKE_CURRENT_BINARY_DIR}/include
 		${CMAKE_CURRENT_SOURCE_DIR}/include
-		${CLIB_UTIL_INCLUDE_DIRS}
 )
 
 target_link_libraries(
