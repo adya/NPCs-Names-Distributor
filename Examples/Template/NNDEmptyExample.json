@@ -4,33 +4,26 @@
     "commentNaming": "All keys should be prefixed with  to make strings unique, so that Skyrim won't mess with their case",
     "commentOptionality": "All keys are optional and can be skipped if not applicable. This file shows all default values for keys.",
     
-    "commentGiven": "This section defines rules for Given (First) names.",
-    "Given": {
-        "commentMale": "Rules specific to Male. If omitted mod will fallback to Any if present, otherwise Male NPCs won't get a Given name.",
+    "commentFirst": "This section defines rules for First names.",
+    "First": {
+        "commentMale": "Rules specific to Male. If omitted mod will fallback to Any if present, otherwise Male NPCs won't get a First name.",
         "Male": {
-            "commentChance": "Chance that Male NPC will get any name picked. If Given name isn't picked, then Family is guaranteed regardless of Chance configured there.",
+            "commentChance": "Chance that Male NPC will get any name picked. If First name isn't picked, then Last is guaranteed regardless of Chance configured there.",
             "Chance": 100,
             "commentNames": "List of all availalbe Male names.",
             "Names": [],
-            "commentPrefix": "Allows to add randomized prefixes. Note that prefixes only apply if Given name was picked.",
+            "commentPrefix": "Allows to add randomized prefixes. Note that prefixes only apply if First name was picked.",
             "Prefix": {
                 "Chance": 100,
                 "Names": []
             },
-            "commentSuffix": "Allows to add randomized suffixes. Note that suffixes only apply if Given name was picked.",
+            "commentSuffix": "Allows to add randomized suffixes. Note that suffixes only apply if First name was picked.",
             "Suffix": {
-                "Chance": 100,
-                "Names": []
-            },
-            "commentCircumfix": "Allows to add randomized circumfixes. Note that circumfixes only apply if Given name was picked.",
-            "commentCircumfixDetails": "Circumfix is a pair of prefix and suffix that should be applied together. They are written in form 'pre><pos'",
-            "commentCircumfixDetails2": "For example word 'enlighten' would be split into a name 'light' and circumfix 'en><en'",
-            "Circumfix": {
                 "Chance": 100,
                 "Names": []
             }
         },
-        "commentFemale": "Rules specific to Female. If omitted mod will fallback to Any if present, otherwise Female NPCs won't get a Given name.",
+        "commentFemale": "Rules specific to Female. If omitted mod will fallback to Any if present, otherwise Female NPCs won't get a First name.",
         "Female": {
             "Chance": 100,
             "Names": [],
@@ -41,13 +34,9 @@
             "Suffix": {
                 "Chance": 100,
                 "Names": []
-            },
-            "Circumfix": {
-                "Chance": 100,
-                "Names": []
             }
         },
-        "commentAny": "Generic rules. If omitted mod will only use gender-specific rules if they present, otherwise NPC won't get a Given name",
+        "commentAny": "Generic rules. If omitted mod will only use gender-specific rules if they present, otherwise NPC won't get a First name",
         "Any": {
             "Chance": 100,
             "Names": [],
@@ -56,23 +45,23 @@
                 "Names": []
             },
             "Suffix": {
-                "Chance": 100,
-                "Names": []
-            },
-            "Circumfix": {
                 "Chance": 100,
                 "Names": []
             }
         },
         "commentBehavior": "Behaviors are a list of options to customize how this Name Definition handles missing name parts",
         "Behavior": {
-            "commentCombine": "When enabled and Given name was not picked, it allows the framework to look for Given name in the next Name Definition",
-            "Combine": false
+            "commentInherit": "When enabled and First name was not picked, it allows the framework to look for the First name in the next Name Definition",
+            "Inherit": false,
+            "commentCircumfix": "When enabled, will synchronize picked prefix and suffix",
+            "commentCircumfix2": "e.g. when there are 3 prefixes and suffixes, Name Definition will pick one index for both lists.",
+            "commentCircumfix3": "Note that number of prefixes and suffixes must match, otherwise length of the shortest one will be used.",
+            "Circumfix": false
         }
     },
     
-    "commentFamily": "This section defines rules for Family (Last) names. See Given for details on each section.",
-    "Family": {
+    "commentLast": "This section defines rules for Last names. See First for details on each section.",
+    "Last": {
         "Male": {
             "Chance": 100,
             "Names": [],
@@ -81,10 +70,6 @@
                 "Names": []
             },
             "Suffix": {
-                "Chance": 100,
-                "Names": []
-            },
-            "Circumfix": {
                 "Chance": 100,
                 "Names": []
             }
@@ -99,10 +84,6 @@
             "Suffix": {
                 "Chance": 100,
                 "Names": []
-            },
-            "Circumfix": {
-                "Chance": 100,
-                "Names": []
             }
         },
         "Any": {
@@ -115,18 +96,15 @@
             "Suffix": {
                 "Chance": 100,
                 "Names": []
-            },
-            "Circumfix": {
-                "Chance": 100,
-                "Names": []
             }
         },
         "Behavior": {
-            "Combine": false
+            "Inherit": false,
+            "Circumfix": false
         }
     },
     
-    "commentConjunctions": "This section defines how Given and Family names get connected. Same gender rules apply as in other sections.",
+    "commentConjunctions": "This section defines how First and Last names get connected. Same gender rules apply as in other sections.",
     "Conjunctions": {
         "Male": [],
         "Female": [],
