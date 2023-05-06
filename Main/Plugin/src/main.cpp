@@ -1,4 +1,5 @@
 #include "Hooks.h"
+#include "LookupNameDefinitions.h"
 
 void MessageHandler(SKSE::MessagingInterface::Message* a_message)
 {

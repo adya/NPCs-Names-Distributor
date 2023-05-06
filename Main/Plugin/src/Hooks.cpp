@@ -1,7 +1,5 @@
 #include "Hooks.h"
 
-#include "NameDefinitionDecoder.h"
-
 namespace NND
 {
 	static const char* GetName(const RE::TESBoundObject* obj, const char* originalName)
@@ -45,50 +43,5 @@ namespace NND
 		stl::write_thunk_call<GetFormName>(target.address() + OFFSET(0, 0x22C));
 
 		logger::info("Installed GetDisplayFullName hooks");
-	}
-
-	
-	// to be moved to Clib util
-	inline std::vector<std::filesystem::path> get_configs(const std::filesystem::path& a_folder, const std::string_view& a_extension)
-	{
-		std::vector<std::filesystem::path> configs{};
-		const auto                         iterator = std::filesystem::directory_iterator(a_folder);
-		for (const auto& entry : iterator) {
-			if (entry.exists()) {
-				if (const auto& path = entry.path(); !path.empty() && path.extension() == a_extension) {
-					configs.push_back(path);
-				}
-			}
-		}
-
-		std::ranges::sort(configs);
-
-		return configs;
-	}
-
-	bool LoadNameDefinitions()
-	{
-		logger::info("{:*^30}", "NAME DEFINITIONS");
-		const auto files = get_configs(R"(Data\SKSE\Plugins\NPCsNamesDistributor)", ".json"sv);
-
-		if (files.empty()) {
-			logger::info("No Name Definition files found. NPCsNamesDistributor will be disabled.");
-			logger::info(R"(Make sure your Name Definition files are located at Data\SKSE\Plugins\NPCsNamesDistributor)");
-			return false;
-		}
-		logger::info("{} name definition files found", files.size());
-		int                   validFiles = 0;
-		NameDefinitionDecoder decoder{};
-		for (const auto& file : files) {
-			const auto name = file.filename().string();
-			logger::info("\t\t Loading {}", name);
-			try {
-				decoder.decode(file);
-				++validFiles;
-			} catch (...) {
-				logger::warn("\t\tFailed to decode Name Definition {} with error", name);
-			}
-		}
-		return validFiles > 0;
 	}
 }

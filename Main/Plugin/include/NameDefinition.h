@@ -29,53 +29,94 @@ namespace NND
 			kForced = kIndividual
 		};
 
+		using NamesList = std::vector<std::string>;
+
 		struct Behavior
 		{
 			bool useForNames = true;
 		    bool useForTitles = false;
 			bool useForObscuring = false;
 			std::uint8_t chance = 100;
+
+			[[nodiscard]] bool HasDefaultScopes() const {
+				return useForNames && !useForTitles && !useForObscuring;
+			}
 		};
 
 		struct BaseNamesContainer
 		{
-			std::vector<std::string> names{};
-			std::uint8_t             chance = 100;
+			NamesList    names{};
+			std::uint8_t chance = 100;
+
+			/// Checks whether given names container will always produce a name.
+			///	Container is considered static when it has at least one name and it's chance is 100%.
+            [[nodiscard]] bool IsStatic() const {
+				return chance >= 100;
+			}
+
+            [[nodiscard]] bool IsEmpty() const {
+				return names.empty();
+            }
 		};
 
-		struct Affix: BaseNamesContainer {};
+		using Affix = BaseNamesContainer;
 		
 		struct GenderNames: BaseNamesContainer
 		{
 			Affix prefix;
 			Affix suffix;
-			/// Combination of prefix and suffix.
-			///	Written in form: "{prefix}>{name}<{suffix}"
-			Affix circumfix;
 		};
 
 		struct NamePart
 		{
 			struct Behavior
 			{
-				// TODO: Allow combining prefixes
-				// Also, define which conjunction is used when combining two definitions
-				// I think the original conjunction should be used.
-				bool shouldCombine = false;
+				/// Flag indicating that NamePart using this behavior should inherit the same NamePart
+				///	from the next Name Definition if it fails to pick a name from the current one.
+				bool shouldInherit = false;
+
+				/// Flag indicating that name part using this behavior should pair prefix and suffix.
+				///	This behavior makes Name Definition pick one index that will be used for both prefix and suffix.
+				///	If either of prefix or suffix has a non 100% chance then it will determine whether both of them will be used or none.
+				///	If both of them has a less than 100% chance, than the prefix's chance will be used.
+				bool useCircumfix = false;
 			};
 
 			GenderNames male;
 			GenderNames female;
 			GenderNames any;
-
+			
 			Behavior behavior;
+
+			/// Checks whether the NamePart will always produce a name.
+			///	NamePart is considered static when it has at least one not empty gender section and all present sections are static.
+			[[nodiscard]] bool IsStatic() const {
+				return male.IsStatic() && female.IsStatic() && any.IsStatic();
+			}
+
+			/// NamePart is considered empty when all its gender names sections are empty.
+			[[nodiscard]] bool IsEmpty() const {
+				return male.IsEmpty() && female.IsEmpty() && any.IsEmpty();
+			}
+		};
+
+		struct Conjunctions
+		{
+			NamesList male;
+			NamesList female;
+			NamesList any = { " " };
 		};
 
 		NamePart firstName;
 		NamePart lastName;
-		NamePart conjunction;
+
+        Conjunctions conjunction;
 
 
 		Behavior behavior;
+
+		[[nodiscard]] bool HasDefaultScopes() const {
+			return behavior.HasDefaultScopes();
+		}
     };
 }

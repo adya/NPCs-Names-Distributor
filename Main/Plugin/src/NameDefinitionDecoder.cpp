@@ -19,13 +19,13 @@ namespace NND
 
 	static constexpr auto kPrefix = "Prefix"sv;
 	static constexpr auto kSuffix = "Suffix"sv;
-	static constexpr auto kCircumfix = "Circumfix"sv;
 
 	static constexpr auto kBehavior = "Behavior"sv;
-	static constexpr auto kCombine = "Combine"sv;
+	static constexpr auto kInherit = "Inherit"sv;
+	static constexpr auto kCircumfix = "Circumfix"sv;
 	static constexpr auto kScopes = "Scopes"sv;
 
-	static constexpr auto kScopeName = "Obscuring"sv;
+	static constexpr auto kScopeName = "Name"sv;
 	static constexpr auto kScopeTitle = "Title"sv;
 	static constexpr auto kScopeObscuring = "Obscuring"sv;
 
@@ -33,64 +33,118 @@ namespace NND
 	using either_key = std::vector<std::string_view>;
 
 	using NamePart = NameDefinition::NamePart;
+	using Conjunctions = NameDefinition::Conjunctions;
 	using GenderNames = NameDefinition::GenderNames;
 
-	// To be moved to clib_util
-	namespace clib_util
-	{
-		namespace string
-		{
-			inline bool replace_all(std::string& a_str, std::string_view a_search, std::string_view a_replace)
-			{
-				if (a_search.empty()) {
-					return false;
-				}
+	namespace convert
+	{		
+		void from_json(const json& j, NameDefinition::BaseNamesContainer& p) {
+			try {
+				j.at(kNames).get_to(p.names);
+			} catch (const json::out_of_range& e) {}
 
-				std::size_t pos = 0;
-				bool        wasReplaced = false;
-				while ((pos = a_str.find(a_search, pos)) != std::string::npos) {
-					a_str.replace(pos, a_search.length(), a_replace);
-					pos += a_replace.length();
-					wasReplaced = true;
-				}
-
-				return wasReplaced;
-			}
-
-			inline bool replace_first_instance(std::string& a_str, std::string_view a_search, std::string_view a_replace)
-			{
-				if (a_search.empty()) {
-					return false;
-				}
-
-				if (const std::size_t pos = a_str.find(a_search); pos != std::string::npos) {
-					a_str.replace(pos, a_search.length(), a_replace);
-					return true;
-				}
-
-				return false;
-			}
-
-			inline bool replace_last_instance(std::string& a_str, std::string_view a_search, std::string_view a_replace)
-			{
-				if (a_search.empty()) {
-					return false;
-				}
-
-				if (const std::size_t pos = a_str.rfind(a_search); pos != std::string::npos) {
-					a_str.replace(pos, a_search.length(), a_replace);
-					return true;
-				}
-
-				return false;
-			}
+			try {
+				j.at(kChance).get_to(p.chance);
+			} catch (const json::out_of_range& e) {}
 		}
 
+		void from_json(const json& j, NamePart::Behavior& p) {
+			try {
+				j.at(kInherit).get_to(p.shouldInherit);
+			} catch (const json::out_of_range& e) {}
+
+			try {
+				j.at(kCircumfix).get_to(p.useCircumfix);
+			} catch (const json::out_of_range& e) {}
+		}
+
+	    void from_json(const json& j, GenderNames& p) {
+			from_json(j, static_cast<NameDefinition::BaseNamesContainer&>(p));
+			try {
+				from_json(j.at(kPrefix), p.prefix);
+			} catch (const json::out_of_range& e) {}
+
+			try {
+				from_json(j.at(kSuffix), p.suffix);
+			} catch (const json::out_of_range& e) {}
+	    }
+
+		void from_json(const json& j, NameDefinition::Behavior& p) {
+			try {
+				if (const auto scopes = j.at(kScopes).get<std::set<std::string_view>>(); scopes.empty()) {
+					p.useForNames = scopes.contains(kScopeName);
+					p.useForTitles = scopes.contains(kScopeTitle);
+					p.useForObscuring = scopes.contains(kScopeObscuring);
+				}
+		    }
+		    catch (const json::out_of_range& e) {}
+
+			try {
+				j.at(kChance).get_to(p.chance);
+			} catch (const json::out_of_range& e) {}
+		}
+
+	    void from_json(const json& j, Conjunctions& p) {
+			try {
+				j.at(kMale).get_to(p.male);
+			} catch (const json::out_of_range& e) {}
+
+			try {
+				j.at(kFemale).get_to(p.female);
+			} catch (const json::out_of_range& e) {}
+
+			try {
+				j.at(kAny).get_to(p.any);
+			} catch (const json::out_of_range& e) {}
+		}
+
+		void from_json(const json& j, NamePart& p) {
+			try {
+				from_json(j.at(kMale), p.male);
+			} catch (const json::out_of_range& e) {}
+
+			try {
+				from_json(j.at(kFemale), p.female);
+			} catch (const json::out_of_range& e) {}
+
+			try {
+				from_json(j.at(kAny), p.any);
+			} catch (const json::out_of_range& e) {}
+
+			try {
+			    from_json(j.at(kBehavior), p.behavior);
+			} catch (const json::out_of_range& e) {}
+		}
+
+		void from_json(const json& j, NameDefinition& p) {
+			auto hasNames = false;
+			try {
+			    from_json(j.at(kFirst), p.firstName);
+				hasNames = true;
+			}
+		    catch (const json::out_of_range& e) {}
+
+			try {
+				from_json(j.at(kLast), p.lastName);
+				hasNames = true;
+			} catch (const json::out_of_range& e) {}
+			
+			if (!hasNames) {
+				logger::warn("\t\tNo name sections were found. Name Definition will be skipped.");
+				return;
+			}
+			try {
+				from_json(j.at(kConjunctions), p.conjunction);
+			} catch (const json::out_of_range& e) {}
+
+			try {
+		        from_json(j.at(kBehavior), p.behavior);
+			} catch (const json::out_of_range& e) {}
+		}
 	}
 
-	// May throw
-	json modernize(const std::filesystem::path& a_path)
-	{
+	/// May throw
+	json modernize(const std::filesystem::path& a_path) {
 		std::ifstream ifile(a_path);
 		json          data = nlohmann::json::parse(ifile);
 		ifile.close();
@@ -99,11 +153,13 @@ namespace NND
 		bool wasModernized = false;
 		for (auto& it : flat.items()) {
 			auto key = it.key();
-			if (clib_util::string::replace_all(key, "NND_", "") ||                   // truncate obsolete NND_ prefix
-				clib_util::string::replace_first_instance(key, "Given", "First") ||  // Replace Given/Family with more universal terms for name parts.
-				clib_util::string::replace_first_instance(key, "Family", "Last")) {
-				wasModernized = true;
-			}
+			// truncate obsolete NND_ prefix
+			wasModernized |= clib_util::string::replace_all(key, "NND_", "");
+			// Replace Given/Family with more universal terms for name parts.
+			wasModernized |= clib_util::string::replace_first_instance(key, "Given", "First");
+			wasModernized |= clib_util::string::replace_first_instance(key, "Family", "Last");
+			// And Combine was renamed to Inherit.
+			wasModernized |= clib_util::string::replace_first_instance(key, "Combine", "Inherit");
 			modernized[key] = it.value();
 		}
 		if (wasModernized) {
@@ -116,19 +172,11 @@ namespace NND
 		return data;
 	}
 
-	NameDefinition NameDefinitionDecoder::decode(const std::filesystem::path& a_path)
-	{
+	NameDefinition NameDefinitionDecoder::decode(const std::filesystem::path& a_path) {
 		std::ifstream f(a_path);
-		try {
-			const json data = modernize(a_path);
-			/*NameDefinition definition{};
-
-                details::decodeNamePart(data, { kFirst, kGiven, prefixed(kGiven) });*/
-			return {};
-		} catch (const std::exception& error) {
-			logger::critical("Encountered an error: {}", error.what());
-			// maybe rethrow custom error?
-			return {};
-		}
+		const json data = modernize(a_path);
+		NameDefinition definition{};
+		convert::from_json(data, definition);
+		return definition;
 	}
 }
