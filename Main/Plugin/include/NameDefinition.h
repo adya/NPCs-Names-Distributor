@@ -3,6 +3,7 @@ namespace NND
 {
 	using Name = std::string;
 	using NameRef = std::string_view;
+	using NameIndex = size_t;
 	using NamesList = std::vector<Name>;
 
 	constexpr inline NameRef empty = ""sv;
@@ -28,16 +29,18 @@ namespace NND
 			       middleName != empty ||
 			       lastName != empty;
 		}
+
+		std::optional<Name> Assemble() const;
 	};
 
 	struct NameDefinition
 	{
 		struct Behavior
 		{
-			bool         useForNames = true;
-			bool         useForTitles = false;
-			bool         useForObscuring = false;
-			std::uint8_t chance = 100;
+			bool    useForNames = true;
+			bool    useForTitles = false;
+			bool    useForObscuring = false;
+			uint8_t chance = 100;
 
 			[[nodiscard]] bool HasDefaultScopes() const {
 				return useForNames && !useForTitles && !useForObscuring;
@@ -46,17 +49,41 @@ namespace NND
 
 		struct BaseNamesContainer
 		{
-			NamesList    names{};
-			std::uint8_t chance = 100;
+			NamesList names{};
+			uint8_t   chance = 100;
 
 			/// Checks whether given names container will always produce a name.
-			///	Container is considered static when it has at least one name and it's chance is 100%.
+			///	Container is considered static when its chance is 100%.
 			[[nodiscard]] bool IsStatic() const {
 				return chance >= 100;
 			}
 
+			/// Checks whether given names container will never produce a name.
+			[[nodiscard]] bool IsDisabled() const {
+				return chance <= 0 || IsEmpty();
+			}
+
 			[[nodiscard]] bool IsEmpty() const {
 				return names.empty();
+			}
+
+			[[nodiscard]] size_t GetSize() const {
+				return names.size();
+			}
+
+			[[nodiscard]] std::pair<NameRef, NameIndex> GetRandom(NameIndex maxIndex) const;
+			std::pair<NameRef, size_t> GetRandom() const {
+				return GetRandom(names.size()-1);
+			}
+			NameRef GetRandomName(NameIndex maxIndex) const {
+				return GetRandom(maxIndex).first;
+			}
+			NameRef GetRandomName() const {
+				return GetRandom().first;
+			}
+
+			[[nodiscard]] NameRef GetNameAt(NameIndex index) const {
+				return names.at(index);
 			}
 		};
 
@@ -69,8 +96,8 @@ namespace NND
 
 		struct NamesVariant : BaseNamesContainer
 		{
-			Adfix prefix;
-			Adfix suffix;
+			Adfix prefix{};
+			Adfix suffix{};
 		};
 
 		struct NameSegment
@@ -88,11 +115,11 @@ namespace NND
 				bool useCircumfix = false;
 			};
 
-			NamesVariant male;
-			NamesVariant female;
-			NamesVariant any;
+			NamesVariant male{};
+			NamesVariant female{};
+			NamesVariant any{};
 
-			Behavior behavior;
+			Behavior behavior{};
 
 			/// Checks whether the NameSegment will always produce a name.
 			///	NameSegment is considered static when it has at least one not empty NamesVariant and all present NamesVariants are static.
@@ -104,25 +131,32 @@ namespace NND
 			[[nodiscard]] bool IsEmpty() const {
 				return male.IsEmpty() && female.IsEmpty() && any.IsEmpty();
 			}
+
+			[[nodiscard]] const NamesVariant& GetVariant(RE::SEX sex) const;
 		};
 
 		struct Conjunctions
 		{
-			NamesList male;
-			NamesList female;
+			NamesList male{};
+			NamesList female{};
 			NamesList any = { " " };
+
+			NameRef GetRandom(RE::SEX sex) const;
+			const NamesList& GetList(RE::SEX sex) const;
 		};
 
-		NameSegment firstName;
-		NameSegment middleName;
-		NameSegment lastName;
+		NameSegment firstName{};
+		NameSegment middleName{};
+		NameSegment lastName{};
 
-		Conjunctions conjunction;
+		Conjunctions conjunction{};
 
-		Behavior behavior;
+		Behavior behavior{};
 
 		[[nodiscard]] bool HasDefaultScopes() const {
 			return behavior.HasDefaultScopes();
 		}
+
+		[[nodiscard]] NameComponents GetRandomName(RE::SEX sex) const;
 	};
 }

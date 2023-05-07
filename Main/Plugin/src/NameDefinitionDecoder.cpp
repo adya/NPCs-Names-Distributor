@@ -36,7 +36,7 @@ namespace NND
 	using NamesVariant = NameDefinition::NamesVariant;
 
 	namespace convert
-	{		
+	{
 		void from_json(const json& j, NameDefinition::BaseNamesContainer& p) {
 			try {
 				j.at(kNames).get_to(p.names);
@@ -64,7 +64,7 @@ namespace NND
 			} catch (const json::out_of_range& e) {}
 		}
 
-	    void from_json(const json& j, NamesVariant& p) {
+		void from_json(const json& j, NamesVariant& p) {
 			from_json(j, static_cast<NameDefinition::BaseNamesContainer&>(p));
 			try {
 				from_json(j.at(kPrefix), p.prefix);
@@ -73,7 +73,7 @@ namespace NND
 			try {
 				from_json(j.at(kSuffix), p.suffix);
 			} catch (const json::out_of_range& e) {}
-	    }
+		}
 
 		void from_json(const json& j, NameDefinition::Behavior& p) {
 			try {
@@ -82,15 +82,14 @@ namespace NND
 					p.useForTitles = scopes.contains(kScopeTitle);
 					p.useForObscuring = scopes.contains(kScopeObscuring);
 				}
-		    }
-		    catch (const json::out_of_range& e) {}
+			} catch (const json::out_of_range& e) {}
 
 			try {
 				j.at(kChance).get_to(p.chance);
 			} catch (const json::out_of_range& e) {}
 		}
 
-	    void from_json(const json& j, Conjunctions& p) {
+		void from_json(const json& j, Conjunctions& p) {
 			try {
 				j.at(kMale).get_to(p.male);
 			} catch (const json::out_of_range& e) {}
@@ -118,17 +117,16 @@ namespace NND
 			} catch (const json::out_of_range& e) {}
 
 			try {
-			    from_json(j.at(kBehavior), p.behavior);
+				from_json(j.at(kBehavior), p.behavior);
 			} catch (const json::out_of_range& e) {}
 		}
 
 		void from_json(const json& j, NameDefinition& p) {
 			auto hasNames = false;
 			try {
-			    from_json(j.at(kFirst), p.firstName);
+				from_json(j.at(kFirst), p.firstName);
 				hasNames = true;
-			}
-		    catch (const json::out_of_range& e) {}
+			} catch (const json::out_of_range& e) {}
 			try {
 				from_json(j.at(kMiddle), p.middleName);
 				hasNames = true;
@@ -138,7 +136,7 @@ namespace NND
 				from_json(j.at(kLast), p.lastName);
 				hasNames = true;
 			} catch (const json::out_of_range& e) {}
-			
+
 			if (!hasNames) {
 				logger::warn("\t\tNo name sections were found. Name Definition will be skipped.");
 				return;
@@ -148,7 +146,7 @@ namespace NND
 			} catch (const json::out_of_range& e) {}
 
 			try {
-		        from_json(j.at(kBehavior), p.behavior);
+				from_json(j.at(kBehavior), p.behavior);
 			} catch (const json::out_of_range& e) {}
 		}
 	}
@@ -160,10 +158,10 @@ namespace NND
 		ifile.close();
 
 		const auto flat = data.flatten();
-		json modernized{};
-		bool wasModernized = false;
+		json       modernized{};
+		bool       wasModernized = false;
 		for (auto& it : flat.items()) {
-			auto key = it.key();
+			std::string key = it.key();
 			// truncate obsolete NND_ prefix
 			wasModernized |= clib_util::string::replace_all(key, "NND_", "");
 			// Replace Given/Family with more universal terms for name parts.
@@ -185,8 +183,8 @@ namespace NND
 	}
 
 	NameDefinition NameDefinitionDecoder::decode(const std::filesystem::path& a_path) {
-		std::ifstream f(a_path);
-		const json data = modernize(a_path);
+		std::ifstream  f(a_path);
+		const json     data = modernize(a_path);
 		NameDefinition definition{};
 		convert::from_json(data, definition);
 		return definition;

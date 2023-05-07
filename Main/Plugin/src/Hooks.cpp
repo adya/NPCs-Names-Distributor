@@ -1,17 +1,21 @@
 #include "Hooks.h"
+#include "Distributor.h"
 
 namespace NND
 {
 	static const char* GetName(const RE::TESBoundObject* obj, const char* originalName)
 	{
 		if (!obj || !obj->Is(RE::FormType::NPC)) {
-			return nullptr;
+			return originalName;
 		}
 
-		std::string name(originalName);
-		name = "Injected! " + name;
-		const RE::BSFixedString str = name;
-		return str.data();
+		if (const auto npc = obj->As<RE::TESNPC>()) {
+			if (const auto name = Distribution::GetName(npc); name != empty) {
+				return name.data();
+			}
+		}
+
+		return originalName;
 	}
 
 	struct GetDisplayName
