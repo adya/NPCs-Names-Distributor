@@ -90,7 +90,7 @@ namespace NND
 		struct Adfix : BaseNamesContainer
 		{
 			/// Flag indicating whether given Adfix can only be applied exclusively.
-			///	When one of the exclusive adfixes is picked the other one will be skipped.
+			///	When one of the exclusive Adfixes is picked the other one will be skipped.
 			bool exclusive = false;
 		};
 
@@ -141,8 +141,8 @@ namespace NND
 			NamesList female{};
 			NamesList any = { " " };
 
-			NameRef GetRandom(RE::SEX sex) const;
-			const NamesList& GetList(RE::SEX sex) const;
+			[[nodiscard]] NameRef          GetRandom(RE::SEX sex) const;
+			[[nodiscard]] const NamesList& GetList(RE::SEX sex) const;
 		};
 
 		NameSegment firstName{};

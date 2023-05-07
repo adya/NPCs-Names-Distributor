@@ -85,9 +85,9 @@ namespace NND
 		if (!IsDisabled() && (IsStatic() || chance > staticRNG.Generate<uint32_t>(0, 100))) {
 			auto index = staticRNG.Generate<NameIndex>(0, std::min(maxIndex, GetSize()-1));
 			auto& name = names.at(index);
-			return std::make_pair(name, index);
+			return { name, index };
 		}
-		return std::make_pair(empty, 0);
+		return { empty, 0 };
 	}
 
 	const NamesList& NameDefinition::Conjunctions::GetList(const RE::SEX sex) const {
@@ -101,7 +101,7 @@ namespace NND
 	}
 
 	NameRef NameDefinition::Conjunctions::GetRandom(const RE::SEX sex) const {
-		if (auto list = GetList(sex); !list.empty()) {
+		if (auto& list = GetList(sex); !list.empty()) {
 			auto& name = list.at(staticRNG.Generate<NameIndex>(0, list.size()-1));
 			return name;
 		}
