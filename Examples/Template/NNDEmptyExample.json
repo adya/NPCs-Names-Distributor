@@ -59,6 +59,50 @@
             "Circumfix": false
         }
     },
+
+    "commentMiddle": "This section defines rules for Last names. See First for details on each section.",
+    "Middle": {
+        "Male": {
+            "Chance": 100,
+            "Names": [],
+            "Prefix": {
+                "Chance": 100,
+                "Names": []
+            },
+            "Suffix": {
+                "Chance": 100,
+                "Names": []
+            }
+        },
+        "Female": {
+            "Chance": 100,
+            "Names": [],
+            "Prefix": {
+                "Chance": 100,
+                "Names": []
+            },
+            "Suffix": {
+                "Chance": 100,
+                "Names": []
+            }
+        },
+        "Any": {
+            "Chance": 100,
+            "Names": [],
+            "Prefix": {
+                "Chance": 100,
+                "Names": []
+            },
+            "Suffix": {
+                "Chance": 100,
+                "Names": []
+            }
+        },
+        "Behavior": {
+            "Inherit": false,
+            "Circumfix": false
+        }
+    },
     
     "commentLast": "This section defines rules for Last names. See First for details on each section.",
     "Last": {
