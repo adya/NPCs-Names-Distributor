@@ -1,6 +1,6 @@
 ---
 AccessModifierOffset: -4
-AlignAfterOpenBracket: DontAlign
+AlignAfterOpenBracket: Align
 AlignConsecutiveAssignments: 'false'
 AlignConsecutiveBitFields: 'false'
 AlignConsecutiveDeclarations: 'true'
@@ -21,8 +21,8 @@ AllowShortLoopsOnASingleLine: 'true'
 AlwaysBreakAfterReturnType: None
 AlwaysBreakBeforeMultilineStrings: 'true'
 AlwaysBreakTemplateDeclarations: 'Yes'
-BinPackArguments: 'true'
-BinPackParameters: 'true'
+BinPackArguments: false
+BinPackParameters: false
 BitFieldColonSpacing: After
 BreakBeforeBraces: Custom
 BraceWrapping:
