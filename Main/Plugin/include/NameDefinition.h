@@ -1,41 +1,42 @@
 #pragma once
 namespace NND
 {
-    struct NameDefinition
-    {
-		/// Priority 
-		enum Priority
-		{
-		    /// Definition with `kRace` priority contains base names specific for races or otherwise a large group that shares an innate trait that cannot be changed.
-		    /// This is the default one and may be omitted.
-			kRace = 0,
+	using Name = std::string;
+	using NameRef = std::string_view;
+	using NamesList = std::vector<Name>;
 
-		    /// Definition with `kClass` priority contains names for a more narrow group that shares an innate trait, which also cannot be changed.
-			kClass,
+	constexpr inline NameRef empty = ""sv;
 
-			/// Definition with `kFaction` priority contains names for a medium sized group that are united by some common idea or belief, that are scattered across the world.
-			kFaction,
+	struct NameComponents
+	{
+		NameRef firstPrefix = empty;
+		NameRef firstName = empty;
+		NameRef firstSuffix = empty;
 
-            /// Definition with `kClan` priority contains names for a small group that are united are united by some common idea or belief, but typically located in a single area.
-            kClan,
+		NameRef middlePrefix = empty;
+		NameRef middleName = empty;
+		NameRef middleSuffix = empty;
 
-			/// Definition with `kIndividual` priority contains names for distinct individuals that are usually hand-picked.
-			kIndividual,
+		NameRef lastPrefix = empty;
+		NameRef lastName = empty;
+		NameRef lastSuffix = empty;
 
-		    /// Default priority is `kRace`.
-			kDefault = kRace,
+		NameRef conjunction = empty;
 
-			/// The highest possible priority.
-			kForced = kIndividual
-		};
+		[[nodiscard]] bool IsValid() const {
+			return firstName != empty ||
+			       middleName != empty ||
+			       lastName != empty;
+		}
+	};
 
-		using NamesList = std::vector<std::string>;
-
+	struct NameDefinition
+	{
 		struct Behavior
 		{
-			bool useForNames = true;
-		    bool useForTitles = false;
-			bool useForObscuring = false;
+			bool         useForNames = true;
+			bool         useForTitles = false;
+			bool         useForObscuring = false;
 			std::uint8_t chance = 100;
 
 			[[nodiscard]] bool HasDefaultScopes() const {
@@ -50,28 +51,33 @@ namespace NND
 
 			/// Checks whether given names container will always produce a name.
 			///	Container is considered static when it has at least one name and it's chance is 100%.
-            [[nodiscard]] bool IsStatic() const {
+			[[nodiscard]] bool IsStatic() const {
 				return chance >= 100;
 			}
 
-            [[nodiscard]] bool IsEmpty() const {
+			[[nodiscard]] bool IsEmpty() const {
 				return names.empty();
-            }
+			}
 		};
 
-		using Affix = BaseNamesContainer;
-		
-		struct GenderNames: BaseNamesContainer
+		struct Adfix : BaseNamesContainer
 		{
-			Affix prefix;
-			Affix suffix;
+			/// Flag indicating whether given Adfix can only be applied exclusively.
+			///	When one of the exclusive adfixes is picked the other one will be skipped.
+			bool exclusive = false;
 		};
 
-		struct NamePart
+		struct NamesVariant : BaseNamesContainer
+		{
+			Adfix prefix;
+			Adfix suffix;
+		};
+
+		struct NameSegment
 		{
 			struct Behavior
 			{
-				/// Flag indicating that NamePart using this behavior should inherit the same NamePart
+				/// Flag indicating that NameSegment using this behavior should inherit the same NameSegment
 				///	from the next Name Definition if it fails to pick a name from the current one.
 				bool shouldInherit = false;
 
@@ -82,19 +88,19 @@ namespace NND
 				bool useCircumfix = false;
 			};
 
-			GenderNames male;
-			GenderNames female;
-			GenderNames any;
-			
+			NamesVariant male;
+			NamesVariant female;
+			NamesVariant any;
+
 			Behavior behavior;
 
-			/// Checks whether the NamePart will always produce a name.
-			///	NamePart is considered static when it has at least one not empty gender section and all present sections are static.
+			/// Checks whether the NameSegment will always produce a name.
+			///	NameSegment is considered static when it has at least one not empty NamesVariant and all present NamesVariants are static.
 			[[nodiscard]] bool IsStatic() const {
 				return male.IsStatic() && female.IsStatic() && any.IsStatic();
 			}
 
-			/// NamePart is considered empty when all its gender names sections are empty.
+			/// NameSegment is considered empty when all its NamesVariants are empty.
 			[[nodiscard]] bool IsEmpty() const {
 				return male.IsEmpty() && female.IsEmpty() && any.IsEmpty();
 			}
@@ -107,16 +113,16 @@ namespace NND
 			NamesList any = { " " };
 		};
 
-		NamePart firstName;
-		NamePart lastName;
+		NameSegment firstName;
+		NameSegment middleName;
+		NameSegment lastName;
 
-        Conjunctions conjunction;
-
+		Conjunctions conjunction;
 
 		Behavior behavior;
 
 		[[nodiscard]] bool HasDefaultScopes() const {
 			return behavior.HasDefaultScopes();
 		}
-    };
+	};
 }

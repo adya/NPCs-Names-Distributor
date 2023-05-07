@@ -3,10 +3,11 @@
 
 namespace NND
 {
-	void Install();
-
-	/// Returns flag indicating whether at least one NameDefinition had been loaded.
+	/// Loads all Name Definitions located at Data/SKSE/Plugins/NPCsNamesDistributor.
+	/// Returns flag indicating whether at least one Name Definition had been loaded without errors.
 	bool LoadNameDefinitions();
 
-	inline std::unordered_map<std::string, NameDefinition> definitions{};
+    /// A map of Name Definitions grouped by their names.
+    ///	This map is populated by LoadNameDefinitions().
+    inline std::unordered_map<std::string, NameDefinition> definitions{};
 }

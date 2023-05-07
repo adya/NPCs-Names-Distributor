@@ -7,6 +7,7 @@ namespace NND
 	using json = nlohmann::json;
 
 	static constexpr auto kFirst = "First"sv;
+	static constexpr auto kMiddle = "Middle"sv;
 	static constexpr auto kLast = "Last"sv;
 	static constexpr auto kConjunctions = "Conjunctions"sv;
 
@@ -19,6 +20,7 @@ namespace NND
 
 	static constexpr auto kPrefix = "Prefix"sv;
 	static constexpr auto kSuffix = "Suffix"sv;
+	static constexpr auto kExclusive = "Exclusive"sv;
 
 	static constexpr auto kBehavior = "Behavior"sv;
 	static constexpr auto kInherit = "Inherit"sv;
@@ -29,12 +31,9 @@ namespace NND
 	static constexpr auto kScopeTitle = "Title"sv;
 	static constexpr auto kScopeObscuring = "Obscuring"sv;
 
-	using key = std::string_view;
-	using either_key = std::vector<std::string_view>;
-
-	using NamePart = NameDefinition::NamePart;
+	using NameSegment = NameDefinition::NameSegment;
 	using Conjunctions = NameDefinition::Conjunctions;
-	using GenderNames = NameDefinition::GenderNames;
+	using NamesVariant = NameDefinition::NamesVariant;
 
 	namespace convert
 	{		
@@ -48,7 +47,7 @@ namespace NND
 			} catch (const json::out_of_range& e) {}
 		}
 
-		void from_json(const json& j, NamePart::Behavior& p) {
+		void from_json(const json& j, NameSegment::Behavior& p) {
 			try {
 				j.at(kInherit).get_to(p.shouldInherit);
 			} catch (const json::out_of_range& e) {}
@@ -58,7 +57,14 @@ namespace NND
 			} catch (const json::out_of_range& e) {}
 		}
 
-	    void from_json(const json& j, GenderNames& p) {
+		void from_json(const json& j, NameDefinition::Adfix& p) {
+			from_json(j, static_cast<NameDefinition::BaseNamesContainer&>(p));
+			try {
+				j.at(kExclusive).get_to(p.exclusive);
+			} catch (const json::out_of_range& e) {}
+		}
+
+	    void from_json(const json& j, NamesVariant& p) {
 			from_json(j, static_cast<NameDefinition::BaseNamesContainer&>(p));
 			try {
 				from_json(j.at(kPrefix), p.prefix);
@@ -98,7 +104,7 @@ namespace NND
 			} catch (const json::out_of_range& e) {}
 		}
 
-		void from_json(const json& j, NamePart& p) {
+		void from_json(const json& j, NameSegment& p) {
 			try {
 				from_json(j.at(kMale), p.male);
 			} catch (const json::out_of_range& e) {}
@@ -123,6 +129,10 @@ namespace NND
 				hasNames = true;
 			}
 		    catch (const json::out_of_range& e) {}
+			try {
+				from_json(j.at(kMiddle), p.middleName);
+				hasNames = true;
+			} catch (const json::out_of_range& e) {}
 
 			try {
 				from_json(j.at(kLast), p.lastName);
@@ -143,12 +153,13 @@ namespace NND
 		}
 	}
 
-	/// May throw
+	/// May throw json::parse_error
 	json modernize(const std::filesystem::path& a_path) {
 		std::ifstream ifile(a_path);
 		json          data = nlohmann::json::parse(ifile);
 		ifile.close();
-		auto flat = data.flatten();
+
+		const auto flat = data.flatten();
 		json modernized{};
 		bool wasModernized = false;
 		for (auto& it : flat.items()) {
@@ -163,6 +174,7 @@ namespace NND
 			modernized[key] = it.value();
 		}
 		if (wasModernized) {
+			logger::info("Updating to use latest format");
 			modernized = modernized.unflatten();
 			std::ofstream ofile(a_path);
 			ofile << std::setw(4) << modernized << std::endl;
