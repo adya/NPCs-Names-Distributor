@@ -34,6 +34,7 @@ namespace NND
 	using NameSegment = NameDefinition::NameSegment;
 	using Conjunctions = NameDefinition::Conjunctions;
 	using NamesVariant = NameDefinition::NamesVariant;
+	using Scope = NameDefinition::Scope;
 
 	namespace convert
 	{
@@ -72,20 +73,6 @@ namespace NND
 
 			try {
 				from_json(j.at(kSuffix), p.suffix);
-			} catch (const json::out_of_range& e) {}
-		}
-
-		void from_json(const json& j, NameDefinition::Behavior& p) {
-			try {
-				if (const auto scopes = j.at(kScopes).get<std::set<std::string_view>>(); scopes.empty()) {
-					p.useForNames = scopes.contains(kScopeName);
-					p.useForTitles = scopes.contains(kScopeTitle);
-					p.useForObscuring = scopes.contains(kScopeObscuring);
-				}
-			} catch (const json::out_of_range& e) {}
-
-			try {
-				j.at(kChance).get_to(p.chance);
 			} catch (const json::out_of_range& e) {}
 		}
 
@@ -146,7 +133,14 @@ namespace NND
 			} catch (const json::out_of_range& e) {}
 
 			try {
-				from_json(j.at(kBehavior), p.behavior);
+				if (const auto scopes = j.at(kScopes).get<std::set<std::string_view>>(); scopes.empty()) {
+					if (scopes.contains(kScopeName))
+						enable(p.scope, Scope::kName);
+					if (scopes.contains(kScopeTitle))
+						enable(p.scope, Scope::kTitle);
+					if (scopes.contains(kScopeObscuring))
+						enable(p.scope, Scope::kObscurity);
+				}
 			} catch (const json::out_of_range& e) {}
 		}
 	}

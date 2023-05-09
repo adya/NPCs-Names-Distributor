@@ -9,5 +9,5 @@ namespace NND
 
     /// A map of Name Definitions grouped by their names.
     ///	This map is populated by LoadNameDefinitions().
-    inline std::unordered_map<std::string, NameDefinition> definitions{};
+    inline std::unordered_map<std::string, NameDefinition> loadedDefinitions{};
 }

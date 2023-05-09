@@ -77,14 +77,15 @@ namespace NND
 		const REL::Relocation<std::uintptr_t> displayFullName{ RE::Offset::TESObjectREFR::GetDisplayFullName };
 		stl::write_thunk_call<GetDisplayFullName_GetDisplayName>(displayFullName.address() + OFFSET(0, 0x23D));
 		stl::write_thunk_call<GetDisplayFullName_GetFormName>(displayFullName.address() + OFFSET(0, 0x22C));
+		logger::info("Installed GetDisplayFullName hooks");
 
 		const REL::Relocation<std::uintptr_t> displayNextSubtitle{ RELOCATION_ID(0, 52637) };
 		stl::write_thunk_call<DisplayNextSubtitle_GetDisplayFullName>(displayNextSubtitle.address() + OFFSET(0, 0x110));
 		stl::write_thunk_call<DisplayNextSubtitle_GetShortName>(displayNextSubtitle.address() + OFFSET(0, 0x106));
+		logger::info("Installed DisplayNextSubtitle hooks");
 
 		const REL::Relocation<std::uintptr_t> barterMenu{ RELOCATION_ID(0, 50957) };
 		stl::write_thunk_call<BarterMenu_GetShortName>(barterMenu.address() + OFFSET(0, 0x20C));
-
-		logger::info("Installed GetDisplayFullName hooks");
+		logger::info("Installed BarterMenu hooks");
 	}
 }

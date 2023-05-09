@@ -56,13 +56,13 @@ namespace NND
 	void LogDefinition(const NameDefinition& definition)
 	{
 		std::vector<std::string> scopes{};
-		if (definition.behavior.useForNames) {
+		if (has(definition.scope, NameDefinition::Scope::kName)) {
 			scopes.emplace_back("Names");
 		}
-		if (definition.behavior.useForTitles) {
+		if (has(definition.scope, NameDefinition::Scope::kTitle)) {
 			scopes.emplace_back("Titles");
 		}
-		if (definition.behavior.useForObscuring) {
+		if (has(definition.scope, NameDefinition::Scope::kTitle)) {
 			scopes.emplace_back("Obscurity");
 		}
 
@@ -92,7 +92,8 @@ namespace NND
 			logger::info("Loading \"{}\"", name);
 			try {
 				auto definition = decoder.decode(file);
-				definitions[name] = definition;
+				definition.name = name;
+				loadedDefinitions[name] = definition;
 				LogDefinition(definition);
 				++validFiles;
 			} catch (const std::exception& error) {

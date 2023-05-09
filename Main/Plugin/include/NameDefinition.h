@@ -1,4 +1,6 @@
 #pragma once
+#include "CLIBUtil/Bitmasks.hpp"
+
 namespace NND
 {
 	using Name = std::string;
@@ -30,23 +32,47 @@ namespace NND
 			       lastName != empty;
 		}
 
-		std::optional<Name> Assemble() const;
+		[[nodiscard]] std::optional<Name> Assemble() const;
 	};
 
 	struct NameDefinition
 	{
-		struct Behavior
+		/// Priority
+		enum class Priority
 		{
-			bool    useForNames = true;
-			bool    useForTitles = false;
-			bool    useForObscuring = false;
-			uint8_t chance = 100;
+			/// Definition with `kRace` priority contains base names specific for races or otherwise a large group that shares an innate trait that cannot be changed.
+			/// This is the default one and may be omitted.
+			kRace = 0,
 
-			[[nodiscard]] bool HasDefaultScopes() const {
-				return useForNames && !useForTitles && !useForObscuring;
-			}
+			/// Definition with `kClass` priority contains names for a more narrow group that shares an innate trait, which also cannot be changed.
+			kClass,
+
+			/// Definition with `kFaction` priority contains names for a medium sized group that are united by some common idea or belief, that are scattered across the world.
+			kFaction,
+
+			/// Definition with `kClan` priority contains names for a small group that are united are united by some common idea or belief, but typically located in a single area.
+			kClan,
+
+			/// Definition with `kIndividual` priority contains names for distinct individuals that are usually hand-picked.
+			kIndividual,
+
+			/// Default priority is `kRace`.
+			kDefault = kRace,
+
+			/// The highest possible priority.
+			kForced = kIndividual
 		};
 
+		enum class Scope: uint8_t
+		{
+			kName = 0b1,
+			kTitle = 0b10,
+			kObscurity = 0b100,
+
+			kDefault = kName,
+			kAll = kName | kTitle | kObscurity
+		};
+		
 		struct BaseNamesContainer
 		{
 			NamesList names{};
@@ -151,12 +177,25 @@ namespace NND
 
 		Conjunctions conjunction{};
 
-		Behavior behavior{};
+		/// Name of the definition.
+		std::string name;
+		Priority    priority = Priority::kDefault;
+		Scope scope = Scope::kDefault;
 
 		[[nodiscard]] bool HasDefaultScopes() const {
-			return behavior.HasDefaultScopes();
+			return scope == Scope::kDefault;
 		}
 
-		[[nodiscard]] NameComponents GetRandomName(RE::SEX sex) const;
+		void GetRandomFullName(RE::SEX sex, NameComponents& components) const;
+		void GetRandomFirstName(RE::SEX sex, NameComponents& components) const;
+		void GetRandomMiddleName(RE::SEX sex, NameComponents& components) const;
+		void GetRandomLastName(RE::SEX sex, NameComponents& components) const;
+		void GetRandomConjunction(RE::SEX sex, NameComponents& components) const;
 	};
 }
+
+template <>
+struct enable_bitmask_operators<NND::NameDefinition::Scope>
+{
+	static constexpr bool enable = true;
+};

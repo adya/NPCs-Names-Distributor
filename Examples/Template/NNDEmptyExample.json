@@ -155,17 +155,11 @@
         "Any": [" "]
     },
 
-    "commentBehavior": "Name Definition itself also has Behavior that controls whole definition",
-    "Behavior": {
-        "commentChance": "Name Definition can have a chance of being skipped. By default Definition is never skipped.",
-        "commentChance2": "This option is ignored if the Name Definition is the last in queue, as othwerise NPC might not get a name at all.",
-        "Chance": 100,
-        "commentScopes": "Scopes define where this Name Definition can be applied. Possible values are: Name, Title and Obscuring",
-        "commentScopes2": "Name Definition can have multiple scopes, which make it an eligible pool of names for each scope.",
-        "commentScopes3": "When not specified, it defaults to 'Name' scope. Otherwise you have to explicitly list all scopes",
-        "commentName": "Name scope indicates that Name Definition contains names that should be applied as NPC's main name. This is default scope.",
-        "commentTitle": "Title scope indicates that Name Definition contains names that should be applied as NPC's Title. This would replace default title",
-        "commentObscuring": "Obscuring scope indicates that Name Definition contains names that should be applied as name for unknown NPCs.",
-        "Scopes": ["Name"]
-    }
+    "commentScopes": "Scopes define where this Name Definition can be applied. Possible values are: Name, Title and Obscuring",
+    "commentScopes2": "Name Definition can have multiple scopes, which make it an eligible pool of names for each scope.",
+    "commentScopes3": "When not specified, it defaults to 'Name' scope. Otherwise you have to explicitly list all scopes",
+    "commentName": "Name scope indicates that Name Definition contains names that should be applied as NPC's main name. This is default scope.",
+    "commentTitle": "Title scope indicates that Name Definition contains names that should be applied as NPC's Title. This would replace default title",
+    "commentObscuring": "Obscuring scope indicates that Name Definition contains names that should be applied as name for unknown NPCs.",
+    "Scopes": ["Name"]
 }
