@@ -119,7 +119,9 @@ namespace NND
 			if (const auto name = CreateName(NameDefinition::Scope::kName, npc)) {
 				// Apparently I can't have this condition in the same if, because it will always be executed regardless of whether name had value or not..
 				if (!name->empty()) {
+#ifndef NDEBUG
 					logger::info("Caching name for {}. New name: {}", std::string(npc->GetName()), *name);
+#endif
 					names[npc->formID].name = *name;
 					return names.at(npc->formID).name;
 				}

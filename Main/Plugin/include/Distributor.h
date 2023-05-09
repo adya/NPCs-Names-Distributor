@@ -19,9 +19,5 @@ namespace NND
 		inline std::unordered_map<RE::FormID, NNDData> names{};
 
 		NameRef GetName(const RE::TESNPC* npc);
-
-		inline NameRef GetName(const RE::Actor* actor) {
-			return GetName(actor->GetActorBase());
-		}
 	}
 }
