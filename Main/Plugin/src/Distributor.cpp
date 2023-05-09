@@ -35,13 +35,21 @@ namespace NND
 			// Get a list of matching definitions.
 			npc->ForEachKeyword([&](const auto& kwd) {
 				std::string name = kwd.GetFormEditorID();
+				std::optional<NameDefinition::Priority > priority;
 				// Erase legacy keyword priorities.
-				clib_util::string::replace_last_instance(name, "_Race"sv, ""sv);
-				clib_util::string::replace_last_instance(name, "_Class"sv, ""sv);
-				clib_util::string::replace_last_instance(name, "_Faction"sv, ""sv);
-				clib_util::string::replace_last_instance(name, "_Forced"sv, ""sv);
+				if (clib_util::string::replace_last_instance(name, "_Race"sv, ""sv))
+					priority = NameDefinition::kRace;
+				if (clib_util::string::replace_last_instance(name, "_Class"sv, ""sv))
+					priority = NameDefinition::kClass;
+				if (clib_util::string::replace_last_instance(name, "_Faction"sv, ""sv))
+					priority = NameDefinition::kFaction;
+				if (clib_util::string::replace_last_instance(name, "_Forced"sv, ""sv))
+					priority = NameDefinition::kForced;
+
 				if (loadedDefinitions.contains(name)) {
-					if (const auto& definition = loadedDefinitions.at(name); has(definition.scope, scope)) {
+					if (auto& definition = loadedDefinitions.at(name); has(definition.scope, scope)) {
+						if (priority.has_value())
+							definition.priority = *priority;
 						definitions.emplace_back(definition);
 					}
 				}

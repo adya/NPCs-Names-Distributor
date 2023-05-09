@@ -38,7 +38,7 @@ namespace NND
 	struct NameDefinition
 	{
 		/// Priority
-		enum class Priority
+		enum Priority : uint8_t
 		{
 			/// Definition with `kRace` priority contains base names specific for races or otherwise a large group that shares an innate trait that cannot be changed.
 			/// This is the default one and may be omitted.
@@ -60,7 +60,9 @@ namespace NND
 			kDefault = kRace,
 
 			/// The highest possible priority.
-			kForced = kIndividual
+			kForced = kIndividual,
+
+			kTotal
 		};
 
 		enum class Scope: uint8_t
