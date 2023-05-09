@@ -18,7 +18,8 @@ namespace NND
 		return originalName;
 	}
 
-	struct GetDisplayName
+	// Always Full
+	struct GetDisplayFullName_GetDisplayName
 	{
 		static const char* thunk(RE::ExtraTextDisplayData* a_this, RE::TESBoundObject* obj, float temperFactor)
 		{
@@ -28,10 +29,41 @@ namespace NND
 		static inline REL::Relocation<decltype(thunk)> func;
 	};
 
-	struct GetFormName
+	// Always Full
+	struct GetDisplayFullName_GetFormName
 	{
 		static const char* thunk(RE::TESBoundObject* a_this)
 		{
+			const auto originalName = func(a_this);
+			return GetName(a_this, originalName);
+		}
+		static inline REL::Relocation<decltype(thunk)> func;
+	};
+
+	// Short when possible
+	struct DisplayNextSubtitle_GetDisplayFullName
+	{
+		static const char* thunk(RE::TESObjectREFR* a_this) {
+			const auto originalName = func(a_this);
+			return GetName(a_this->GetObjectReference(), originalName);
+		}
+		static inline REL::Relocation<decltype(thunk)> func;
+	};
+
+	// Short when possible
+	struct DisplayNextSubtitle_GetShortName
+	{
+		static const char* thunk(RE::TESNPC* a_this) {
+			const auto originalName = func(a_this);
+			return GetName(a_this, originalName);
+		}
+		static inline REL::Relocation<decltype(thunk)> func;
+	};
+
+	// Always Full
+	struct BarterMenu_GetShortName
+	{
+		static const char* thunk(RE::TESNPC* a_this) {
 			const auto originalName = func(a_this);
 			return GetName(a_this, originalName);
 		}
@@ -42,9 +74,16 @@ namespace NND
 	{
 		logger::info("{:*^30}", "HOOKS");
 
-		const REL::Relocation<std::uintptr_t> target{ RE::Offset::TESObjectREFR::GetDisplayFullName };
-		stl::write_thunk_call<GetDisplayName>(target.address() + OFFSET(0, 0x23D));
-		stl::write_thunk_call<GetFormName>(target.address() + OFFSET(0, 0x22C));
+		const REL::Relocation<std::uintptr_t> displayFullName{ RE::Offset::TESObjectREFR::GetDisplayFullName };
+		stl::write_thunk_call<GetDisplayFullName_GetDisplayName>(displayFullName.address() + OFFSET(0, 0x23D));
+		stl::write_thunk_call<GetDisplayFullName_GetFormName>(displayFullName.address() + OFFSET(0, 0x22C));
+
+		const REL::Relocation<std::uintptr_t> displayNextSubtitle{ RELOCATION_ID(0, 52637) };
+		stl::write_thunk_call<DisplayNextSubtitle_GetDisplayFullName>(displayNextSubtitle.address() + OFFSET(0, 0x110));
+		stl::write_thunk_call<DisplayNextSubtitle_GetShortName>(displayNextSubtitle.address() + OFFSET(0, 0x106));
+
+		const REL::Relocation<std::uintptr_t> barterMenu{ RELOCATION_ID(0, 50957) };
+		stl::write_thunk_call<BarterMenu_GetShortName>(barterMenu.address() + OFFSET(0, 0x20C));
 
 		logger::info("Installed GetDisplayFullName hooks");
 	}
