@@ -35,7 +35,7 @@ namespace NND
 
 	void LogNameSegment(std::string_view name, const NameDefinition::NameSegment& namePart)
 	{
-		const auto inherits = namePart.behavior.shouldInherit;
+		const auto inherits = namePart.shouldInherit;
 
 		if (!inherits && namePart.IsEmpty())
 			return;
@@ -48,9 +48,9 @@ namespace NND
 			}
 		}
 
-		LogNamesVariant("Male"sv, namePart.male, namePart.behavior.useCircumfix);
-		LogNamesVariant("Female"sv, namePart.female, namePart.behavior.useCircumfix);
-		LogNamesVariant("Any"sv, namePart.any, namePart.behavior.useCircumfix);
+		LogNamesVariant("Male"sv, namePart.male, namePart.useCircumfix);
+		LogNamesVariant("Female"sv, namePart.female, namePart.useCircumfix);
+		LogNamesVariant("Any"sv, namePart.any, namePart.useCircumfix);
 	}
 
 	void LogDefinition(const NameDefinition& definition)

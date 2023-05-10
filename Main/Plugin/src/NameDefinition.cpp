@@ -37,7 +37,7 @@ namespace NND
 
 	void NameDefinition::GetRandomFirstName(RE::SEX sex, NameComponents& components) const {
 		AssignRandomNameVariant(firstName.GetVariant(sex),
-		                        firstName.behavior.useCircumfix,
+		                        firstName.useCircumfix,
 		                        &components.firstName,
 		                        &components.firstPrefix,
 		                        &components.firstSuffix);
@@ -45,7 +45,7 @@ namespace NND
 
 	void NameDefinition::GetRandomMiddleName(RE::SEX sex, NameComponents& components) const {
 		AssignRandomNameVariant(middleName.GetVariant(sex),
-		                        middleName.behavior.useCircumfix,
+		                        middleName.useCircumfix,
 		                        &components.middleName,
 		                        &components.middlePrefix,
 		                        &components.middleSuffix);
@@ -53,7 +53,7 @@ namespace NND
 
 	void NameDefinition::GetRandomLastName(RE::SEX sex, NameComponents& components) const {
 		AssignRandomNameVariant(lastName.GetVariant(sex),
-		                        lastName.behavior.useCircumfix,
+		                        lastName.useCircumfix,
 		                        &components.lastName,
 		                        &components.lastPrefix,
 		                        &components.lastSuffix);

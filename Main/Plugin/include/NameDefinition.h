@@ -129,24 +129,19 @@ namespace NND
 
 		struct NameSegment
 		{
-			struct Behavior
-			{
-				/// Flag indicating that NameSegment using this behavior should inherit the same NameSegment
-				///	from the next Name Definition if it fails to pick a name from the current one.
-				bool shouldInherit = false;
-
-				/// Flag indicating that name part using this behavior should pair prefix and suffix.
-				///	This behavior makes Name Definition pick one index that will be used for both prefix and suffix.
-				///	If either of prefix or suffix has a non 100% chance then it will determine whether both of them will be used or none.
-				///	If both of them has a less than 100% chance, than the prefix's chance will be used.
-				bool useCircumfix = false;
-			};
-
 			NamesVariant male{};
 			NamesVariant female{};
 			NamesVariant any{};
 
-			Behavior behavior{};
+			/// Flag indicating that NameSegment using this behavior should inherit the same NameSegment
+			///	from the next Name Definition if it fails to pick a name from the current one.
+			bool shouldInherit = false;
+
+			/// Flag indicating that name part using this behavior should pair prefix and suffix.
+			///	This behavior makes Name Definition pick one index that will be used for both prefix and suffix.
+			///	If either of prefix or suffix has a non 100% chance then it will determine whether both of them will be used or none.
+			///	If both of them has a less than 100% chance, than the prefix's chance will be used.
+			bool useCircumfix = false;
 
 			/// Checks whether the NameSegment will always produce a name.
 			///	NameSegment is considered static when it has at least one not empty NamesVariant and all present NamesVariants are static.

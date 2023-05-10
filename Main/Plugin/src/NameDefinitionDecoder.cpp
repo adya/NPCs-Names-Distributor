@@ -73,16 +73,6 @@ namespace NND
 			} catch (const json::out_of_range&) {}
 		}
 
-		void from_json(const json& j, NameSegment::Behavior& p) {
-			try {
-				j.at(kInherit).get_to(p.shouldInherit);
-			} catch (const json::out_of_range&) {}
-
-			try {
-				j.at(kCircumfix).get_to(p.useCircumfix);
-			} catch (const json::out_of_range&) {}
-		}
-
 		void from_json(const json& j, NameDefinition::Adfix& p) {
 			from_json(j, static_cast<NameDefinition::BaseNamesContainer&>(p));
 			try {
@@ -129,7 +119,11 @@ namespace NND
 			} catch (const json::out_of_range&) {}
 
 			try {
-				from_json(j.at(kBehavior), p.behavior);
+				j.at(kInherit).get_to(p.shouldInherit);
+			} catch (const json::out_of_range&) {}
+
+			try {
+				j.at(kCircumfix).get_to(p.useCircumfix);
 			} catch (const json::out_of_range&) {}
 		}
 
@@ -195,6 +189,8 @@ namespace NND
 			wasModernized |= clib_util::string::replace_first_instance(key, "Family", "Last");
 			// And Combine was renamed to Inherit.
 			wasModernized |= clib_util::string::replace_first_instance(key, "Combine", "Inherit");
+			// Finally, replace Behavior/ path, since behaviors had been flattened
+			wasModernized |= clib_util::string::replace_first_instance(key, "Behavior/", "");
 			modernized[key] = it.value();
 		}
 

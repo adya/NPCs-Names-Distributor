@@ -49,15 +49,12 @@
                 "Names": []
             }
         },
-        "commentBehavior": "Behaviors are a list of options to customize how this Name Definition handles missing name parts",
-        "Behavior": {
-            "commentInherit": "When enabled and First name was not picked, it allows the framework to look for the First name in the next Name Definition",
-            "Inherit": false,
-            "commentCircumfix": "When enabled, will synchronize picked prefix and suffix",
-            "commentCircumfix2": "e.g. when there are 3 prefixes and suffixes, Name Definition will pick one index for both lists.",
-            "commentCircumfix3": "Note that number of prefixes and suffixes must match, otherwise length of the shortest one will be used.",
-            "Circumfix": false
-        }
+        "commentInherit": "When enabled and First name was not picked, it allows the framework to look for the First name in the next Name Definition",
+        "Inherit": false,
+        "commentCircumfix": "When enabled, will synchronize picked prefix and suffix",
+        "commentCircumfix2": "e.g. when there are 3 prefixes and suffixes, Name Definition will pick one index for both lists.",
+        "commentCircumfix3": "Note that number of prefixes and suffixes must match, otherwise length of the shortest one will be used.",
+        "Circumfix": false
     },
 
     "commentMiddle": "This section defines rules for Last names. See First for details on each section.",
@@ -98,10 +95,8 @@
                 "Names": []
             }
         },
-        "Behavior": {
-            "Inherit": false,
-            "Circumfix": false
-        }
+        "Inherit": false,
+        "Circumfix": false
     },
     
     "commentLast": "This section defines rules for Last names. See First for details on each section.",
@@ -142,10 +137,8 @@
                 "Names": []
             }
         },
-        "Behavior": {
-            "Inherit": false,
-            "Circumfix": false
-        }
+        "Inherit": false,
+        "Circumfix": false
     },
     
     "commentConjunctions": "This section defines how First and Last names get connected. Same gender rules apply as in other sections.",
@@ -161,5 +154,8 @@
     "commentName": "Name scope indicates that Name Definition contains names that should be applied as NPC's main name. This is default scope.",
     "commentTitle": "Title scope indicates that Name Definition contains names that should be applied as NPC's Title. This would replace default title",
     "commentObscuring": "Obscuring scope indicates that Name Definition contains names that should be applied as name for unknown NPCs.",
-    "Scopes": ["Name"]
+    "Scopes": ["Name"],
+    "commentPriority": "Default priority of this Name Definition. The values are: Race, Class, Faction, Clan, Individual",
+    "commentPriority2": "When Keyword associated with this Name Definition also include priority (e.g. _Faction) it will override the one specified here",
+    "Priority": "Race"
 }

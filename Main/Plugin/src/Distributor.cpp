@@ -101,9 +101,9 @@ namespace NND
 					definition.GetRandomConjunction(sex, comps);
 				}
 
-				resolvedFirstName = resolvedFirstName || !definition.firstName.behavior.shouldInherit;
-				resolvedMiddleName = resolvedMiddleName || !definition.middleName.behavior.shouldInherit;
-				resolvedLastName = resolvedLastName || !definition.lastName.behavior.shouldInherit;
+				resolvedFirstName = resolvedFirstName || !definition.firstName.shouldInherit;
+				resolvedMiddleName = resolvedMiddleName || !definition.middleName.shouldInherit;
+				resolvedLastName = resolvedLastName || !definition.lastName.shouldInherit;
 
 				// If all segments are resolved, then we're ready :)
 				if (resolvedFirstName && resolvedMiddleName && resolvedLastName)
