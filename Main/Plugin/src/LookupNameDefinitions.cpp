@@ -62,7 +62,7 @@ namespace NND
 		if (has(definition.scope, NameDefinition::Scope::kTitle)) {
 			scopes.emplace_back("Titles");
 		}
-		if (has(definition.scope, NameDefinition::Scope::kTitle)) {
+		if (has(definition.scope, NameDefinition::Scope::kObscurity)) {
 			scopes.emplace_back("Obscurity");
 		}
 
@@ -93,7 +93,15 @@ namespace NND
 			try {
 				auto definition = decoder.decode(file);
 				definition.name = name;
-				loadedDefinitions[name] = definition;
+				if (has(definition.scope, NameDefinition::Scope::kName)) {
+					loadedDefinitions[NameDefinition::Scope::kName][name] = definition;
+				}
+				if (has(definition.scope, NameDefinition::Scope::kTitle)) {
+					loadedDefinitions[NameDefinition::Scope::kTitle][name] = definition;
+				}
+				if (has(definition.scope, NameDefinition::Scope::kObscurity)) {
+					loadedDefinitions[NameDefinition::Scope::kObscurity][name] = definition;
+				}
 				LogDefinition(definition);
 				++validFiles;
 			} catch (const std::exception& error) {

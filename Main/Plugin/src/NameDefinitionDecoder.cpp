@@ -153,7 +153,8 @@ namespace NND
 			} catch (const json::out_of_range&) {}
 
 			try {
-				if (const auto scopes = j.at(kScopes).get<std::set<std::string_view>>(); scopes.empty()) {
+				if (const auto scopes = j.at(kScopes).get<std::set<std::string_view>>(); !scopes.empty()) {
+					p.scope = Scope::kNone; // if we found kScopes property, then we reset default scope.
 					if (scopes.contains(kScopeName))
 						enable(p.scope, Scope::kName);
 					if (scopes.contains(kScopeTitle))

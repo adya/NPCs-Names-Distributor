@@ -67,9 +67,11 @@ namespace NND
 
 		enum class Scope: uint8_t
 		{
-			kName = 0b1,
-			kTitle = 0b10,
-			kObscurity = 0b100,
+			kNone		= 0b000,
+
+			kName		= 0b001,
+			kTitle		= 0b010,
+			kObscurity	= 0b100,
 
 			kDefault = kName,
 			kAll = kName | kTitle | kObscurity
