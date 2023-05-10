@@ -1,4 +1,5 @@
 #include "NameDefinitionDecoder.h"
+#include "CLIBUtil/distribution.hpp"
 #include "json.hpp"
 #include <fstream>
 
@@ -49,8 +50,12 @@ namespace NND
 			return type = static_cast<Priority>(static_cast<uint8_t>(type) + 1);
 		}
 
+		static constexpr std::string_view toRawPriority(Priority priority) {
+			return rawPriorities[priority];
+		}
+
 		static constexpr NameDefinition::Priority fromRawPriority(const std::string_view& raw) {
-			for (Priority priority = Priority::kDefault; priority < Priority::kForced; ++priority) {
+			for (Priority priority = Priority::kDefault; priority < Priority::kTotal; ++priority) {
 				if (rawPriorities[priority] == raw) {
 					return priority;
 				}
@@ -179,6 +184,8 @@ namespace NND
 		const auto flat = data.flatten();
 		json       modernized{};
 		bool       wasModernized = false;
+
+		// Replace legacy keys.
 		for (auto& it : flat.items()) {
 			std::string key = it.key();
 			// truncate obsolete NND_ prefix
@@ -190,6 +197,40 @@ namespace NND
 			wasModernized |= clib_util::string::replace_first_instance(key, "Combine", "Inherit");
 			modernized[key] = it.value();
 		}
+
+		// Remove keyword priorities and write them to the Name Definition instead
+		const auto distrs = clib_util::distribution::get_configs_paths("Data", "_DISTR"sv, ".ini"sv);
+		for (const auto & distr : distrs) {
+			std::ifstream ifile(distr);
+			if (ifile.is_open()) {
+				const std::string content((std::istreambuf_iterator<char>(ifile)),
+				                    (std::istreambuf_iterator<char>()));
+				ifile.close();
+				std::string       name = a_path.stem().string();
+				const std::string pattern = name + "_(Race|Class|Faction|Forced)";
+				const std::regex  re(pattern); 
+				std::smatch match;
+				std::regex_search(content, match, re);
+				if (match.size() > 1) {
+					const std::string new_content = std::regex_replace(content, re, name);  // Replace all occurrences
+
+					auto priority = match[1].str();
+					if (priority == "Forced") // Rename Forced priority
+						priority = convert::toRawPriority(Priority::kIndividual);
+					modernized["/Priority"] = priority;
+					wasModernized = true;
+					std::ofstream ofile(distr);  // Open the file for output
+					if (ofile.is_open()) {
+						ofile << new_content;  // Write the new string to the file
+						ofile.close();          // Close the output file
+						logger::info("Removed keyword priorities in \"{}\"", distr.filename().string());
+					}
+				} else {
+					std::cout << "Error: No match found." << std::endl;
+				}
+			}
+		}
+
 		if (wasModernized) {
 			logger::info("Updating to use latest format");
 			modernized = modernized.unflatten();

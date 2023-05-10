@@ -59,9 +59,6 @@ namespace NND
 			/// Default priority is `kRace`.
 			kDefault = kRace,
 
-			/// The highest possible priority.
-			kForced = kIndividual,
-
 			kTotal
 		};
 

@@ -31,27 +31,21 @@ namespace NND
 		};
 
 		std::optional<Name> CreateName(NameDefinition::Scope scope, const RE::TESNPC* npc) {
+
+			if (!loadedDefinitions.contains(scope))
+				return std::nullopt;
+
+			const auto& scopedLoadedDefinitions = loadedDefinitions.at(scope);
+			if (scopedLoadedDefinitions.empty())
+				return std::nullopt;
+
 			std::vector<std::reference_wrapper<const NameDefinition>> definitions{};
 			// Get a list of matching definitions.
-			npc->ForEachKeyword([&](const auto& kwd) {
-				std::string name = kwd.GetFormEditorID();
-				std::optional<NameDefinition::Priority > priority;
-				// Erase legacy keyword priorities.
-				if (clib_util::string::replace_last_instance(name, "_Race"sv, ""sv))
-					priority = NameDefinition::kRace;
-				if (clib_util::string::replace_last_instance(name, "_Class"sv, ""sv))
-					priority = NameDefinition::kClass;
-				if (clib_util::string::replace_last_instance(name, "_Faction"sv, ""sv))
-					priority = NameDefinition::kFaction;
-				if (clib_util::string::replace_last_instance(name, "_Forced"sv, ""sv))
-					priority = NameDefinition::kForced;
-
-				if (loadedDefinitions.contains(name)) {
-					if (auto& definition = loadedDefinitions.at(name); has(definition.scope, scope)) {
-						if (priority.has_value())
-							definition.priority = *priority;
-						definitions.emplace_back(definition);
-					}
+			npc->ForEachKeyword([&](const RE::BGSKeyword& kwd) {
+				std::string name = kwd.formEditorID.c_str();
+				if (scopedLoadedDefinitions.contains(name)) {
+					const auto& definition = scopedLoadedDefinitions.at(name);
+					definitions.emplace_back(definition);
 				}
 				return RE::BSContainer::ForEachResult::kContinue;
 			});
