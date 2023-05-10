@@ -17,6 +17,13 @@ namespace NND
 			}
 		}
 
+		// Here we'll handle all styles and whatnot.
+		void NNDData::UpdateDisplayName() {
+			displayName = name;
+			if (title != empty)
+				displayName += " (" + title + ")";
+		}
+
 		/// Sorts NameDefinitions by their priorities.
 		///	If priorities are the same, then alphabetical order is used.
 		struct definitions_priority_greater
@@ -105,23 +112,42 @@ namespace NND
 			return comps.Assemble();
 		}
 
-		NameRef GetName(const RE::TESNPC* npc) {
-			if (names.contains(npc->formID)) {
-				return names.at(npc->formID).GetNameInScope(NameDefinition::Scope::kName);
-			}
-			
-			if (const auto name = CreateName(NameDefinition::Scope::kName, npc)) {
+		// TODO: Get a reference to this keyword in the plugin and use it to compare directly.
+		// It could be slightly more efficient.
+		bool IsObscure(const RE::TESNPC* npc) {
+			return npc->HasKeywordString("NNDObscure") || !npc->HasKeywordString("NNDKnown");
+		}
+
+		void SetName(Name* name, NameDefinition::Scope scope, const RE::TESNPC* npc) {
+			if (const auto createdName = CreateName(scope, npc)) {
 				// Apparently I can't have this condition in the same if, because it will always be executed regardless of whether name had value or not..
-				if (!name->empty()) {
+				if (!createdName->empty()) {
 #ifndef NDEBUG
-					logger::info("Caching name for {}. New name: {}", std::string(npc->GetName()), *name);
+					logger::info("Caching new name '{}' for '{}'", *createdName, std::string(npc->GetName()));
 #endif
-					names[npc->formID].name = *name;
-					return names.at(npc->formID).name;
+					*name = *createdName;
 				}
 			}
+		}
 
-			return empty;
+		NameRef GetName(const RE::TESNPC* npc) {
+			if (names.contains(npc->formID)) {
+				auto& data = names.at(npc->formID);
+				return data.displayName;
+			}
+			NNDData data{};
+
+			SetName(&data.name, NameDefinition::Scope::kName, npc);
+			SetName(&data.title, NameDefinition::Scope::kTitle, npc);
+
+			if (IsObscure(npc)) {
+				SetName(&data.obscurity, NameDefinition::Scope::kObscurity, npc);
+			}
+
+			data.UpdateDisplayName();
+			names[npc->formID] = data;
+			
+			return data.displayName;
 		}
 	}
 }
