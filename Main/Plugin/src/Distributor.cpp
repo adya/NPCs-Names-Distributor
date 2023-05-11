@@ -5,23 +5,19 @@ namespace NND
 {
 	namespace Distribution
 	{
-		NameRef NNDData::GetNameInScope(NameDefinition::Scope scope) {
-			switch (scope) {
-			default:
-			case NameDefinition::Scope::kName:
-				return name;
-			case NameDefinition::Scope::kTitle:
-				return title;
-			case NameDefinition::Scope::kObscurity:
-				return obscurity;
-			}
-		}
+		using Scope = NameDefinition::Scope;
 
 		// Here we'll handle all styles and whatnot.
 		void NNDData::UpdateDisplayName() {
-			displayName = name;
-			if (title != empty)
-				displayName += " (" + title + ")";
+			if (name != empty) {
+				displayName = name;
+				if (title != empty)
+					displayName += " (" + title + ")";
+			} else if (title != empty) {
+				displayName = title;
+			} else {
+				displayName = empty;  // fall back to original name.
+			}
 		}
 
 		/// Sorts NameDefinitions by their priorities.
@@ -37,8 +33,22 @@ namespace NND
 			}
 		};
 
-		std::optional<Name> CreateName(NameDefinition::Scope scope, const RE::TESNPC* npc) {
+#ifndef NDEBUG
+		std::string rawScopeName(Scope scope) {
+			switch (scope) {
+			default:
+			case Scope::kName:
+				return "name";
+				break;
+			case Scope::kTitle:
+				return "title";
+			case Scope::kObscurity:
+				return "obscure name";
+			}
+		}
+#endif
 
+		std::optional<NameComponents> MakeNameComponents(NameDefinition::Scope scope, const RE::TESNPC* npc) {
 			if (!loadedDefinitions.contains(scope))
 				return std::nullopt;
 
@@ -65,8 +75,10 @@ namespace NND
 			std::ranges::sort(definitions, definitions_priority_greater());
 #ifndef NDEBUG
 			std::vector<std::string> defNames;
+			std::string              nameType = rawScopeName(scope);
+			
 			std::ranges::transform(definitions.begin(), definitions.end(), std::back_inserter(defNames), [](const auto& d) { return d.get().name; });
-			logger::info("Generating name for {} from: [{}]", npc->GetName(), clib_util::string::join(defNames, ", "));
+			logger::info("Generating {} for {} from: [{}]", nameType, npc->GetName(), clib_util::string::join(defNames, ", "));
 #endif
 			// Assemble a name.
 			NameComponents comps;
@@ -83,6 +95,7 @@ namespace NND
 				const auto emptyFirst = comps.firstName == empty;
 				const auto emptyMiddle = comps.middleName == empty;
 				const auto emptyLast = comps.lastName == empty;
+				const auto allNamesEmpty = emptyFirst && emptyMiddle && emptyLast;
 				if (emptyFirst && !resolvedFirstName) {
 					definition.GetRandomFirstName(sex, comps);
 				}
@@ -97,8 +110,13 @@ namespace NND
 
 				// At the moment we use first conjunction that will be picked with at least one name segment.
 				// So if Name Definition only provided conjunction, it will be skipped.
-				if (comps.conjunction == empty || (emptyFirst && emptyMiddle && emptyLast)) {
+				if (comps.conjunction == empty || allNamesEmpty) {
 					definition.GetRandomConjunction(sex, comps);
+				}
+
+				// We use first found shortening setting in either name definition.
+				if (comps.shortSegments == NameSegmentType::kNone && definition.shortened != NameSegmentType::kNone) {
+					comps.shortSegments = definition.shortened;
 				}
 
 				resolvedFirstName = resolvedFirstName || !definition.firstName.shouldInherit;
@@ -109,7 +127,7 @@ namespace NND
 				if (resolvedFirstName && resolvedMiddleName && resolvedLastName)
 					break;
 			}
-			return comps.Assemble();
+			return comps;
 		}
 
 		// TODO: Get a reference to this keyword in the plugin and use it to compare directly.
@@ -118,36 +136,55 @@ namespace NND
 			return npc->HasKeywordString("NNDObscure") || !npc->HasKeywordString("NNDKnown");
 		}
 
-		void SetName(Name* name, NameDefinition::Scope scope, const RE::TESNPC* npc) {
-			if (const auto createdName = CreateName(scope, npc)) {
-				// Apparently I can't have this condition in the same if, because it will always be executed regardless of whether name had value or not..
-				if (!createdName->empty()) {
+		void SetName(Scope scope, Name* name, Name* shortened, const RE::TESNPC* npc) {
+			const auto components = MakeNameComponents(scope, npc);
+			if (components.has_value()) {
+				const auto fullName = components->Assemble();
+				if (fullName.has_value() && !fullName->empty()) {
 #ifndef NDEBUG
-					logger::info("Caching new name '{}' for '{}'", *createdName, std::string(npc->GetName()));
+					std::string nameType = rawScopeName(scope);
+					logger::info("Caching new {} '{}' for '{}'", nameType, *fullName, std::string(npc->GetName()));
 #endif
-					*name = *createdName;
+					*name = *fullName;
+
+					if (shortened) {
+						const auto shortName = components->AssembleShort();
+						if (shortName.has_value() && !shortName->empty() && *shortName != *fullName) {
+#ifndef NDEBUG
+							logger::info("Caching new short {} '{}' for '{}'", nameType, *shortName, std::string(npc->GetName()));
+#endif
+							*shortened = *shortName;
+						}
+					}
 				}
 			}
 		}
 
-		NameRef GetName(const RE::TESNPC* npc) {
+		NameRef NNDData::GetName(NameFormat format) const {
+			if (format == kShortName) {
+				return shortDisplayName != empty ? shortDisplayName : name;
+			}
+			return format == kName ? name : displayName;
+		}
+
+		NameRef GetName(NameFormat format, const RE::TESNPC* npc) {
 			if (names.contains(npc->formID)) {
-				auto& data = names.at(npc->formID);
-				return data.displayName;
+				const auto& data = names.at(npc->formID);
+				return data.GetName(format);
 			}
 			NNDData data{};
 
-			SetName(&data.name, NameDefinition::Scope::kName, npc);
-			SetName(&data.title, NameDefinition::Scope::kTitle, npc);
+			SetName(Scope::kName, &data.name, &data.shortDisplayName, npc);
+			SetName(Scope::kTitle, &data.title, nullptr, npc);
 
 			if (IsObscure(npc)) {
-				SetName(&data.obscurity, NameDefinition::Scope::kObscurity, npc);
+				SetName(Scope::kObscurity, &data.obscurity, nullptr, npc);
 			}
 
 			data.UpdateDisplayName();
 			names[npc->formID] = data;
 			
-			return data.displayName;
+			return names[npc->formID].GetName(format);
 		}
 	}
 }

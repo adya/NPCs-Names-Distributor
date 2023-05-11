@@ -3,6 +3,18 @@
 
 namespace NND
 {
+	enum NameFormat
+	{
+		/// Show full name with title.
+		kFullName,
+
+		/// Show only name without a title.
+		kName,
+
+		/// Show short name if available.
+		kShortName
+	};
+
 	namespace Distribution
 	{
 		struct NNDData
@@ -11,17 +23,17 @@ namespace NND
 			Name title{};
 			Name obscurity{};
 
+			Name shortDisplayName{};
+
 			Name displayName{};
 
-			std::string sourceNameDefinition{};
-
-			NameRef GetNameInScope(NameDefinition::Scope scope);
-
 			void UpdateDisplayName();
+
+			NameRef GetName(NameFormat format) const;
 		};
 
 		inline std::unordered_map<RE::FormID, NNDData> names{};
 
-		NameRef GetName(const RE::TESNPC* npc);
+		NameRef GetName(NameFormat format, const RE::TESNPC* npc);
 	}
 }

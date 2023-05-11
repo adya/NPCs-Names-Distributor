@@ -8,6 +8,16 @@ namespace NND
 	using NameIndex = size_t;
 	using NamesList = std::vector<Name>;
 
+	enum class NameSegmentType : uint8_t
+	{
+		kNone = 0b000,
+		kFirst = 0b001,
+		kMiddle = 0b010,
+		kLast = 0b100,
+
+		kAll = kFirst | kMiddle | kLast
+	};
+
 	constexpr inline NameRef empty = ""sv;
 
 	struct NameComponents
@@ -26,6 +36,8 @@ namespace NND
 
 		NameRef conjunction = empty;
 
+		NameSegmentType shortSegments = NameSegmentType::kNone;
+
 		[[nodiscard]] bool IsValid() const {
 			return firstName != empty ||
 			       middleName != empty ||
@@ -33,7 +45,9 @@ namespace NND
 		}
 
 		[[nodiscard]] std::optional<Name> Assemble() const;
+		[[nodiscard]] std::optional<Name> AssembleShort() const;
 	};
+
 
 	struct NameDefinition
 	{
@@ -43,6 +57,9 @@ namespace NND
 			/// Definition with `kRace` priority contains base names specific for races or otherwise a large group that shares an innate trait that cannot be changed.
 			/// This is the default one and may be omitted.
 			kRace = 0,
+
+			/// Default priority is `kRace`.
+			kDefault = kRace,
 
 			/// Definition with `kClass` priority contains names for a more narrow group that shares an innate trait, which also cannot be changed.
 			kClass,
@@ -55,9 +72,6 @@ namespace NND
 
 			/// Definition with `kIndividual` priority contains names for distinct individuals that are usually hand-picked.
 			kIndividual,
-
-			/// Default priority is `kRace`.
-			kDefault = kRace,
 
 			kTotal
 		};
@@ -73,6 +87,8 @@ namespace NND
 			kDefault = kName,
 			kAll = kName | kTitle | kObscurity
 		};
+
+		
 		
 		struct BaseNamesContainer
 		{
@@ -99,13 +115,16 @@ namespace NND
 			}
 
 			[[nodiscard]] std::pair<NameRef, NameIndex> GetRandom(NameIndex maxIndex) const;
-			std::pair<NameRef, size_t> GetRandom() const {
+
+			[[nodiscard]] std::pair<NameRef, size_t> GetRandom() const {
 				return GetRandom(names.size()-1);
 			}
-			NameRef GetRandomName(NameIndex maxIndex) const {
+
+			[[nodiscard]] NameRef GetRandomName(NameIndex maxIndex) const {
 				return GetRandom(maxIndex).first;
 			}
-			NameRef GetRandomName() const {
+
+			[[nodiscard]] NameRef GetRandomName() const {
 				return GetRandom().first;
 			}
 
@@ -173,10 +192,14 @@ namespace NND
 
 		Conjunctions conjunction{};
 
+		Priority    priority = Priority::kDefault;
+
+		Scope scope = Scope::kDefault;
+
+		NameSegmentType shortened = NameSegmentType::kNone;
+
 		/// Name of the definition.
 		std::string name;
-		Priority    priority = Priority::kDefault;
-		Scope scope = Scope::kDefault;
 
 		[[nodiscard]] bool HasDefaultScopes() const {
 			return scope == Scope::kDefault;
@@ -192,6 +215,12 @@ namespace NND
 
 template <>
 struct enable_bitmask_operators<NND::NameDefinition::Scope>
+{
+	static constexpr bool enable = true;
+};
+
+template <>
+struct enable_bitmask_operators<NND::NameSegmentType>
 {
 	static constexpr bool enable = true;
 };

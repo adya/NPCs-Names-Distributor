@@ -23,12 +23,12 @@ namespace NND
 	static constexpr auto kSuffix = "Suffix"sv;
 	static constexpr auto kExclusive = "Exclusive"sv;
 
-	static constexpr auto kBehavior = "Behavior"sv;
 	static constexpr auto kInherit = "Inherit"sv;
 	static constexpr auto kCircumfix = "Circumfix"sv;
 
 	static constexpr auto kScopes = "Scopes"sv;
 	static constexpr auto kPriority = "Priority"sv;
+	static constexpr auto kShorten = "Shortened"sv;
 
 	static constexpr auto kScopeName = "Name"sv;
 	static constexpr auto kScopeTitle = "Title"sv;
@@ -38,6 +38,7 @@ namespace NND
 	using Conjunctions = NameDefinition::Conjunctions;
 	using NamesVariant = NameDefinition::NamesVariant;
 	using Scope = NameDefinition::Scope;
+	using Segment = NameSegmentType;
 	using Priority = NameDefinition::Priority;
 
 	namespace convert
@@ -152,8 +153,19 @@ namespace NND
 			} catch (const json::out_of_range&) {}
 
 			try {
+				if (const auto shorten = j.at(kShorten).get<std::set<std::string_view>>(); !shorten.empty()) {
+					if (shorten.contains(kFirst))
+						enable(p.shortened, Segment::kFirst);
+					if (shorten.contains(kMiddle))
+						enable(p.shortened, Segment::kMiddle);
+					if (shorten.contains(kLast))
+						enable(p.shortened, Segment::kLast);
+				}
+			} catch (const json::out_of_range&) {}
+
+			try {
 				if (const auto scopes = j.at(kScopes).get<std::set<std::string_view>>(); !scopes.empty()) {
-					p.scope = Scope::kNone; // if we found kScopes property, then we reset default scope.
+					p.scope = Scope::kNone;  // if we found kScopes property, then we reset default scope.
 					if (scopes.contains(kScopeName))
 						enable(p.scope, Scope::kName);
 					if (scopes.contains(kScopeTitle))
@@ -238,7 +250,7 @@ namespace NND
 		return data;
 	}
 
-	NameDefinition NameDefinitionDecoder::decode(const std::filesystem::path& a_path) {
+	NameDefinition NameDefinitionDecoder::decode(const std::filesystem::path& a_path) const {
 		std::ifstream  f(a_path);
 		const json     data = modernize(a_path);
 		NameDefinition definition{};

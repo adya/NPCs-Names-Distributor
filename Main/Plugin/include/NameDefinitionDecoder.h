@@ -7,6 +7,6 @@ namespace NND
 	struct NameDefinitionDecoder
 	{
 		/// May throw
-        NameDefinition decode(const std::filesystem::path& a_path);
+        NameDefinition decode(const std::filesystem::path& a_path) const;
     };
 }

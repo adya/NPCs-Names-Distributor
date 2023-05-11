@@ -3,14 +3,14 @@
 
 namespace NND
 {
-	static const char* GetName(const RE::TESBoundObject* obj, const char* originalName)
+	static const char* GetName(NameFormat format, const RE::TESBoundObject* obj, const char* originalName)
 	{
 		if (!obj || !obj->Is(RE::FormType::NPC)) {
 			return originalName;
 		}
 
 		if (const auto npc = obj->As<RE::TESNPC>()) {
-			if (const auto name = Distribution::GetName(npc); name != empty) {
+			if (const auto name = Distribution::GetName(format, npc); name != empty) {
 				return name.data();
 			}
 		}
@@ -24,7 +24,7 @@ namespace NND
 		static const char* thunk(RE::ExtraTextDisplayData* a_this, RE::TESBoundObject* obj, float temperFactor)
 		{
 			const auto        originalName = func(a_this, obj, temperFactor);
-		    return GetName(obj, originalName);
+			return GetName(kFullName, obj, originalName);
 		}
 		static inline REL::Relocation<decltype(thunk)> func;
 	};
@@ -35,7 +35,7 @@ namespace NND
 		static const char* thunk(RE::TESBoundObject* a_this)
 		{
 			const auto originalName = func(a_this);
-			return GetName(a_this, originalName);
+			return GetName(kFullName, a_this, originalName);
 		}
 		static inline REL::Relocation<decltype(thunk)> func;
 	};
@@ -45,7 +45,7 @@ namespace NND
 	{
 		static const char* thunk(RE::TESObjectREFR* a_this) {
 			const auto originalName = func(a_this);
-			return GetName(a_this->GetObjectReference(), originalName);
+			return GetName(kShortName, a_this->GetObjectReference(), originalName);
 		}
 		static inline REL::Relocation<decltype(thunk)> func;
 	};
@@ -55,7 +55,7 @@ namespace NND
 	{
 		static const char* thunk(RE::TESNPC* a_this) {
 			const auto originalName = func(a_this);
-			return GetName(a_this, originalName);
+			return GetName(kShortName, a_this, originalName);
 		}
 		static inline REL::Relocation<decltype(thunk)> func;
 	};
@@ -65,7 +65,7 @@ namespace NND
 	{
 		static const char* thunk(RE::TESNPC* a_this) {
 			const auto originalName = func(a_this);
-			return GetName(a_this, originalName);
+			return GetName(kName, a_this, originalName);
 		}
 		static inline REL::Relocation<decltype(thunk)> func;
 	};
