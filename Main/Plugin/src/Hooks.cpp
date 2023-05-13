@@ -10,7 +10,7 @@ namespace NND
 		}
 
 		if (const auto npc = obj->As<RE::TESNPC>()) {
-			if (const auto name = Distribution::GetName(format, npc); name != empty) {
+			if (const auto name = Distribution::GetName(format, npc, originalName); name != empty) {
 				return name.data();
 			}
 		}

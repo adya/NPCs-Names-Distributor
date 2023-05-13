@@ -27,6 +27,10 @@ namespace NND
 
 			Name displayName{};
 
+			bool isUnique = false;
+			bool isKnown = false;
+			bool isTitleless = false;
+
 			void UpdateDisplayName();
 
 			NameRef GetName(NameFormat format) const;
@@ -34,6 +38,6 @@ namespace NND
 
 		inline std::unordered_map<RE::FormID, NNDData> names{};
 
-		NameRef GetName(NameFormat format, const RE::TESNPC* npc);
+		NameRef GetName(NameFormat format, const RE::TESNPC* npc, const char* originalName);
 	}
 }

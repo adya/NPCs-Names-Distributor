@@ -1,5 +1,6 @@
 #include "Distributor.h"
 #include "LookupNameDefinitions.h"
+#include "NNDKeywords.h"
 
 namespace NND
 {
@@ -167,23 +168,43 @@ namespace NND
 			return format == kName ? name : displayName;
 		}
 
-		NameRef GetName(NameFormat format, const RE::TESNPC* npc) {
+		NameRef GetName(NameFormat format, const RE::TESNPC* npc, const char* originalName) {
 			if (names.contains(npc->formID)) {
 				const auto& data = names.at(npc->formID);
-				return data.GetName(format);
+				return !data.isUnique ? data.GetName(format) : empty;
 			}
+			const auto startTime = std::chrono::steady_clock::now();
+			
 			NNDData data{};
+
+			data.isUnique = npc->HasKeyword(unique);
+			data.isTitleless = npc->HasKeyword(titleless);
+			data.isKnown = npc->HasKeyword(known);
+
+			// Ignore marked as unique NPCs.
+			if (data.isUnique) {
+				names[npc->formID] = data;
+				return originalName;
+			}
 
 			SetName(Scope::kName, &data.name, &data.shortDisplayName, npc);
 			SetName(Scope::kTitle, &data.title, nullptr, npc);
+
+			// Use original name as title if no custom one provided.
+			if (data.title == empty && !data.isTitleless) {
+				data.title = originalName;
+			}
 
 			if (IsObscure(npc)) {
 				SetName(Scope::kObscurity, &data.obscurity, nullptr, npc);
 			}
 
 			data.UpdateDisplayName();
+			const auto endTime = std::chrono::steady_clock::now();
+			const auto duration = std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime).count();
+			logger::info("Generated name in {}μs / {}ms", duration, duration / 1000.0f);
+
 			names[npc->formID] = data;
-			
 			return names[npc->formID].GetName(format);
 		}
 	}
