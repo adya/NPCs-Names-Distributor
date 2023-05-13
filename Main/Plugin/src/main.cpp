@@ -1,13 +1,14 @@
 #include "Hooks.h"
 #include "LookupNameDefinitions.h"
+#include "NNDKeywords.h"
 
+// ReSharper disable once CppParameterMayBeConstPtrOrRef
 void MessageHandler(SKSE::MessagingInterface::Message* a_message)
 {
 	switch (a_message->type) {
-	case SKSE::MessagingInterface::kPostLoad:
-		if (NND::LoadNameDefinitions()) {
+	case SKSE::MessagingInterface::kDataLoaded:
+		if (NND::CacheKeywords() && NND::LoadNameDefinitions())
 			NND::Install();
-		}
 		break;
 	default:
 		break;
@@ -50,7 +51,7 @@ extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Query(const SKSE::QueryInterface* a
 
 void InitializeLog()
 {
-    auto path = logger::log_directory();
+	auto path = logger::log_directory();
 	if (!path) {
 		stl::report_and_fail("Failed to find standard logging directory"sv);
 	}

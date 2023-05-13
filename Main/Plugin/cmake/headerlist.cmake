@@ -1,6 +1,7 @@
 set(headers ${headers}
 	include/json.hpp
 	include/Distributor.h
+	include/NNDKeywords.h
 	include/Hooks.h
 	include/LookupNameDefinitions.h
 	include/NameDefinition.h

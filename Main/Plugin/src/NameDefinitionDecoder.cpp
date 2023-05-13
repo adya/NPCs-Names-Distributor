@@ -233,8 +233,6 @@ namespace NND
 						ofile.close();          // Close the output file
 						logger::info("Removed keyword priorities in \"{}\"", distr.filename().string());
 					}
-				} else {
-					std::cout << "Error: No match found." << std::endl;
 				}
 			}
 		}
