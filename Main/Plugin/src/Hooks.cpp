@@ -3,14 +3,15 @@
 
 namespace NND
 {
-	static const char* GetName(NameFormat format, const RE::TESBoundObject* obj, const char* originalName)
-	{
+	using namespace Distribution;
+
+	static const char* GetName(NameFormat format, const RE::TESBoundObject* obj, const char* originalName) {
 		if (!obj || !obj->Is(RE::FormType::NPC)) {
 			return originalName;
 		}
 
 		if (const auto npc = obj->As<RE::TESNPC>()) {
-			if (const auto name = Distribution::GetName(format, npc, originalName); name != empty) {
+			if (const auto name = Distribution::Manager::GetSingleton()->GetName(format, npc, originalName); name != empty) {
 				return name.data();
 			}
 		}
@@ -21,9 +22,8 @@ namespace NND
 	// Always Full
 	struct GetDisplayFullName_GetDisplayName
 	{
-		static const char* thunk(RE::ExtraTextDisplayData* a_this, RE::TESBoundObject* obj, float temperFactor)
-		{
-			const auto        originalName = func(a_this, obj, temperFactor);
+		static const char* thunk(RE::ExtraTextDisplayData* a_this, RE::TESBoundObject* obj, float temperFactor) {
+			const auto originalName = func(a_this, obj, temperFactor);
 			return GetName(kFullName, obj, originalName);
 		}
 		static inline REL::Relocation<decltype(thunk)> func;
@@ -32,8 +32,7 @@ namespace NND
 	// Always Full
 	struct GetDisplayFullName_GetFormName
 	{
-		static const char* thunk(RE::TESBoundObject* a_this)
-		{
+		static const char* thunk(RE::TESBoundObject* a_this) {
 			const auto originalName = func(a_this);
 			return GetName(kFullName, a_this, originalName);
 		}
@@ -70,8 +69,7 @@ namespace NND
 		static inline REL::Relocation<decltype(thunk)> func;
 	};
 
-	void Install()
-	{
+	void Install() {
 		logger::info("{:*^30}", "HOOKS");
 
 		const REL::Relocation<std::uintptr_t> displayFullName{ RE::Offset::TESObjectREFR::GetDisplayFullName };

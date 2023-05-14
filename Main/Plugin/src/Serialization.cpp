@@ -77,23 +77,6 @@ namespace NND
 
 		}
 
-		struct NNDData
-		{
-			RE::FormID formId;
-
-			Name name{};
-			Name title{};
-			Name obscurity{};
-
-			Name shortDisplayName{};
-
-			Name displayName{};
-
-			bool isUnique = false;
-			bool isKnown = false;
-			bool isTitleless = false;
-		};
-
 		void Setup() {
 			const auto serializationInterface = SKSE::GetSerializationInterface();
 			serializationInterface->SetUniqueID(serializationKey);
@@ -101,39 +84,41 @@ namespace NND
 			serializationInterface->SetLoadCallback(Load);
 		}
 
-		void Load(SKSE::SerializationInterface* a_serializationInterface) {
-			logger::info("{:*^30}", "SERIALIZATION");
+		void Load(SKSE::SerializationInterface* interface) {
+			logger::info("{:*^30}", "LOADING");
 			logger::info("Loading names...");
 
-			auto createdObjectManager = RE::BGSCreatedObjectManager::GetSingleton();
-			RE::BSSpinLockGuard lockGuard(createdObjectManager->lock);
-
-			std::uint32_t type, version, length;
 			std::uint32_t loadedCount = 0;
-			while (a_serializationInterface->GetNextRecordInfo(type, version, length)) {
-				if (type == recordType) {
-					Distribution::NNDData data{};
-					if (details::Deserialize(a_serializationInterface, data)) {
-						logger::info("Loaded [0x{:X}] {} ({})", data.formId, data.name, data.title);
-						Distribution::names[data.formId] = data;
-						++loadedCount;
+			Distribution::Manager::GetSingleton()->UpdateNames([&interface, &loadedCount](auto& names) {
+				std::uint32_t type, version, length;
+
+				while (interface->GetNextRecordInfo(type, version, length)) {
+					if (type == recordType && version == serializationVersion) {
+						Distribution::NNDData data{};
+						if (details::Deserialize(interface, data)) {
+#ifndef NDEBUG
+							logger::info("Loaded [0x{:X}] {} ({})", data.formId, data.name, data.title);
+#endif
+							names[data.formId] = data;
+							++loadedCount;
+						}
 					}
 				}
-			}
+			});
 
 			logger::info("Loaded {} names", loadedCount);
 		}
 
-		void Save(SKSE::SerializationInterface* serializationInterface) {
-			logger::info("{:*^30}", "SERIALIZATION");
-			logger::info("Saving {} names...", Distribution::names.size());
+		void Save(SKSE::SerializationInterface* interface) {
+			logger::info("{:*^30}", "SAVING");
 
-			auto                createdObjectManager = RE::BGSCreatedObjectManager::GetSingleton();
-			RE::BSSpinLockGuard lockGuard(createdObjectManager->lock);
+			auto names = Distribution::Manager::GetSingleton()->GetAllNames();
+
+			logger::info("Saving {} names...", names.size());
 
 			std::uint32_t savedCount = 0;
-			for (const auto& data : Distribution::names | std::views::values) {
-				if (!details::Serialize(serializationInterface, data)) {
+			for (const auto& data : names | std::views::values) {
+				if (!details::Serialize(interface, data)) {
 					logger::error("Failed to save name for [0x{:X}]", data.formId);
 					continue;
 				}
@@ -141,7 +126,6 @@ namespace NND
 			}
 
 			logger::info("Saved {} names", savedCount);
-
 		}
 	}
 }
