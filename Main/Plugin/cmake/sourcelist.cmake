@@ -4,6 +4,7 @@ set(sources ${sources}
 	src/LookupNameDefinitions.cpp
 	src/NameDefinition.cpp
 	src/NameDefinitionDecoder.cpp
+	src/Serialization.cpp
 	src/main.cpp
 	src/PCH.cpp
 )

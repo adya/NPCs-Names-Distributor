@@ -1,6 +1,7 @@
 #include "Hooks.h"
 #include "LookupNameDefinitions.h"
 #include "NNDKeywords.h"
+#include "Serialization.h"
 
 // ReSharper disable once CppParameterMayBeConstPtrOrRef
 void MessageHandler(SKSE::MessagingInterface::Message* a_message)
@@ -79,6 +80,8 @@ extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* a_s
 	SKSE::Init(a_skse);
 
 	SKSE::GetMessagingInterface()->RegisterListener(MessageHandler);
+
+	NND::Serialization::Setup();
 
 	return true;
 }

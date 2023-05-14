@@ -6,5 +6,6 @@ set(headers ${headers}
 	include/LookupNameDefinitions.h
 	include/NameDefinition.h
 	include/NameDefinitionDecoder.h
+	include/Serialization.h
 	include/PCH.h
 )

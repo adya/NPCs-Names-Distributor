@@ -19,6 +19,8 @@ namespace NND
 	{
 		struct NNDData
 		{
+			RE::FormID formId;
+
 			Name name{};
 			Name title{};
 			Name obscurity{};

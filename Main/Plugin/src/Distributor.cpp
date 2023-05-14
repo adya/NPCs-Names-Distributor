@@ -144,7 +144,7 @@ namespace NND
 				if (fullName.has_value() && !fullName->empty()) {
 #ifndef NDEBUG
 					std::string nameType = rawScopeName(scope);
-					logger::info("Caching new {} '{}' for '{}'", nameType, *fullName, std::string(npc->GetName()));
+					logger::info("Caching new {} '{}' for '{}' [0x{:X}]", nameType, *fullName, std::string(npc->GetName()), npc->formID);
 #endif
 					*name = *fullName;
 
@@ -152,7 +152,7 @@ namespace NND
 						const auto shortName = components->AssembleShort();
 						if (shortName.has_value() && !shortName->empty() && *shortName != *fullName) {
 #ifndef NDEBUG
-							logger::info("Caching new short {} '{}' for '{}'", nameType, *shortName, std::string(npc->GetName()));
+							logger::info("Caching new short {} '{}' for '{}' [0x{:X}]", nameType, *shortName, std::string(npc->GetName()), npc->formID);
 #endif
 							*shortened = *shortName;
 						}
@@ -176,6 +176,8 @@ namespace NND
 			const auto startTime = std::chrono::steady_clock::now();
 			
 			NNDData data{};
+
+			data.formId = npc->formID;
 
 			data.isUnique = npc->HasKeyword(unique);
 			data.isTitleless = npc->HasKeyword(titleless);
