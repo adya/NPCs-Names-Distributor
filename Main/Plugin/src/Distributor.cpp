@@ -23,14 +23,22 @@ namespace NND
 		}
 
 		NameRef NNDData::GetName(NameFormat format) const {
+			if (isObscured && obscurity != empty) {
+				return obscurity;
+			}
+
+			if (isUnique) {
+				return empty;
+			}
+
 			if (format == kShortName) {
 				return shortDisplayName != empty ? shortDisplayName : name;
 			}
-			return format == kName ? name : displayName;
+			return format == kFullName ? name : displayName;
 		}
 	}
 
-	// FormDelete
+	// Events
 	namespace Distribution
 	{
 		void Manager::Register() {
@@ -38,12 +46,27 @@ namespace NND
 				scripts->AddEventSink<RE::TESFormDeleteEvent>(GetSingleton());
 				logger::info("Registered for {}", typeid(RE::TESFormDeleteEvent).name());
 			}
+			if (const auto ui = RE::UI::GetSingleton()) {
+				ui->AddEventSink<RE::MenuOpenCloseEvent>(GetSingleton());
+				logger::info("Registered for {}", typeid(RE::MenuOpenCloseEvent).name());
+			}
 		}
 
 		RE::BSEventNotifyControl Manager::ProcessEvent(const RE::TESFormDeleteEvent* a_event,
 		                                               RE::BSTEventSource<RE::TESFormDeleteEvent>*) {
 			if (a_event && a_event->formID != 0) {
 				DeleteName(a_event->formID);
+			}
+			return RE::BSEventNotifyControl::kContinue;
+		}
+
+		RE::BSEventNotifyControl Manager::ProcessEvent(const RE::MenuOpenCloseEvent* a_event,
+		                                               RE::BSTEventSource<RE::MenuOpenCloseEvent>*) {
+			if (a_event && a_event->menuName == RE::DialogueMenu::MENU_NAME && a_event->opening) {
+				if (const auto speaker = RE::MenuTopicManager::GetSingleton()->speaker.get()) {
+					logger::info("Speaking to [0x{:X}]", speaker->formID);
+					RevealName(speaker->formID);
+				}
 			}
 			return RE::BSEventNotifyControl::kContinue;
 		}
@@ -165,12 +188,6 @@ namespace NND
 				return comps;
 			}
 
-			// TODO: Get a reference to this keyword in the plugin and use it to compare directly.
-			// It could be slightly more efficient.
-			bool IsObscure(const RE::TESNPC* npc) {
-				return npc->HasKeywordString("NNDObscure") || !npc->HasKeywordString("NNDKnown");
-			}
-
 			void CreateName(Scope scope, Name* name, Name* shortened, const RE::TESNPC* npc) {
 				const auto components = MakeNameComponents(scope, npc);
 				if (components.has_value()) {
@@ -197,11 +214,10 @@ namespace NND
 		}
 
 		NameRef Manager::GetName(NameFormat format, const RE::TESNPC* npc, const char* originalName) {
-			{  // Lock for reading access to cached names.
+			{  // Limit scope of lock for reading access to cached names.
 				ReadLocker lock(_lock);
 				if (names.contains(npc->formID)) {
-					const auto& data = names.at(npc->formID);
-					return !data.isUnique ? data.GetName(format) : empty;
+					return names.at(npc->formID).GetName(format);
 				}
 			}
 
@@ -213,10 +229,10 @@ namespace NND
 
 			data.isUnique = npc->HasKeyword(unique);
 			data.isTitleless = npc->HasKeyword(titleless);
-			data.isKnown = npc->HasKeyword(known);
+			data.isObscured = npc->HasKeyword(obscure);
 
-			// Ignore marked as unique NPCs.
-			if (data.isUnique) {
+			// Ignore marked as unique NPCs that are not obscured.
+			if (data.isUnique && !data.isObscured) {
 				SetName(data);
 				return originalName;
 			}
@@ -224,13 +240,23 @@ namespace NND
 			details::CreateName(Scope::kName, &data.name, &data.shortDisplayName, npc);
 			details::CreateName(Scope::kTitle, &data.title, nullptr, npc);
 
+			/* Algorithm for obscurity:
+			 * 1. If definition for obscuring names present - use it
+			 * 2. If not present (or name wasn't picked) check title
+			 * 3. If custom title is provided - use it
+			 * 4. If no custom title and isTitleless = false - use preferred obscuring name (originalName or ???. Original name is default option when not titleless)
+			*/
+			if (data.isObscured) {
+				details::CreateName(Scope::kObscurity, &data.obscurity, nullptr, npc);
+				if (data.obscurity == empty) {
+					data.obscurity = data.title != empty ? data.title : defaultObscure;
+				}
+			}
+
+			// Set default title after obscuring, so that obscurity never uses originalName.
 			// Use original name as title if no custom one provided.
 			if (data.title == empty && !data.isTitleless) {
 				data.title = originalName;
-			}
-
-			if (details::IsObscure(npc)) {
-				details::CreateName(Scope::kObscurity, &data.obscurity, nullptr, npc);
 			}
 
 			data.UpdateDisplayName();
@@ -245,6 +271,13 @@ namespace NND
 			WriteLocker lock(_lock);
 			names[data.formId] = data;
 			return names.at(data.formId);
+		}
+
+		void Manager::RevealName(RE::FormID formId) {
+			WriteLocker lock(_lock);
+			if (const auto& it = names.find(formId); it != names.end()) {
+				it->second.isObscured = false;
+			}
 		}
 
 		void Manager::DeleteName(RE::FormID formId) {

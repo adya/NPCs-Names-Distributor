@@ -47,7 +47,7 @@ namespace NND
 				                    Read(interface, data.shortDisplayName) &&
 				                    Read(interface, data.displayName) &&
 				                    Read(interface, data.isUnique) &&
-				                    Read(interface, data.isKnown) &&
+				                    Read(interface, data.isObscured) &&
 				                    Read(interface, data.isTitleless);
 
 
@@ -71,7 +71,7 @@ namespace NND
 				       Write(serializationInterface, data.shortDisplayName) &&
 				       Write(serializationInterface, data.displayName) &&
 				       Write(serializationInterface, data.isUnique) &&
-				       Write(serializationInterface, data.isKnown) &&
+				       Write(serializationInterface, data.isObscured) &&
 				       Write(serializationInterface, data.isTitleless);
 			}
 

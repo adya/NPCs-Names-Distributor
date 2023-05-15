@@ -19,6 +19,7 @@ namespace NND
 	};
 
 	constexpr inline NameRef empty = ""sv;
+	constexpr inline NameRef defaultObscure = "???"sv;
 
 	struct NameComponents
 	{
@@ -88,8 +89,6 @@ namespace NND
 			kAll = kName | kTitle | kObscurity
 		};
 
-		
-		
 		struct BaseNamesContainer
 		{
 			NamesList names{};
@@ -192,7 +191,7 @@ namespace NND
 
 		Conjunctions conjunction{};
 
-		Priority    priority = Priority::kDefault;
+		Priority priority = Priority::kDefault;
 
 		Scope scope = Scope::kDefault;
 

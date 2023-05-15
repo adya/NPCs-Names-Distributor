@@ -8,8 +8,10 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_message)
 {
 	switch (a_message->type) {
 	case SKSE::MessagingInterface::kDataLoaded:
-		if (NND::CacheKeywords() && NND::LoadNameDefinitions())
+		if (NND::CacheKeywords() && NND::LoadNameDefinitions()) {
 			NND::Install();
+			NND::Distribution::Manager::Register();
+		}
 		break;
 	default:
 		break;

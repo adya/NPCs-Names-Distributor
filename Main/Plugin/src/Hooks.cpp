@@ -24,7 +24,7 @@ namespace NND
 	{
 		static const char* thunk(RE::ExtraTextDisplayData* a_this, RE::TESBoundObject* obj, float temperFactor) {
 			const auto originalName = func(a_this, obj, temperFactor);
-			return GetName(kFullName, obj, originalName);
+			return GetName(kDisplayName, obj, originalName);
 		}
 		static inline REL::Relocation<decltype(thunk)> func;
 	};
@@ -34,7 +34,7 @@ namespace NND
 	{
 		static const char* thunk(RE::TESBoundObject* a_this) {
 			const auto originalName = func(a_this);
-			return GetName(kFullName, a_this, originalName);
+			return GetName(kDisplayName, a_this, originalName);
 		}
 		static inline REL::Relocation<decltype(thunk)> func;
 	};
@@ -64,7 +64,7 @@ namespace NND
 	{
 		static const char* thunk(RE::TESNPC* a_this) {
 			const auto originalName = func(a_this);
-			return GetName(kName, a_this, originalName);
+			return GetName(kFullName, a_this, originalName);
 		}
 		static inline REL::Relocation<decltype(thunk)> func;
 	};
@@ -85,5 +85,8 @@ namespace NND
 		const REL::Relocation<std::uintptr_t> barterMenu{ RELOCATION_ID(0, 50957) };
 		stl::write_thunk_call<BarterMenu_GetShortName>(barterMenu.address() + OFFSET(0, 0x20C));
 		logger::info("Installed BarterMenu hooks");
+
+		/*REL::Relocation<std::uintptr_t> vtbl{ RE::Offset::Character::Vtbl };
+		_SetDialogueWithPlayer = vtbl.write_vfunc(0x41, SetDialogueWithPlayer);*/
 	}
 }

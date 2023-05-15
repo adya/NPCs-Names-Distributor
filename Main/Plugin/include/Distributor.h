@@ -9,11 +9,11 @@ namespace NND
 	{
 		enum NameFormat
 		{
-			/// Show full name with title.
-			kFullName,
+			/// Show a full name with a title.
+			kDisplayName,
 
-			/// Show only name without a title.
-			kName,
+			/// Show only a name without a title.
+			kFullName,
 
 			/// Show short name if available.
 			kShortName
@@ -32,7 +32,7 @@ namespace NND
 			Name displayName{};
 
 			bool isUnique = false;
-			bool isKnown = false;
+			bool isObscured = false;
 			bool isTitleless = false;
 
 			void UpdateDisplayName();
@@ -40,7 +40,8 @@ namespace NND
 			NameRef GetName(NameFormat) const;
 		};
 
-		class Manager : public RE::BSTEventSink<RE::TESFormDeleteEvent>
+		class Manager : public RE::BSTEventSink<RE::TESFormDeleteEvent>,
+						public RE::BSTEventSink<RE::MenuOpenCloseEvent>
 		{
 		public:
 			static Manager* GetSingleton() {
@@ -52,6 +53,9 @@ namespace NND
 
 			using NamesMap = std::unordered_map<RE::FormID, NNDData>;
 
+			/// Reveals name for given RE::FormID if it was previously obscured.
+			void RevealName(RE::FormID);
+
 			NameRef  GetName(NameFormat, const RE::TESNPC*, const char* originalName);
 			NNDData& SetName(const NNDData&);
 
@@ -60,6 +64,7 @@ namespace NND
 
 		protected:
 			RE::BSEventNotifyControl ProcessEvent(const RE::TESFormDeleteEvent*, RE::BSTEventSource<RE::TESFormDeleteEvent>*) override;
+			RE::BSEventNotifyControl ProcessEvent(const RE::MenuOpenCloseEvent*, RE::BSTEventSource<RE::MenuOpenCloseEvent>*) override;
 
 		private:
 
