@@ -46,27 +46,12 @@ namespace NND
 				scripts->AddEventSink<RE::TESFormDeleteEvent>(GetSingleton());
 				logger::info("Registered for {}", typeid(RE::TESFormDeleteEvent).name());
 			}
-			if (const auto ui = RE::UI::GetSingleton()) {
-				ui->AddEventSink<RE::MenuOpenCloseEvent>(GetSingleton());
-				logger::info("Registered for {}", typeid(RE::MenuOpenCloseEvent).name());
-			}
 		}
 
 		RE::BSEventNotifyControl Manager::ProcessEvent(const RE::TESFormDeleteEvent* a_event,
 		                                               RE::BSTEventSource<RE::TESFormDeleteEvent>*) {
 			if (a_event && a_event->formID != 0) {
 				DeleteName(a_event->formID);
-			}
-			return RE::BSEventNotifyControl::kContinue;
-		}
-
-		RE::BSEventNotifyControl Manager::ProcessEvent(const RE::MenuOpenCloseEvent* a_event,
-		                                               RE::BSTEventSource<RE::MenuOpenCloseEvent>*) {
-			if (a_event && a_event->menuName == RE::DialogueMenu::MENU_NAME && a_event->opening) {
-				if (const auto speaker = RE::MenuTopicManager::GetSingleton()->speaker.get()) {
-					logger::info("Speaking to [0x{:X}]", speaker->formID);
-					RevealName(speaker->formID);
-				}
 			}
 			return RE::BSEventNotifyControl::kContinue;
 		}
@@ -246,7 +231,7 @@ namespace NND
 			 * 3. If custom title is provided - use it
 			 * 4. If no custom title and isTitleless = false - use preferred obscuring name (originalName or ???. Original name is default option when not titleless)
 			*/
-			if (data.isObscured) {
+			if (data.isObscured) { // TODO: check actor->CanTalkToPlayer() to ensure that name can be revealed.
 				details::CreateName(Scope::kObscurity, &data.obscurity, nullptr, npc);
 				if (data.obscurity == empty) {
 					data.obscurity = data.title != empty ? data.title : defaultObscure;

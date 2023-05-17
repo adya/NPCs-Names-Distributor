@@ -40,8 +40,7 @@ namespace NND
 			NameRef GetName(NameFormat) const;
 		};
 
-		class Manager : public RE::BSTEventSink<RE::TESFormDeleteEvent>,
-						public RE::BSTEventSink<RE::MenuOpenCloseEvent>
+		class Manager : public RE::BSTEventSink<RE::TESFormDeleteEvent>
 		{
 		public:
 			static Manager* GetSingleton() {
@@ -64,7 +63,6 @@ namespace NND
 
 		protected:
 			RE::BSEventNotifyControl ProcessEvent(const RE::TESFormDeleteEvent*, RE::BSTEventSource<RE::TESFormDeleteEvent>*) override;
-			RE::BSEventNotifyControl ProcessEvent(const RE::MenuOpenCloseEvent*, RE::BSTEventSource<RE::MenuOpenCloseEvent>*) override;
 
 		private:
 
@@ -86,8 +84,6 @@ namespace NND
 
 			Manager& operator=(const Manager&) = delete;
 			Manager& operator=(Manager&&) = delete;
-
-			
 		};
 
 		
