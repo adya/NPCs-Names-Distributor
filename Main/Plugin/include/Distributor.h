@@ -55,7 +55,7 @@ namespace NND
 			/// Reveals name for given RE::FormID if it was previously obscured.
 			void RevealName(RE::FormID);
 
-			NameRef  GetName(NameFormat, const RE::TESNPC*, const char* originalName);
+			NameRef  GetName(NameFormat, const RE::Actor*, const char* originalName);
 			NNDData& SetName(const NNDData&);
 
 			void            UpdateNames(std::function<void(NamesMap&)>);

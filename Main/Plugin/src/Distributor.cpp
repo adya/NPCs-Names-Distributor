@@ -91,7 +91,10 @@ namespace NND
 				}
 			};
 
-			std::optional<NameComponents> MakeNameComponents(Scope scope, const RE::TESNPC* npc) {
+			std::optional<NameComponents> MakeNameComponents(Scope scope, const RE::Actor* actor) {
+				if (!actor || !actor->GetActorBase())
+					return std::nullopt;
+
 				if (!loadedDefinitions.contains(scope))
 					return std::nullopt;
 
@@ -101,7 +104,7 @@ namespace NND
 
 				std::vector<std::reference_wrapper<const NameDefinition>> definitions{};
 				// Get a list of matching definitions.
-				npc->ForEachKeyword([&](const RE::BGSKeyword& kwd) {
+				actor->GetActorBase()->ForEachKeyword([&](const RE::BGSKeyword& kwd) {
 					std::string name = kwd.formEditorID.c_str();
 					if (scopedLoadedDefinitions.contains(name)) {
 						const auto& definition = scopedLoadedDefinitions.at(name);
@@ -121,11 +124,11 @@ namespace NND
 				std::string              nameType = rawScopeName(scope);
 
 				std::ranges::transform(definitions.begin(), definitions.end(), std::back_inserter(defNames), [](const auto& d) { return d.get().name; });
-				logger::info("Generating {} for {} from: [{}]", nameType, npc->GetName(), clib_util::string::join(defNames, ", "));
+				logger::info("Generating {} for {} from: [{}]", nameType, actor->GetName(), clib_util::string::join(defNames, ", "));
 #endif
 				// Assemble a name.
 				NameComponents comps;
-				const auto     sex = npc->GetSex();
+				const auto     sex = actor->GetActorBase()->GetSex();
 
 				// Flags that determine whether a name segment was resolved and components contain final result.
 				// These flags are used to handle name inheritance.
@@ -173,14 +176,14 @@ namespace NND
 				return comps;
 			}
 
-			void CreateName(Scope scope, Name* name, Name* shortened, const RE::TESNPC* npc) {
-				const auto components = MakeNameComponents(scope, npc);
+			void CreateName(Scope scope, Name* name, Name* shortened, const RE::Actor* actor) {
+				const auto components = MakeNameComponents(scope, actor);
 				if (components.has_value()) {
 					const auto fullName = components->Assemble();
 					if (fullName.has_value() && !fullName->empty()) {
 #ifndef NDEBUG
 						std::string nameType = rawScopeName(scope);
-						logger::info("Caching new {} '{}' for '{}' [0x{:X}]", nameType, *fullName, std::string(npc->GetName()), npc->formID);
+						logger::info("Caching new {} '{}' for '{}' [0x{:X}]", nameType, *fullName, std::string(actor->GetName()), actor->formID);
 #endif
 						*name = *fullName;
 
@@ -188,7 +191,7 @@ namespace NND
 							const auto shortName = components->AssembleShort();
 							if (shortName.has_value() && !shortName->empty() && *shortName != *fullName) {
 #ifndef NDEBUG
-								logger::info("Caching new short {} '{}' for '{}' [0x{:X}]", nameType, *shortName, std::string(npc->GetName()), npc->formID);
+								logger::info("Caching new short {} '{}' for '{}' [0x{:X}]", nameType, *shortName, std::string(actor->GetName()), actor->formID);
 #endif
 								*shortened = *shortName;
 							}
@@ -198,11 +201,11 @@ namespace NND
 			}
 		}
 
-		NameRef Manager::GetName(NameFormat format, const RE::TESNPC* npc, const char* originalName) {
+		NameRef Manager::GetName(NameFormat format, const RE::Actor* actor, const char* originalName) {
 			{  // Limit scope of lock for reading access to cached names.
 				ReadLocker lock(_lock);
-				if (names.contains(npc->formID)) {
-					return names.at(npc->formID).GetName(format);
+				if (names.contains(actor->formID)) {
+					return names.at(actor->formID).GetName(format);
 				}
 			}
 
@@ -210,11 +213,11 @@ namespace NND
 
 			NNDData data{};
 
-			data.formId = npc->formID;
+			data.formId = actor->formID;
 
-			data.isUnique = npc->HasKeyword(unique);
-			data.isTitleless = npc->HasKeyword(titleless);
-			data.isObscured = npc->HasKeyword(obscure);
+			data.isUnique = actor->HasKeyword(unique);
+			data.isTitleless = actor->HasKeyword(titleless);
+			data.isObscured = actor->HasKeyword(obscure);
 
 			// Ignore marked as unique NPCs that are not obscured.
 			if (data.isUnique && !data.isObscured) {
@@ -222,8 +225,8 @@ namespace NND
 				return originalName;
 			}
 
-			details::CreateName(Scope::kName, &data.name, &data.shortDisplayName, npc);
-			details::CreateName(Scope::kTitle, &data.title, nullptr, npc);
+			details::CreateName(Scope::kName, &data.name, &data.shortDisplayName, actor);
+			details::CreateName(Scope::kTitle, &data.title, nullptr, actor);
 
 			/* Algorithm for obscurity:
 			 * 1. If definition for obscuring names present - use it
@@ -232,7 +235,7 @@ namespace NND
 			 * 4. If no custom title and isTitleless = false - use preferred obscuring name (originalName or ???. Original name is default option when not titleless)
 			*/
 			if (data.isObscured) { // TODO: check actor->CanTalkToPlayer() to ensure that name can be revealed.
-				details::CreateName(Scope::kObscurity, &data.obscurity, nullptr, npc);
+				details::CreateName(Scope::kObscurity, &data.obscurity, nullptr, actor);
 				if (data.obscurity == empty) {
 					data.obscurity = data.title != empty ? data.title : defaultObscure;
 				}
