@@ -295,6 +295,7 @@ namespace NND
 				if (a_this && inDialgoue) {
 					// TODO: Handle force greet with custom options.
 					Manager::GetSingleton()->RevealName(a_this->formID);
+					RE::PlayerCharacter::GetSingleton()->UpdateCrosshairs();
 				}
 				return func(a_this, inDialgoue, forceGreet, a_topic);
 			}
