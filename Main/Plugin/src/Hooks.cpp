@@ -21,85 +21,269 @@ namespace NND
 			return originalName;
 		}
 
-		//// Always Full
-		//struct GetDisplayFullName_GetDisplayName
-		//{
-		//	static const char* thunk(RE::ExtraTextDisplayData* a_this, RE::TESBoundObject* obj, float temperFactor) {
-		//		const auto originalName = func(a_this, obj, temperFactor);
-		//		return GetName(kDisplayName, obj, originalName);
-		//	}
-		//	static inline REL::Relocation<decltype(thunk)> func;
-		//};
-
-		//// Always Full
-		//struct GetDisplayFullName_GetFormName
-		//{
-		//	static const char* thunk(RE::TESBoundObject* a_this) {
-		//		const auto originalName = func(a_this);
-		//		return GetName(kDisplayName, a_this, originalName);
-		//	}
-		//	static inline REL::Relocation<decltype(thunk)> func;
-		//};
-
-		// Short when possible
-		struct DisplayNextSubtitle_GetDisplayFullName
+		namespace Default
 		{
-			static const char* thunk(RE::TESObjectREFR* a_this) {
-				const auto originalName = func(a_this);
-				return GetName(kShortName, a_this, originalName);
-			}
-			static inline REL::Relocation<decltype(thunk)> func;
-		};
+			// Always Full
+			struct GetDisplayFullName_GetDisplayName
+			{
+				static const char* thunk(RE::ExtraTextDisplayData* a_this, RE::TESObjectREFR* obj, float temperFactor) {
+					const auto originalName = a_this->GetDisplayName(obj->GetBaseObject(), temperFactor);
+					return GetName(kDisplayName, obj, originalName);
+				}
+				static inline REL::Relocation<decltype(thunk)> func;
+			};
 
-		// Short when possible
-		struct EnemyHealthUpdate_GetDisplayFullName
+			// Always Full
+			struct GetDisplayFullName_GetFormName
+			{
+				static const char* thunk(RE::TESObjectREFR* a_this) {
+					const auto originalName = a_this->GetBaseObject()->GetName();
+					return GetName(kDisplayName, a_this, originalName);
+				}
+				static inline REL::Relocation<decltype(thunk)> func;
+			};
+
+			inline void Install() {
+				// Yeah, these will need to be re-hooked to somewhere where Actor is used.
+				const REL::Relocation<std::uintptr_t> displayFullName{ RE::Offset::TESObjectREFR::GetDisplayFullName };
+
+				// Swaps the argument to pass TESObjectREFR* obj instead of obj->GetBaseObject() 
+				// mov rcx, [r15+40h] (49 8B 4F 40)
+				//                     v  v  v  +
+				// mov rcx, r15       (4C 89 F9) + 90
+				REL::safe_fill(displayFullName.address() + OFFSET(0, 0x228), 0x4C, 1);
+				REL::safe_fill(displayFullName.address() + OFFSET(0, 0x229), 0x89, 1);
+				REL::safe_fill(displayFullName.address() + OFFSET(0, 0x22A), 0xF9, 1);
+				REL::safe_fill(displayFullName.address() + OFFSET(0, 0x22B), 0x90, 1);
+				stl::write_thunk_call<GetDisplayFullName_GetFormName>(displayFullName.address() + OFFSET(0, 0x22C));
+
+				// Swaps 2nd argument to pass TESObjectREFR* obj instead of obj->GetBaseObject() 
+				// mov rdx, [r15+40h] (49 8B 57 40)
+				//                     v  v  v   +
+				// mov rdx, r15       (4C 89 FA) + 90
+				REL::safe_fill(displayFullName.address() + OFFSET(0, 0x236), 0x4C, 1);
+				REL::safe_fill(displayFullName.address() + OFFSET(0, 0x237), 0x89, 1);
+				REL::safe_fill(displayFullName.address() + OFFSET(0, 0x238), 0xFA, 1);
+				REL::safe_fill(displayFullName.address() + OFFSET(0, 0x239), 0x90, 1);
+				stl::write_thunk_call<GetDisplayFullName_GetDisplayName>(displayFullName.address() + OFFSET(0, 0x23D));
+
+				logger::info("Installed Default GetDisplayFullName hooks");
+			}
+		}
+
+		namespace Subtitles
 		{
-			static const char* thunk(RE::TESObjectREFR* a_this) {
-				const auto originalName = func(a_this);
-				return GetName(kShortName, a_this, originalName);
-			}
-			static inline REL::Relocation<decltype(thunk)> func;
-		};
+			/// Vanilla: Short.
+			///	    NND: Short.
+			///	Name displayed in subtitles.
+			struct DisplayNextSubtitle_GetDisplayFullName
+			{
+				static const char* thunk(RE::TESObjectREFR* a_this) {
+					const auto originalName = func(a_this);
+					return GetName(kShortName, a_this, originalName);
+				}
+				static inline REL::Relocation<decltype(thunk)> func;
+			};
 
-		// Short circuit the condition to be always true, to force DisplayNextSubtitle to always call GetDisplayFullName.
-		struct DisplayNextSubtitle_ExtraDataList
+			/// Short circuit the condition to be always true, to force DisplayNextSubtitle to always call GetDisplayFullName.
+			struct DisplayNextSubtitle_ExtraDataList
+			{
+				static std::uintptr_t thunk(RE::ExtraDataList* a_this) {
+					return 1;
+				}
+				static inline REL::Relocation<decltype(thunk)> func;
+			};
+
+			inline void Install() {
+				const REL::Relocation<std::uintptr_t> displayNextSubtitle{ RELOCATION_ID(0, 52637) };
+				stl::write_thunk_call<DisplayNextSubtitle_ExtraDataList>(displayNextSubtitle.address() + OFFSET(0, 0xE8));
+				stl::write_thunk_call<DisplayNextSubtitle_GetDisplayFullName>(displayNextSubtitle.address() + OFFSET(0, 0x110));
+				logger::info("Installed Subtitles hooks");
+			}
+		}
+
+		namespace EnemyHUD
 		{
-			static std::uintptr_t thunk(RE::ExtraDataList* a_this) {
-				return 1;
-			}
-			static inline REL::Relocation<decltype(thunk)> func;
-		};
+			/// Vanilla: Full.
+			///	    NND: Full.
+			///	Name displayed in the HUD near Enemy health.
+			struct EnemyHealthUpdate_GetDisplayFullName
+			{
+				static const char* thunk(RE::TESObjectREFR* a_this) {
+					const auto originalName = func(a_this);
+					return GetName(kFullName, a_this, originalName);
+				}
+				static inline REL::Relocation<decltype(thunk)> func;
+			};
 
-		//// Always Full
-		//struct BarterMenu_GetShortName
-		//{
-		//	static const char* thunk(RE::TESNPC* a_this) {
-		//		const auto originalName = func(a_this);
-		//		return GetName(kFullName, a_this, originalName);
-		//	}
-		//	static inline REL::Relocation<decltype(thunk)> func;
-		//};
+			inline void Install() {
+				const REL::Relocation<std::uintptr_t> enemyHealthUpdate{ RELOCATION_ID(0, 51671) };
+				stl::write_thunk_call<EnemyHealthUpdate_GetDisplayFullName>(enemyHealthUpdate.address() + OFFSET(0, 0x20E));  // For Name length
+				stl::write_thunk_call<EnemyHealthUpdate_GetDisplayFullName>(enemyHealthUpdate.address() + OFFSET(0, 0x254));  // For actual name that will be displayed
+				logger::info("Installed EnemyHUD hooks");
+			}
+		}
+
+		namespace Crosshair
+		{
+			/// Vanilla: Full.
+			///	    NND: Full.
+			/// Name displayed on someone's remains.
+			struct ActivateText_Bones_GetDisplayFullName
+			{
+				static const char* thunk(RE::TESObjectREFR* a_this) {
+					const auto originalName = func(a_this);
+					return GetName(kFullName, a_this, originalName);
+				}
+				static inline REL::Relocation<decltype(thunk)> func;
+			};
+			
+			/// Vanilla: Full.
+			///	    NND: Full.
+			/// Default activation name (e.g. Talk, Steal, Pickpocket, etc.)
+			struct ActivateText_Default_GetDisplayFullName
+			{
+				static const char* thunk(RE::TESObjectREFR* a_this) {
+					const auto originalName = func(a_this);
+					return GetName(kFullName, a_this, originalName);
+				}
+				static inline REL::Relocation<decltype(thunk)> func;
+			};
+
+			/// Vanilla: Full.
+			///	    NND: Full.
+			/// Activation name for Search action.
+			struct ActivateText_Search_GetDisplayFullName
+			{
+				static const char* thunk(RE::TESObjectREFR* a_this) {
+					const auto originalName = func(a_this);
+					return GetName(kFullName, a_this, originalName);
+				}
+				static inline REL::Relocation<decltype(thunk)> func;
+			};
+
+			inline void Install() {
+				const REL::Relocation<std::uintptr_t> activateText{ RELOCATION_ID(0, 24716) };
+				stl::write_thunk_call<ActivateText_Bones_GetDisplayFullName>(activateText.address() + OFFSET(0, 0xB5));
+				stl::write_thunk_call<ActivateText_Bones_GetDisplayFullName>(activateText.address() + OFFSET(0, 0xDC));
+
+				stl::write_thunk_call<ActivateText_Search_GetDisplayFullName>(activateText.address() + OFFSET(0, 0x23D));
+				stl::write_thunk_call<ActivateText_Default_GetDisplayFullName>(activateText.address() + OFFSET(0, 0x33A));
+
+				logger::info("Installed Crosshair hooks");
+			}
+		}
+
+		namespace Dialogue
+		{
+			/// Vanilla: Full.
+			///	    NND: Full.
+			/// This is a name displayed while UI transitions into Dialogue menu.
+			///	The order is this:
+			///	1) ActivateText_Default_GetDisplayFullName
+			///	2) ActivateText_Dialogue_GetDisplayFullName <- you are here
+			///	3) MenuTopicManager_GetDisplayFullName
+			struct ActivateText_Dialogue_GetDisplayFullName
+			{
+				static const char* thunk(RE::TESObjectREFR* a_this) {
+					const auto originalName = func(a_this);
+					return GetName(kFullName, a_this, originalName);
+				}
+				static inline REL::Relocation<decltype(thunk)> func;
+			};
+
+			// Vanilla: Full.
+			///	    NND: Full.
+			/// Name in Dialogue menu.
+			struct MenuTopicManager_GetDisplayFullName
+			{
+				static const char* thunk(RE::TESObjectREFR* a_this) {
+					const auto originalName = func(a_this);
+					return GetName(kFullName, a_this, originalName);
+				}
+				static inline REL::Relocation<decltype(thunk)> func;
+			};
+
+			inline void Install()
+			{
+				const REL::Relocation<std::uintptr_t> dialogueMenu{ RELOCATION_ID(0, 35282) };
+				stl::write_thunk_call<MenuTopicManager_GetDisplayFullName>(dialogueMenu.address() + OFFSET(0, 0x587));
+
+				const REL::Relocation<std::uintptr_t> activateText{ RELOCATION_ID(0, 24716) };
+				stl::write_thunk_call<ActivateText_Dialogue_GetDisplayFullName>(activateText.address() + OFFSET(0, 0x1F2));
+				logger::info("Installed ActivateText hooks");
+			}
+		}
+
+		namespace Inventory
+		{
+			/// Vanilla: Full.
+			///	    NND: Full.
+			/// Name in the Inventory menu when bartering.
+			struct BarterMenu_GetDisplayFullName
+			{
+				static const char* thunk(RE::TESObjectREFR* a_this) {
+					const auto originalName = func(a_this);
+					return GetName(kFullName, a_this, originalName);
+				}
+				static inline REL::Relocation<decltype(thunk)> func;
+			};
+
+			/// Vanilla: Full.
+			///     NND: Full.
+			/// Name in the Inventory menu when Pickpocketing or trading with followers and all other cases of inventory menu, except barter.
+			struct ContainerMenu_GetDisplayFullName
+			{
+				static const char* thunk(RE::TESObjectREFR* a_this) {
+					const auto originalName = func(a_this);
+					return GetName(kFullName, a_this, originalName);
+				}
+				static inline REL::Relocation<decltype(thunk)> func;
+			};
+
+			inline void Install() {
+				const REL::Relocation<std::uintptr_t> barterMenuInventory{ RELOCATION_ID(0, 50956) };
+				stl::write_thunk_call<BarterMenu_GetDisplayFullName>(barterMenuInventory.address() + OFFSET(0, 0x94));
+
+				const REL::Relocation<std::uintptr_t> containerMenu{ RELOCATION_ID(0, 51142) };
+				stl::write_thunk_call<ContainerMenu_GetDisplayFullName>(containerMenu.address() + OFFSET(0, 0x99));
+				logger::info("Installed Inventory hooks");
+			}
+		}
+
+		namespace Barter
+		{
+			/// Vanilla: Short.
+			///	    NND: Short.
+			/// Name at the bottom bar near Gold amount when bartering.
+			struct BarterMenu_GetShortName
+			{
+				static const char* thunk(RE::TESObjectREFR* a_this) {
+					return GetName(kShortName, a_this, a_this->GetDisplayFullName());
+				}
+				static inline REL::Relocation<decltype(thunk)> func;
+			};
+
+			inline void Install() {
+				const REL::Relocation<std::uintptr_t> barterMenuGold{ RELOCATION_ID(0, 50957) };
+				// Swaps the argument to pass TESObjectREFR* obj instead of obj->GetBaseObject() 
+				// mov rcx, [rbx+40h] (48 8B 4B 40)
+				//                           v  v
+				// mov rcx, [rbp+30h] (48 8B 4D 30)
+				REL::safe_fill(barterMenuGold.address() + OFFSET(0, 0x20A), 0x4D, 1);
+				REL::safe_fill(barterMenuGold.address() + OFFSET(0, 0x20B), 0x30, 1);
+				stl::write_thunk_call<BarterMenu_GetShortName>(barterMenuGold.address() + OFFSET(0, 0x20C));
+			}
+		}
 
 		inline void Install() {
-			// Yeah, these will need to be re-hooked to somewhere where Actor is used.
-			/*const REL::Relocation<std::uintptr_t> displayFullName{ RE::Offset::TESObjectREFR::GetDisplayFullName };
-			stl::write_thunk_call<GetDisplayFullName_GetDisplayName>(displayFullName.address() + OFFSET(0, 0x23D));
-			stl::write_thunk_call<GetDisplayFullName_GetFormName>(displayFullName.address() + OFFSET(0, 0x22C));
-			logger::info("Installed GetDisplayFullName hooks");*/
-
-			const REL::Relocation<std::uintptr_t> enemyHealthUpdate{ RELOCATION_ID(0, 51671) };
-			stl::write_thunk_call<EnemyHealthUpdate_GetDisplayFullName>(enemyHealthUpdate.address() + OFFSET(0, 0x20E));  // For Name length
-			stl::write_thunk_call<EnemyHealthUpdate_GetDisplayFullName>(enemyHealthUpdate.address() + OFFSET(0, 0x254)); // For actual name that will be displayed
-			logger::info("Installed EnemyHealthUpdate hooks");
-
-			const REL::Relocation<std::uintptr_t> displayNextSubtitle{ RELOCATION_ID(0, 52637) };
-			stl::write_thunk_call<DisplayNextSubtitle_ExtraDataList>(displayNextSubtitle.address() + OFFSET(0, 0xE8));
-			stl::write_thunk_call<DisplayNextSubtitle_GetDisplayFullName>(displayNextSubtitle.address() + OFFSET(0, 0x110));
-			logger::info("Installed DisplayNextSubtitle hooks");
-
-			/*const REL::Relocation<std::uintptr_t> barterMenu{ RELOCATION_ID(0, 50957) };
-			stl::write_thunk_call<BarterMenu_GetShortName>(barterMenu.address() + OFFSET(0, 0x20C));
-			logger::info("Installed BarterMenu hooks");*/
+			Default::Install();
+			Subtitles::Install();
+			EnemyHUD::Install();
+			Crosshair::Install();
+			Dialogue::Install();
+			Inventory::Install();
+			Barter::Install();
 		}
 	}
 
