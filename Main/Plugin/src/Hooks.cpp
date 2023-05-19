@@ -5,15 +5,40 @@ namespace NND
 {
 	using namespace Distribution;
 
+	enum class NameContext
+	{
+		kDefault = 0,
+		kCrosshair,
+		kSubtitles,
+		kDialogue,
+		kInventory,
+		kBarter,
+		kEnemyHUD
+	};
+
+	// TODO: Read from settings.
+	inline NameFormat GetFormatByContext(NameContext context) {
+		switch (context) {
+		default:
+		case NameContext::kDefault: return kFullName;
+		case NameContext::kCrosshair: return kDisplayName;
+		case NameContext::kSubtitles: return kShortName;
+		case NameContext::kDialogue: return kFullName;
+		case NameContext::kInventory: return kFullName;
+		case NameContext::kBarter: return kShortName;
+		case NameContext::kEnemyHUD: return kFullName;
+		}
+	}
+
 	namespace Naming
 	{
-		static const char* GetName(NameFormat format, const RE::TESObjectREFR* ref, const char* originalName) {
+		static const char* GetName(NameContext context, const RE::TESObjectREFR* ref, const char* originalName) {
 			if (!ref || !ref->Is(RE::FormType::ActorCharacter)) {
 				return originalName;
 			}
 
 			if (const auto actor = ref->As<RE::Actor>()) {
-				if (const auto name = Distribution::Manager::GetSingleton()->GetName(format, actor, originalName); name != empty) {
+				if (const auto name = Distribution::Manager::GetSingleton()->GetName(GetFormatByContext(context), actor, originalName); name != empty) {
 					return name.data();
 				}
 			}
@@ -23,25 +48,57 @@ namespace NND
 
 		namespace Default
 		{
-			// Always Full
+			/// Vanilla: Full.
+			///	    NND: Full.
+			/// Name displayed in all other cases, like notifications.
 			struct GetDisplayFullName_GetDisplayName
 			{
 				static const char* thunk(RE::ExtraTextDisplayData* a_this, RE::TESObjectREFR* obj, float temperFactor) {
 					const auto originalName = a_this->GetDisplayName(obj->GetBaseObject(), temperFactor);
-					return GetName(kDisplayName, obj, originalName);
+					return GetName(NameContext::kDefault, obj, originalName);
 				}
 				static inline REL::Relocation<decltype(thunk)> func;
 			};
 
-			// Always Full
+			/// Vanilla: Full.
+			///	    NND: Full.
+			/// Name displayed in all other cases, like notifications.
 			struct GetDisplayFullName_GetFormName
 			{
 				static const char* thunk(RE::TESObjectREFR* a_this) {
 					const auto originalName = a_this->GetBaseObject()->GetName();
-					return GetName(kDisplayName, a_this, originalName);
+					return GetName(NameContext::kDefault, a_this, originalName);
 				}
 				static inline REL::Relocation<decltype(thunk)> func;
 			};
+
+			namespace PickpocketNotification
+			{
+				/// Vanilla: Full.
+				///	    NND: Full.
+				/// Name displayed in pickpocket notification ("%Name% has already caught you")
+				struct Activate_GetBaseObject
+				{
+					static const char* thunk(RE::Actor* a_this) {
+						const auto originalName = a_this->GetDisplayFullName();
+						return GetName(NameContext::kDefault, a_this, originalName);
+					}
+					static inline REL::Relocation<decltype(thunk)> func;
+				};
+
+				inline void Install() {
+					const REL::Relocation<std::uintptr_t> activate{ RELOCATION_ID(0, 24715) };
+
+					// Erase the whole thing with TESFullName. Instead Actor::GetBaseObject_1406313C0 will return a name.
+					// lea	rcx, [rax+0D8h]
+					// mov  rax, [rcx]
+					// call qword ptr[rax + 28h]
+					REL::safe_fill(activate.address() + OFFSET(0, 0x6CF), 0x90, 13);
+					stl::write_thunk_call<Activate_GetBaseObject>(activate.address() + OFFSET(0, 0x6CA));
+
+					logger::info("Installed Pickpocket Notification hooks");
+				}
+			}
 
 			inline void Install() {
 				// Yeah, these will need to be re-hooked to somewhere where Actor is used.
@@ -68,6 +125,8 @@ namespace NND
 				stl::write_thunk_call<GetDisplayFullName_GetDisplayName>(displayFullName.address() + OFFSET(0, 0x23D));
 
 				logger::info("Installed Default GetDisplayFullName hooks");
+
+				PickpocketNotification::Install();
 			}
 		}
 
@@ -80,7 +139,7 @@ namespace NND
 			{
 				static const char* thunk(RE::TESObjectREFR* a_this) {
 					const auto originalName = func(a_this);
-					return GetName(kShortName, a_this, originalName);
+					return GetName(NameContext::kSubtitles, a_this, originalName);
 				}
 				static inline REL::Relocation<decltype(thunk)> func;
 			};
@@ -111,7 +170,7 @@ namespace NND
 			{
 				static const char* thunk(RE::TESObjectREFR* a_this) {
 					const auto originalName = func(a_this);
-					return GetName(kFullName, a_this, originalName);
+					return GetName(NameContext::kEnemyHUD, a_this, originalName);
 				}
 				static inline REL::Relocation<decltype(thunk)> func;
 			};
@@ -133,7 +192,7 @@ namespace NND
 			{
 				static const char* thunk(RE::TESObjectREFR* a_this) {
 					const auto originalName = func(a_this);
-					return GetName(kFullName, a_this, originalName);
+					return GetName(NameContext::kCrosshair, a_this, originalName);
 				}
 				static inline REL::Relocation<decltype(thunk)> func;
 			};
@@ -145,7 +204,7 @@ namespace NND
 			{
 				static const char* thunk(RE::TESObjectREFR* a_this) {
 					const auto originalName = func(a_this);
-					return GetName(kFullName, a_this, originalName);
+					return GetName(NameContext::kCrosshair, a_this, originalName);
 				}
 				static inline REL::Relocation<decltype(thunk)> func;
 			};
@@ -157,7 +216,7 @@ namespace NND
 			{
 				static const char* thunk(RE::TESObjectREFR* a_this) {
 					const auto originalName = func(a_this);
-					return GetName(kFullName, a_this, originalName);
+					return GetName(NameContext::kCrosshair, a_this, originalName);
 				}
 				static inline REL::Relocation<decltype(thunk)> func;
 			};
@@ -187,19 +246,19 @@ namespace NND
 			{
 				static const char* thunk(RE::TESObjectREFR* a_this) {
 					const auto originalName = func(a_this);
-					return GetName(kFullName, a_this, originalName);
+					return GetName(NameContext::kDialogue, a_this, originalName);
 				}
 				static inline REL::Relocation<decltype(thunk)> func;
 			};
 
 			// Vanilla: Full.
-			///	    NND: Full.
+			///	   NND: Full.
 			/// Name in Dialogue menu.
 			struct MenuTopicManager_GetDisplayFullName
 			{
 				static const char* thunk(RE::TESObjectREFR* a_this) {
 					const auto originalName = func(a_this);
-					return GetName(kFullName, a_this, originalName);
+					return GetName(NameContext::kDialogue, a_this, originalName);
 				}
 				static inline REL::Relocation<decltype(thunk)> func;
 			};
@@ -224,7 +283,7 @@ namespace NND
 			{
 				static const char* thunk(RE::TESObjectREFR* a_this) {
 					const auto originalName = func(a_this);
-					return GetName(kFullName, a_this, originalName);
+					return GetName(NameContext::kInventory, a_this, originalName);
 				}
 				static inline REL::Relocation<decltype(thunk)> func;
 			};
@@ -236,7 +295,7 @@ namespace NND
 			{
 				static const char* thunk(RE::TESObjectREFR* a_this) {
 					const auto originalName = func(a_this);
-					return GetName(kFullName, a_this, originalName);
+					return GetName(NameContext::kInventory, a_this, originalName);
 				}
 				static inline REL::Relocation<decltype(thunk)> func;
 			};
@@ -259,7 +318,7 @@ namespace NND
 			struct BarterMenu_GetShortName
 			{
 				static const char* thunk(RE::TESObjectREFR* a_this) {
-					return GetName(kShortName, a_this, a_this->GetDisplayFullName());
+					return GetName(NameContext::kBarter, a_this, a_this->GetDisplayFullName());
 				}
 				static inline REL::Relocation<decltype(thunk)> func;
 			};
