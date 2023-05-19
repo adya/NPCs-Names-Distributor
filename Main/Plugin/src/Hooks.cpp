@@ -32,13 +32,13 @@ namespace NND
 
 	namespace Naming
 	{
-		static const char* GetName(NameContext context, const RE::TESObjectREFR* ref, const char* originalName) {
+		static const char* GetName(NameContext context, RE::TESObjectREFR* ref, const char* originalName) {
 			if (!ref || !ref->Is(RE::FormType::ActorCharacter)) {
 				return originalName;
 			}
 
-			if (const auto actor = ref->As<RE::Actor>()) {
-				if (const auto name = Distribution::Manager::GetSingleton()->GetName(GetFormatByContext(context), actor, originalName); name != empty) {
+			if (auto actor = ref->As<RE::Actor>()) {
+				if (const auto name = Manager::GetSingleton()->GetName(GetFormatByContext(context), actor, originalName); name != empty) {
 					return name.data();
 				}
 			}

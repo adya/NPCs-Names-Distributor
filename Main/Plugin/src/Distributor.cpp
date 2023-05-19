@@ -201,7 +201,7 @@ namespace NND
 			}
 		}
 
-		NameRef Manager::GetName(NameFormat format, const RE::Actor* actor, const char* originalName) {
+		NameRef Manager::GetName(NameFormat format, RE::Actor* actor, const char* originalName) {
 			{  // Limit scope of lock for reading access to cached names.
 				ReadLocker lock(_lock);
 				if (names.contains(actor->formID)) {
@@ -214,16 +214,22 @@ namespace NND
 			NNDData data{};
 
 			data.formId = actor->formID;
-			
+
+			/// A flag indicating whether given actor can be introduced to the player.
+			///	For that actor:
+			/// - must be able to talk with the player in any capacity
+			///	- had zero conversations with the player prior to that. (mid-game installation support)
+			const auto canBeIntroduced = actor->CanTalkToPlayer() && !talkedToPC->IsTrue(actor, nullptr);
+
 			// This is a little bit weird check, I'm 98% sure that I could just use actor, but... there is this 2% chance.. :)
 			if (const auto npc = actor->GetActorBase()) {
 				data.isUnique = npc->HasKeyword(unique);
 				data.isTitleless = npc->HasKeyword(titleless);
-				data.isObscured = npc->HasKeyword(obscure);
+				data.isObscured = canBeIntroduced && npc->HasKeyword(obscure);
 			} else {
 				data.isUnique = actor->HasKeyword(unique);
 				data.isTitleless = actor->HasKeyword(titleless);
-				data.isObscured = actor->HasKeyword(obscure);
+				data.isObscured = canBeIntroduced && actor->HasKeyword(obscure);
 			}
 
 			// Ignore marked as unique NPCs that are not obscured.
@@ -244,7 +250,7 @@ namespace NND
 			 * 3. If custom title is provided - use it
 			 * 4. If no custom title and isTitleless = false - use preferred obscuring name (originalName or ???. Original name is default option when not titleless)
 			*/
-			if (data.isObscured) { // TODO: check actor->CanTalkToPlayer() to ensure that name can be revealed.
+			if (data.isObscured) {
 				details::CreateName(Scope::kObscurity, &data.obscurity, nullptr, actor);
 				if (data.obscurity == empty) {
 					data.obscurity = data.title != empty ? data.title : defaultObscure;
@@ -281,6 +287,19 @@ namespace NND
 		void Manager::DeleteName(RE::FormID formId) {
 			WriteLocker lock(_lock);
 			names.erase(formId);
+		}
+
+		Manager::Manager(): talkedToPC(std::make_unique<RE::TESCondition>()) {
+			RE::CONDITION_ITEM_DATA condData{};
+			condData.functionData.function = RE::FUNCTION_DATA::FunctionID::kGetTalkedToPC;
+			condData.flags.opCode = RE::CONDITION_ITEM_DATA::OpCode::kEqualTo;
+			condData.comparisonValue.f = 1;
+
+			const auto newNode = new RE::TESConditionItem;
+			newNode->data = condData;
+			newNode->next = nullptr;
+
+			talkedToPC->head = newNode;
 		}
 
 		void Manager::UpdateNames(const std::function<void(NamesMap&)> update) {

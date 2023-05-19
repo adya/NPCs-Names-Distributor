@@ -55,7 +55,7 @@ namespace NND
 			/// Reveals name for given RE::FormID if it was previously obscured.
 			void RevealName(RE::FormID);
 
-			NameRef  GetName(NameFormat, const RE::Actor*, const char* originalName);
+			NameRef  GetName(NameFormat, RE::Actor*, const char* originalName);
 			NNDData& SetName(const NNDData&);
 
 			void            UpdateNames(std::function<void(NamesMap&)>);
@@ -73,10 +73,12 @@ namespace NND
 			mutable Lock _lock;
 			NamesMap     names{};
 
+			const std::unique_ptr<RE::TESCondition> talkedToPC;
+
 			void DeleteName(RE::FormID);
 
 			// Singleton stuff :)
-			Manager() = default;
+			Manager();
 			Manager(const Manager&) = delete;
 			Manager(Manager&&) = delete;
 
