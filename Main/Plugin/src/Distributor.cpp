@@ -214,10 +214,17 @@ namespace NND
 			NNDData data{};
 
 			data.formId = actor->formID;
-
-			data.isUnique = actor->HasKeyword(unique);
-			data.isTitleless = actor->HasKeyword(titleless);
-			data.isObscured = actor->HasKeyword(obscure);
+			
+			// This is a little bit weird check, I'm 98% sure that I could just use actor, but... there is this 2% chance.. :)
+			if (const auto npc = actor->GetActorBase()) {
+				data.isUnique = npc->HasKeyword(unique);
+				data.isTitleless = npc->HasKeyword(titleless);
+				data.isObscured = npc->HasKeyword(obscure);
+			} else {
+				data.isUnique = actor->HasKeyword(unique);
+				data.isTitleless = actor->HasKeyword(titleless);
+				data.isObscured = actor->HasKeyword(obscure);
+			}
 
 			// Ignore marked as unique NPCs that are not obscured.
 			if (data.isUnique && !data.isObscured) {
@@ -225,7 +232,10 @@ namespace NND
 				return originalName;
 			}
 
-			details::CreateName(Scope::kName, &data.name, &data.shortDisplayName, actor);
+			if (!data.isUnique) {
+				details::CreateName(Scope::kName, &data.name, &data.shortDisplayName, actor);
+			}
+
 			details::CreateName(Scope::kTitle, &data.title, nullptr, actor);
 
 			/* Algorithm for obscurity:
