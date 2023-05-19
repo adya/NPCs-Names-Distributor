@@ -82,6 +82,7 @@ namespace NND
 			serializationInterface->SetUniqueID(serializationKey);
 			serializationInterface->SetSaveCallback(Save);
 			serializationInterface->SetLoadCallback(Load);
+			serializationInterface->SetRevertCallback(Revert);
 		}
 
 		void Load(SKSE::SerializationInterface* interface) {
@@ -91,7 +92,7 @@ namespace NND
 			std::uint32_t loadedCount = 0;
 			Distribution::Manager::GetSingleton()->UpdateNames([&interface, &loadedCount](auto& names) {
 				std::uint32_t type, version, length;
-
+				names.clear();
 				while (interface->GetNextRecordInfo(type, version, length)) {
 					if (type == recordType && version == serializationVersion) {
 						Distribution::NNDData data{};
@@ -126,6 +127,13 @@ namespace NND
 			}
 
 			logger::info("Saved {} names", savedCount);
+		}
+
+		void Revert(SKSE::SerializationInterface* interface) {
+			logger::info("{:*^30}", "REVERTING");
+			Distribution::Manager::GetSingleton()->UpdateNames([](auto& names) {
+				names.clear();
+			});
 		}
 	}
 }

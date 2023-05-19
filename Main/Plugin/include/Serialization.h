@@ -11,7 +11,8 @@ namespace NND
 
 		void Setup();
 
-		void Load(SKSE::SerializationInterface* interface);
-		void Save(SKSE::SerializationInterface* a_serializationInterface);
+		void Load(SKSE::SerializationInterface*);
+		void Save(SKSE::SerializationInterface*);
+		void Revert(SKSE::SerializationInterface*);
 	}
 }
