@@ -204,11 +204,11 @@ namespace NND
 			return scope == Scope::kDefault;
 		}
 
-		void GetRandomFullName(RE::SEX sex, NameComponents& components) const;
-		void GetRandomFirstName(RE::SEX sex, NameComponents& components) const;
-		void GetRandomMiddleName(RE::SEX sex, NameComponents& components) const;
-		void GetRandomLastName(RE::SEX sex, NameComponents& components) const;
-		void GetRandomConjunction(RE::SEX sex, NameComponents& components) const;
+		bool GetRandomFullName(RE::SEX sex, NameComponents& components) const;
+		bool GetRandomFirstName(RE::SEX sex, NameComponents& components) const;
+		bool GetRandomMiddleName(RE::SEX sex, NameComponents& components) const;
+		bool GetRandomLastName(RE::SEX sex, NameComponents& components) const;
+		bool GetRandomConjunction(RE::SEX sex, NameComponents& components) const;
 	};
 }
 

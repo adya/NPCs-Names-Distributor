@@ -5,10 +5,10 @@ namespace NND
 {
 	inline clib_util::RNG staticRNG{};
 
-	inline void AssignRandomNameVariant(const NameDefinition::NamesVariant& variant, bool useCircumfix, NameRef* nameComp, NameRef* prefixComp, NameRef* suffixComp) {
+	inline bool AssignRandomNameVariant(const NameDefinition::NamesVariant& variant, bool useCircumfix, NameRef* nameComp, NameRef* prefixComp, NameRef* suffixComp) {
 		*nameComp = variant.GetRandom().first;
 		if (*nameComp == empty)
-			return;
+			return false;
 		// Reset adfixes if components already had one (from previous definition)
 		*prefixComp = empty;
 		*suffixComp = empty;
@@ -26,41 +26,44 @@ namespace NND
 			*prefixComp = variant.prefix.GetRandomName();
 			*suffixComp = variant.suffix.GetRandomName();
 		}
+
+		return *nameComp != empty;
 	}
 
-	void NameDefinition::GetRandomFullName(const RE::SEX sex, NameComponents& components) const {
-		GetRandomFirstName(sex, components);
-		GetRandomMiddleName(sex, components);
-		GetRandomLastName(sex, components);
-		GetRandomConjunction(sex, components);
+	bool NameDefinition::GetRandomFullName(const RE::SEX sex, NameComponents& components) const {
+		return GetRandomFirstName(sex, components) ||
+		       GetRandomMiddleName(sex, components) ||
+		       GetRandomLastName(sex, components) ||
+		       GetRandomConjunction(sex, components);
 	}
 
-	void NameDefinition::GetRandomFirstName(RE::SEX sex, NameComponents& components) const {
-		AssignRandomNameVariant(firstName.GetVariant(sex),
-		                        firstName.useCircumfix,
-		                        &components.firstName,
-		                        &components.firstPrefix,
-		                        &components.firstSuffix);
+	bool NameDefinition::GetRandomFirstName(RE::SEX sex, NameComponents& components) const {
+		return AssignRandomNameVariant(firstName.GetVariant(sex),
+		                               firstName.useCircumfix,
+		                               &components.firstName,
+		                               &components.firstPrefix,
+		                               &components.firstSuffix);
 	}
 
-	void NameDefinition::GetRandomMiddleName(RE::SEX sex, NameComponents& components) const {
-		AssignRandomNameVariant(middleName.GetVariant(sex),
-		                        middleName.useCircumfix,
-		                        &components.middleName,
-		                        &components.middlePrefix,
-		                        &components.middleSuffix);
+	bool NameDefinition::GetRandomMiddleName(RE::SEX sex, NameComponents& components) const {
+		return AssignRandomNameVariant(middleName.GetVariant(sex),
+		                               middleName.useCircumfix,
+		                               &components.middleName,
+		                               &components.middlePrefix,
+		                               &components.middleSuffix);
 	}
 
-	void NameDefinition::GetRandomLastName(RE::SEX sex, NameComponents& components) const {
-		AssignRandomNameVariant(lastName.GetVariant(sex),
-		                        lastName.useCircumfix,
-		                        &components.lastName,
-		                        &components.lastPrefix,
-		                        &components.lastSuffix);
+	bool NameDefinition::GetRandomLastName(RE::SEX sex, NameComponents& components) const {
+		return AssignRandomNameVariant(lastName.GetVariant(sex),
+		                               lastName.useCircumfix,
+		                               &components.lastName,
+		                               &components.lastPrefix,
+		                               &components.lastSuffix);
 	}
 
-	void NameDefinition::GetRandomConjunction(RE::SEX sex, NameComponents& components) const {
+	bool NameDefinition::GetRandomConjunction(RE::SEX sex, NameComponents& components) const {
 		components.conjunction = conjunction.GetRandom(sex);
+		return components.conjunction != empty;
 	}
 
 	/// Gets NamesVariant that matches given `sex`.

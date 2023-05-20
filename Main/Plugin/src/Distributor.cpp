@@ -62,7 +62,7 @@ namespace NND
 	{
 
 #ifndef NDEBUG
-		std::string rawScopeName(Scope scope) {
+		std::string rawScopeName(const Scope scope) {
 			switch (scope) {
 			default:
 			case Scope::kName:
@@ -72,6 +72,20 @@ namespace NND
 			case Scope::kObscurity:
 				return "obscure name";
 			}
+		}
+
+		std::string allScopeNames(const Scope scope) {
+			std::vector<std::string> names{};
+			if (has(scope, Scope::kName)) {
+				names.push_back("name");
+			}
+			if (has(scope, Scope::kTitle)) {
+				names.push_back("title");
+			}
+			if (has(scope, Scope::kObscurity)) {
+				names.push_back("obscuring");
+			}
+			return clib_util::string::join(names, ", ");
 		}
 #endif
 
@@ -90,7 +104,14 @@ namespace NND
 				}
 			};
 
-			std::optional<NameComponents> MakeNameComponents(Scope scope, const RE::Actor* actor) {
+			/**
+			 * \brief Creates a NameComponents object that contains resolved name segments from all loaded name definitions that are associated with given actor.
+			 * \param scope Target scope in which the name components are being picked.
+			 * \param actor An actor for whom the name components are being picked. Used to determine appropriate name variant.
+			 * \param commonScopes All other scopes that used Name Definitions have in common.
+			 * \return Created NameComponents containing a resolved name segments.
+			 */
+			std::optional<NameComponents> MakeNameComponents(Scope scope, const RE::Actor* actor, Scope& commonScopes) {
 				if (!actor || !actor->GetActorBase())
 					return std::nullopt;
 
@@ -135,39 +156,48 @@ namespace NND
 				auto resolvedMiddleName = false;
 				auto resolvedLastName = false;
 
+				commonScopes = Scope::kAll;
+
 				for (const auto& definitionRef : definitions) {
-					auto&      definition = definitionRef.get();
-					const auto emptyFirst = comps.firstName == empty;
-					const auto emptyMiddle = comps.middleName == empty;
-					const auto emptyLast = comps.lastName == empty;
-					const auto allNamesEmpty = emptyFirst && emptyMiddle && emptyLast;
-					if (emptyFirst && !resolvedFirstName) {
-						definition.GetRandomFirstName(sex, comps);
+					const auto& definition = definitionRef.get();
+
+					auto pickedFirstName = false;
+					auto pickedMiddleName = false;
+					auto pickedLastName = false;
+				
+					if (!resolvedFirstName) {
+						pickedFirstName = definition.GetRandomFirstName(sex, comps);
+						resolvedFirstName = pickedFirstName || !definition.firstName.shouldInherit;
 					}
 
-					if (emptyMiddle && !resolvedMiddleName) {
-						definition.GetRandomMiddleName(sex, comps);
+					if (!resolvedMiddleName) {
+						pickedMiddleName = definition.GetRandomMiddleName(sex, comps);
+						resolvedMiddleName = pickedMiddleName || !definition.middleName.shouldInherit;
 					}
 
-					if (emptyLast && !resolvedLastName) {
-						definition.GetRandomLastName(sex, comps);
+					if (!resolvedLastName) {
+						pickedLastName = definition.GetRandomLastName(sex, comps);
+						resolvedLastName = pickedLastName || !definition.lastName.shouldInherit;
+						
+					}
+
+					const auto pickedAnyName = pickedFirstName || pickedMiddleName || pickedLastName;
+
+					if (pickedAnyName) {
+						commonScopes &= definition.scope;
 					}
 
 					// At the moment we use first conjunction that will be picked with at least one name segment.
 					// So if Name Definition only provided conjunction, it will be skipped.
-					if (comps.conjunction == empty || allNamesEmpty) {
+					if (pickedAnyName && comps.conjunction == empty) {
 						definition.GetRandomConjunction(sex, comps);
 					}
 
-					// We use first found shortening setting in either name definition.
-					if (comps.shortSegments == NameSegmentType::kNone && definition.shortened != NameSegmentType::kNone) {
+					// We use first found shortening setting in either name definition that provided at least one name.
+					if (pickedAnyName && comps.shortSegments == NameSegmentType::kNone && definition.shortened != NameSegmentType::kNone) {
 						comps.shortSegments = definition.shortened;
 					}
-
-					resolvedFirstName = resolvedFirstName || !definition.firstName.shouldInherit;
-					resolvedMiddleName = resolvedMiddleName || !definition.middleName.shouldInherit;
-					resolvedLastName = resolvedLastName || !definition.lastName.shouldInherit;
-
+					
 					// If all segments are resolved, then we're ready :)
 					if (resolvedFirstName && resolvedMiddleName && resolvedLastName)
 						break;
@@ -175,8 +205,19 @@ namespace NND
 				return comps;
 			}
 
-			void CreateName(Scope scope, Name* name, Name* shortened, const RE::Actor* actor) {
-				const auto components = MakeNameComponents(scope, actor);
+			/**
+			 * \brief Creates a name for given scope and fills provided name properties.
+			 * \param scope Scope of the Name Definitions that should be used in name creation.
+			 * \param name Pointer to one of the NNDData's members that will store full name picked for specified scope.
+			 * \param shortened Optional pointer to one of the NNDData's members that will store a short version of the name picked for specified scope.
+			 * \param actor An actor for whom a name is being created. Used to determine appropriate name variant.
+			 * \return  All scopes in which created name can be used.
+			 *			These scopes are picked from the Name Definition which provided the name.
+			 *			If name components were picked from multiple Name Definitions then only the common scopes are used.
+			 */
+			Scope CreateName(Scope scope, Name* name, Name* shortened, const RE::Actor* actor) {
+				Scope      commonScopes = scope;
+				const auto components = MakeNameComponents(scope, actor, commonScopes);
 				if (components.has_value()) {
 					const auto fullName = components->Assemble();
 					if (fullName.has_value() && !fullName->empty()) {
@@ -197,6 +238,7 @@ namespace NND
 						}
 					}
 				}
+				return commonScopes;
 			}
 		}
 
@@ -247,31 +289,38 @@ namespace NND
 				details::CreateName(Scope::kName, &data.name, &data.shortDisplayName, actor);
 			}
 
-			details::CreateName(Scope::kTitle, &data.title, nullptr, actor);
-
-			/* Algorithm for obscurity:
-			 * 1. If definition for obscuring names present - use it
-			 * 2. If not present (or name wasn't picked) check title
-			 * 3. If custom title is provided - use it
-			 * 4. If no custom title and isTitleless = false - use preferred obscuring name (originalName or ???. Original name is default option when not titleless)
-			*/
+			const Scope titleScopes = details::CreateName(Scope::kTitle, &data.title, nullptr, actor);
+#ifndef NDEBUG
+			std::string nameType = allScopeNames(titleScopes);
+			logger::info("Title {} for [0x{:X}] can be used in {} scopes", data.title, actor->formID, nameType);
+#endif
 			if (data.isObscured) {
-				details::CreateName(Scope::kObscurity, &data.obscurity, nullptr, actor);
-				if (data.obscurity == empty) {
-					data.obscurity = data.title != empty ? data.title : defaultObscure;
+				// If custom title is provided and can be used in Obscurity scope - use it
+				if (has(titleScopes, Scope::kObscurity) && data.title != empty) {
+					data.obscurity = data.title;
+				} else {
+					// If no custom title usable in obscurity, then try to pick obscuring name in
+					details::CreateName(Scope::kObscurity, &data.obscurity, nullptr, actor);
+					// If name wasn't picked check whether original name can be used as title. In all other cases fallback to default obscuring name.
+					if (data.obscurity == empty) {
+						data.obscurity = !data.isTitleless ? originalName : defaultObscure;
+					}
 				}
 			}
 
-			// Set default title after obscuring, so that obscurity never uses originalName.
+			// Set default title after obscuring, so that it won't interfere with obscurity logic.
 			// Use original name as title if no custom one provided.
 			if (data.title == empty && !data.isTitleless) {
 				data.title = originalName;
 			}
 
 			data.UpdateDisplayName();
+
+			// TODO: Comment this for releases.
+			// (not NDEBUG, since I'd want to measure performance on Release from time to time)
 			const auto endTime = std::chrono::steady_clock::now();
 			const auto duration = std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime).count();
-			logger::info("Generated name in {}μs / {}ms", duration, duration / 1000.0f);
+			logger::info("Generated name {} in {} ms", data.displayName, duration);
 
 			return SetName(data).GetName(format, actor);
 		}
