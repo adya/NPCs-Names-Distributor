@@ -7,8 +7,8 @@ namespace NND
 	inline constexpr std::string_view titlelessEDID{ "NNDTitleless" };
 	inline RE::BGSKeyword* titleless{ nullptr };
 
-	inline constexpr std::string_view obscureEDID{ "NNDObscured" };
-	inline RE::BGSKeyword* obscure{ nullptr };
+	inline constexpr std::string_view knownEDID{ "NNDKnown" };
+	inline RE::BGSKeyword* known{ nullptr };
 
 	/// Caches built-in keywords.
 	///
@@ -20,16 +20,16 @@ namespace NND
 			auto& keywords = dataHandler->GetFormArray<RE::BGSKeyword>();
 
 			auto findUnique = [&](const auto& keyword) { return keyword && keyword->formEditorID == uniqueEDID.data(); };
-			auto findObscured = [&](const auto& keyword) { return keyword && keyword->formEditorID == obscureEDID.data(); };
+			auto findKnown = [&](const auto& keyword) { return keyword && keyword->formEditorID == knownEDID.data(); };
 			auto findTitleless = [&](const auto& keyword) { return keyword && keyword->formEditorID == titlelessEDID.data(); };
 
 			if (const auto result = std::ranges::find_if(keywords, findUnique); result != keywords.end()) {
 				logger::info("Cached {}", uniqueEDID);
 				unique = *result;
 			}
-			if (const auto result = std::ranges::find_if(keywords, findObscured); result != keywords.end()) {
-				logger::info("Cached {}", obscureEDID);
-				obscure = *result;
+			if (const auto result = std::ranges::find_if(keywords, findKnown); result != keywords.end()) {
+				logger::info("Cached {}", knownEDID);
+				known = *result;
 			}
 			if (const auto result = std::ranges::find_if(keywords, findTitleless); result != keywords.end()) {
 				logger::info("Cached {}", titlelessEDID);
@@ -37,7 +37,7 @@ namespace NND
 			}
 		
 			// If either of those wasn't found - create them.
-			if (!unique || !obscure || !titleless) {
+			if (!unique || !known || !titleless) {
 				if (const auto factory = RE::IFormFactory::GetConcreteFormFactoryByType<RE::BGSKeyword>()) {
 					if (!unique) {
 						if (const auto keyword = factory->Create()) {
@@ -47,12 +47,12 @@ namespace NND
 							logger::info("Created {}", uniqueEDID);
 						}
 					}
-					if (!obscure) {
+					if (!known) {
 						if (const auto keyword = factory->Create()) {
-							keyword->formEditorID = obscureEDID;
+							keyword->formEditorID = knownEDID;
 							keywords.push_back(keyword);
-							obscure = keyword;
-							logger::info("Created {}", obscureEDID);
+							known = keyword;
+							logger::info("Created {}", knownEDID);
 						}
 					}
 					if (!titleless) {
@@ -66,6 +66,6 @@ namespace NND
 				}
 			}
 		}
-		return unique && titleless && obscure;
+		return unique && titleless && known;
 	}
 }

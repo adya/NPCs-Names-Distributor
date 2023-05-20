@@ -230,11 +230,11 @@ namespace NND
 			if (const auto npc = actor->GetActorBase()) {
 				data.isUnique = npc->HasKeyword(unique);
 				data.isTitleless = npc->HasKeyword(titleless);
-				data.isObscured = canBeIntroduced && npc->HasKeyword(obscure) && !actor->IsCommandedActor();
+				data.isObscured = canBeIntroduced && !actor->IsCommandedActor() && !npc->HasKeyword(known);
 			} else {
 				data.isUnique = actor->HasKeyword(unique);
 				data.isTitleless = actor->HasKeyword(titleless);
-				data.isObscured = canBeIntroduced && actor->HasKeyword(obscure) && !actor->IsCommandedActor();
+				data.isObscured = canBeIntroduced && !actor->IsCommandedActor() && !actor->HasKeyword(known);
 			}
 
 			// Ignore marked as unique NPCs that are not obscured.
