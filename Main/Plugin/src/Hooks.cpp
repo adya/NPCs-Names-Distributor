@@ -39,7 +39,7 @@ namespace NND
 				return originalName;
 			}
 
-			if (auto actor = ref->As<RE::Actor>()) {
+			if (const auto actor = ref->As<RE::Actor>(); actor != RE::PlayerCharacter::GetSingleton()) {
 				if (const auto name = Manager::GetSingleton()->GetName(GetFormatByContext(context), actor, originalName); name != empty) {
 					return name.data();
 				}
