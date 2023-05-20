@@ -9,6 +9,7 @@ namespace NND
 	{
 		kDefault = 0,
 		kCrosshair,
+		kCrosshairMinion,
 		kSubtitles,
 		kDialogue,
 		kInventory,
@@ -22,6 +23,7 @@ namespace NND
 		default:
 		case NameContext::kDefault: return kFullName;
 		case NameContext::kCrosshair: return kDisplayName;
+		case NameContext::kCrosshairMinion: return kFullName;
 		case NameContext::kSubtitles: return kShortName;
 		case NameContext::kDialogue: return kFullName;
 		case NameContext::kInventory: return kFullName;
@@ -187,12 +189,12 @@ namespace NND
 		{
 			/// Vanilla: Full.
 			///	    NND: Full.
-			/// Name displayed on someone's remains.
-			struct ActivateText_Bones_GetDisplayFullName
+			/// Name displayed on player's minions.
+			struct ActivateText_Minion_GetDisplayFullName
 			{
 				static const char* thunk(RE::TESObjectREFR* a_this) {
 					const auto originalName = func(a_this);
-					return GetName(NameContext::kCrosshair, a_this, originalName);
+					return GetName(NameContext::kCrosshairMinion, a_this, originalName);
 				}
 				static inline REL::Relocation<decltype(thunk)> func;
 			};
@@ -223,8 +225,8 @@ namespace NND
 
 			inline void Install() {
 				const REL::Relocation<std::uintptr_t> activateText{ RELOCATION_ID(0, 24716) };
-				stl::write_thunk_call<ActivateText_Bones_GetDisplayFullName>(activateText.address() + OFFSET(0, 0xB5));
-				stl::write_thunk_call<ActivateText_Bones_GetDisplayFullName>(activateText.address() + OFFSET(0, 0xDC));
+				stl::write_thunk_call<ActivateText_Minion_GetDisplayFullName>(activateText.address() + OFFSET(0, 0xB5));
+				stl::write_thunk_call<ActivateText_Minion_GetDisplayFullName>(activateText.address() + OFFSET(0, 0xDC));
 
 				stl::write_thunk_call<ActivateText_Search_GetDisplayFullName>(activateText.address() + OFFSET(0, 0x23D));
 				stl::write_thunk_call<ActivateText_Default_GetDisplayFullName>(activateText.address() + OFFSET(0, 0x33A));

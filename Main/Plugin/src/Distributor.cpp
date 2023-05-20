@@ -22,7 +22,7 @@ namespace NND
 			}
 		}
 
-		NameRef NNDData::GetName(NameFormat format) const {
+		NameRef NNDData::GetName(NameFormat format, const RE::Actor* actor) const {
 			if (isObscured && obscurity != empty) {
 				return obscurity;
 			}
@@ -67,7 +67,6 @@ namespace NND
 			default:
 			case Scope::kName:
 				return "name";
-				break;
 			case Scope::kTitle:
 				return "title";
 			case Scope::kObscurity:
@@ -205,7 +204,13 @@ namespace NND
 			{  // Limit scope of lock for reading access to cached names.
 				ReadLocker lock(_lock);
 				if (names.contains(actor->formID)) {
-					return names.at(actor->formID).GetName(format);
+					auto& data = names.at(actor->formID);
+					// For commanded actors always reveal their name, since Player... well.. commands them :)
+					// These are reanimates people.
+					if (actor->IsCommandedActor()) {
+						data.isObscured = false;
+					}
+					return data.GetName(format, actor);
 				}
 			}
 
@@ -225,11 +230,11 @@ namespace NND
 			if (const auto npc = actor->GetActorBase()) {
 				data.isUnique = npc->HasKeyword(unique);
 				data.isTitleless = npc->HasKeyword(titleless);
-				data.isObscured = canBeIntroduced && npc->HasKeyword(obscure);
+				data.isObscured = canBeIntroduced && npc->HasKeyword(obscure) && !actor->IsCommandedActor();
 			} else {
 				data.isUnique = actor->HasKeyword(unique);
 				data.isTitleless = actor->HasKeyword(titleless);
-				data.isObscured = canBeIntroduced && actor->HasKeyword(obscure);
+				data.isObscured = canBeIntroduced && actor->HasKeyword(obscure) && !actor->IsCommandedActor();
 			}
 
 			// Ignore marked as unique NPCs that are not obscured.
@@ -268,7 +273,7 @@ namespace NND
 			const auto duration = std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime).count();
 			logger::info("Generated name in {}μs / {}ms", duration, duration / 1000.0f);
 
-			return SetName(data).GetName(format);
+			return SetName(data).GetName(format, actor);
 		}
 
 		NNDData& Manager::SetName(const NNDData& data) {

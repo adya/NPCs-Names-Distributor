@@ -37,7 +37,7 @@ namespace NND
 
 			void UpdateDisplayName();
 
-			NameRef GetName(NameFormat) const;
+			NameRef GetName(NameFormat, const RE::Actor* actor) const;
 		};
 
 		class Manager : public RE::BSTEventSink<RE::TESFormDeleteEvent>
