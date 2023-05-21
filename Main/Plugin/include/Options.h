@@ -27,7 +27,6 @@ namespace NND
 			inline bool enabled = true;
 			inline Name defaultName = "???";
 		}
-		
 
 		namespace NameContext
 		{
@@ -44,6 +43,16 @@ namespace NND
 			inline auto kEnemyHUD = kFullName;
 
 			inline auto kOther = kFullName;
+		}
+
+		namespace DisplayName
+		{
+			/// Format string for DisplayName.
+			///	Supports placeholders:
+			///	- [name]: Substitutes full name
+			///	- [title]: Substitutes title
+			///	- [break]: Substitutes new line.
+			inline std::string format = "[name] ([title])";
 		}
 
 		void Load();

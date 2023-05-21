@@ -11,11 +11,20 @@ namespace NND
 	{
 		// Here we'll handle all styles and whatnot.
 		void NNDData::UpdateDisplayName() {
-			if (name != empty) {
+			if (name != empty && title != empty) {
+				Name formattedDisplayName = Options::DisplayName::format;
+				if (formattedDisplayName != empty) {
+					clib_util::string::replace_first_instance(formattedDisplayName, "[name]", name);
+					clib_util::string::replace_first_instance(formattedDisplayName, "[title]", title);
+					clib_util::string::replace_first_instance(formattedDisplayName, "[break]", "\n");
+					displayName = formattedDisplayName;
+				} else {
+					displayName = name + " (" + title + ")";
+				}
+			} else if (name != empty) {
 				displayName = name;
-				if (title != empty)
-					displayName += " (" + title + ")";
-			} else if (title != empty) {
+			}
+			else if (title != empty) {
 				displayName = title;
 			} else {
 				displayName = empty;  // fall back to original name.

@@ -17,25 +17,25 @@ namespace NND
 	}
 
 	bool ReadStyle(const CSimpleIniA& ini, const char* name, NameStyle& style) {
-		auto rawName = ini.GetValue("NameContext", name);
-		if (clib_util::string::iequals(rawName, "display")) {
-			style = kDisplayName;
-			return true;
+		if (const auto rawName = ini.GetValue("NameContext", name)) {
+			if (clib_util::string::iequals(rawName, "display")) {
+				style = kDisplayName;
+				return true;
+			}
+			if (clib_util::string::iequals(rawName, "full")) {
+				style = kFullName;
+				return true;
+			}
+			if (clib_util::string::iequals(rawName, "short")) {
+				style = kShortName;
+				return true;
+			}
+			if (clib_util::string::iequals(rawName, "title")) {
+				style = kTitle;
+				return true;
+			}
+			logger::warn("WARN: Unexpected value for NameContext:{}. Got '{}', but expected either: 'display', 'full', 'short', 'title'", name, rawName);
 		}
-		if (clib_util::string::iequals(rawName, "full")) {
-			style = kFullName;
-			return true;
-		}
-		if (clib_util::string::iequals(rawName, "short")) {
-			style = kShortName;
-			return true;
-		}
-		if (clib_util::string::iequals(rawName, "title")) {
-			style = kTitle;
-			return true;
-		}
-
-		logger::warn("WARN: Unexpected value for NameContext:{}. Got '{}', but expected either: 'display', 'full', 'short', 'title'", name, rawName);
 		return false;
 	}
 
@@ -47,6 +47,8 @@ namespace NND
 		if (ini.LoadFile(options.string().c_str()) >= 0) {
 			Obscurity::enabled = ini.GetBoolValue("Obscurity", "bEnabled", Obscurity::enabled);
 			Obscurity::defaultName = ini.GetValue("Obscurity", "sDefaultName", Obscurity::defaultName.data());
+
+			DisplayName::format = ini.GetValue("DisplayName", "sFormat", DisplayName::format.data());
 
 			ReadStyle(ini, "sCrosshair", NameContext::kCrosshair);
 			ReadStyle(ini, "sCrosshairMinion", NameContext::kCrosshairMinion);
@@ -65,6 +67,11 @@ namespace NND
 		logger::info("\t{}", Obscurity::enabled ? "Enabled" : "Disabled");
 		logger::info("\tDefault Name: {}", Obscurity::defaultName);
 		logger::info("");
+
+		logger::info("Display Name:");
+		logger::info("\tFormat: {}", DisplayName::format);
+		logger::info("");
+
 		logger::info("Name Contexts:");
 		logger::info("\tCrosshair: {}", name(NameContext::kCrosshair));
 		logger::info("\tCrosshairMinion: {}", name(NameContext::kCrosshairMinion));
