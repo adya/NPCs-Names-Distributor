@@ -59,7 +59,11 @@ namespace NND
 				                    details::Read(interface, data.displayName) &&
 				                    details::Read(interface, data.isUnique) &&
 				                    details::Read(interface, data.isObscured) &&
-				                    details::Read(interface, data.isTitleless);
+				                    details::Read(interface, data.isTitleless) &&
+				                    details::Read(interface, data.isObscuringTitle) &&
+				                    details::Read(interface, data.hasDefaultObscurity) &&
+				                    details::Read(interface, data.hasDefaultTitle) &&
+				                    details::Read(interface, data.updateMask);
 
 				if (!result || !interface->ResolveFormID(data.formId, data.formId)) {
 					logger::warn("Failed to load name for NPCs with FormID [0x{:X}]", data.formId);
@@ -82,7 +86,11 @@ namespace NND
 				       details::Write(interface, data.displayName) &&
 				       details::Write(interface, data.isUnique) &&
 				       details::Write(interface, data.isObscured) &&
-				       details::Write(interface, data.isTitleless);
+				       details::Write(interface, data.isTitleless) &&
+				       details::Write(interface, data.isObscuringTitle) &&
+				       details::Write(interface, data.hasDefaultObscurity) &&
+				       details::Write(interface, data.hasDefaultTitle) &&
+				       details::Write(interface, data.updateMask);
 			}
 		}
 
@@ -91,40 +99,59 @@ namespace NND
 			constexpr std::uint32_t recordType = 'CRC';
 
 			bool Save(SKSE::SerializationInterface* interface) {
-				const auto snapshot = MakeSnapshot();
-
-				if (snapshot.empty()) {
-					return true;
-				}
-
-				logger::info("Saving {} snapshots:", snapshot.size());
-
 				if (!interface->OpenRecord(recordType, serializationVersion)) {
 					return false;
 				}
+				logger::info("Saving options...");
+				if (!details::Write(interface, Options::DisplayName::format) ||
+				    !details::Write(interface, Options::Obscurity::defaultName))
+					return false;
 
-				auto result = details::Write(interface, snapshot.size());
-				for (const auto& entry : snapshot) {
-					logger::info("\t{}", entry);
-					result = details::Write(interface, entry) && result;
+				const auto snapshot = MakeSnapshot();
+				if (!snapshot.empty()) {
+					logger::info("Saving {} snapshots:", snapshot.size());
+
+					if (!details::Write(interface, snapshot.size()))
+						return false;
+					
+					for (const auto& entry : snapshot) {
+						logger::info("\t{}", entry);
+						if (!details::Write(interface, entry))
+							return false;
+					}
 				}
-
-				return result;
+				return true;
 			}
 
-			bool Load(SKSE::SerializationInterface* interface, bool& hasChanged) {
+			bool Load(SKSE::SerializationInterface* interface, Distribution::NNDData::UpdateMask& mask) {
+				logger::info("Loading options...");
+
+				std::string oldFormat;
+				std::string oldObscurity;
+
+				if (!details::Read(interface, oldFormat) ||
+				    !details::Read(interface, oldObscurity))
+					return false;
+
+				if (oldFormat != Options::DisplayName::format)
+					mask |= Distribution::NNDData::UpdateMask::kDisplayName;
+				if (oldObscurity != Options::Obscurity::defaultName)
+					mask |= Distribution::NNDData::UpdateMask::kObscureName;
+
+				std::size_t snapshotSize;
+				if (!details::Read(interface, snapshotSize))
+					return false;
+				if (snapshotSize == 0)
+					return true;
+
 				NND::Snapshot oldSnapshot{};
 				const auto    currentSnapshot = MakeSnapshot();
 
-				std::size_t snapshotSize;
-				auto        result = details::Read(interface, snapshotSize);
-				if (!result || snapshotSize == 0) {
-					return false;
-				}
 				logger::info("Loading {} snapshots:", snapshotSize);
 				for (int i = 0; i < snapshotSize; ++i) {
 					std::string entry;
-					details::Read(interface, entry);
+					if (!details::Read(interface, entry))
+						return false;
 					oldSnapshot.insert(entry);
 					logger::info("\t{}", entry);
 				}
@@ -138,9 +165,8 @@ namespace NND
 						logger::info("\t{}", entry);
 					}
 					logger::info("Data will be updated.");
+					mask |= Distribution::NNDData::UpdateMask::kDefinitions;
 				}
-
-				hasChanged = !diff.empty();
 
 				return true;
 			}
@@ -161,20 +187,19 @@ namespace NND
 		void Load(SKSE::SerializationInterface* interface) {
 			logger::info("{:*^30}", "LOADING");
 
-			logger::info("Loading names...");
-
 			std::uint32_t loadedCount = 0;
 			Distribution::Manager::GetSingleton()->UpdateNames([&interface, &loadedCount](auto& names) {
 				std::uint32_t type, version, length;
 				names.clear();
-				bool hasChanged = false;
+				auto mask = Distribution::NNDData::UpdateMask::kNone;
 				while (interface->GetNextRecordInfo(type, version, length)) {
 					if (type == Snapshot::recordType) {
-						Snapshot::Load(interface, hasChanged);
+						Snapshot::Load(interface, mask);
+						logger::info("Loading names...");
 					} else if (type == Data::recordType) {
 						Distribution::NNDData data{};
 						if (Data::Load(interface, data)) {
-							// TODO: Check if hasChanged true and data uses default values - run the update.
+							data.updateMask |= mask;
 #ifndef NDEBUG
 							logger::info("Loaded [0x{:X}] {} ({})", data.formId, data.name, data.title);
 #endif

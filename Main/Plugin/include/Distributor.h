@@ -1,7 +1,7 @@
 #pragma once
 #include "NameDefinition.h"
-#include <shared_mutex>
 #include "Options.h"
+#include <shared_mutex>
 
 namespace NND
 {
@@ -9,7 +9,17 @@ namespace NND
 	{
 		struct NNDData
 		{
-			RE::FormID formId {};
+			enum class UpdateMask : uint8_t
+			{
+				kNone = 0b000,
+				kDisplayName = 0b001,
+				kObscureName = 0b010,
+				kDefinitions = 0b100,
+
+				kAll = kDisplayName | kObscureName | kDefinitions
+			};
+
+			RE::FormID formId{};
 
 			Name name{};
 			Name title{};
@@ -23,6 +33,12 @@ namespace NND
 			bool isObscured = false;
 			bool isTitleless = false;
 
+			bool isObscuringTitle = false;
+			bool hasDefaultObscurity = false;
+			bool hasDefaultTitle = false;
+		
+			UpdateMask updateMask = UpdateMask::kNone;
+
 			void UpdateDisplayName();
 
 			NameRef GetName(NameStyle) const;
@@ -35,7 +51,7 @@ namespace NND
 				static Manager singleton;
 				return &singleton;
 			}
-			
+
 			static void Register();
 
 			using NamesMap = std::unordered_map<RE::FormID, NNDData>;
@@ -53,7 +69,6 @@ namespace NND
 			RE::BSEventNotifyControl ProcessEvent(const RE::TESFormDeleteEvent*, RE::BSTEventSource<RE::TESFormDeleteEvent>*) override;
 
 		private:
-
 			using Lock = std::shared_mutex;
 			using ReadLocker = std::shared_lock<Lock>;
 			using WriteLocker = std::unique_lock<Lock>;
@@ -63,7 +78,11 @@ namespace NND
 
 			const std::unique_ptr<RE::TESCondition> talkedToPC;
 
+			void MakeTitle(NNDData&, const RE::Actor*) const;
+			void MakeObscureName(NNDData&, const RE::Actor*) const;
+
 			void DeleteName(RE::FormID);
+			void Refresh(NNDData&, const RE::Actor*);
 
 			// Singleton stuff :)
 			Manager();
@@ -75,7 +94,11 @@ namespace NND
 			Manager& operator=(const Manager&) = delete;
 			Manager& operator=(Manager&&) = delete;
 		};
-
-		
 	}
 }
+
+template <>
+struct enable_bitmask_operators<NND::Distribution::NNDData::UpdateMask>
+{
+	static constexpr bool enable = true;
+};

@@ -261,6 +261,13 @@ namespace NND
 				WriteLocker lock(_lock);
 				if (names.contains(actor->formID)) {
 					auto& data = names.at(actor->formID);
+
+					if (data.updateMask != NNDData::UpdateMask::kNone) {
+#ifndef NDEBUG
+						logger::info("Refreshing [0x{:X}] {} ({})...", data.formId, data.name, data.title);
+#endif
+						Refresh(data, actor);
+					}
 					// For commanded actors always reveal their name, since Player... well.. commands them :)
 					// These are reanimates people.
 					if (actor->IsCommandedActor() && actor->GetCommandingActor().get() == RE::PlayerCharacter::GetSingleton()) {
@@ -303,30 +310,8 @@ namespace NND
 				details::CreateName(Scope::kName, &data.name, &data.shortDisplayName, actor);
 			}
 
-			const Scope titleScopes = details::CreateName(Scope::kTitle, &data.title, nullptr, actor);
-#ifndef NDEBUG
-			std::string nameType = allScopeNames(titleScopes);
-			logger::info("Title {} for [0x{:X}] can be used in {} scopes", data.title, actor->formID, nameType);
-#endif
-			if (data.isObscured) {
-				// If custom title is provided and can be used in Obscurity scope - use it
-				if (has(titleScopes, Scope::kObscurity) && data.title != empty) {
-					data.obscurity = data.title;
-				} else {
-					// If no custom title usable in obscurity, then try to pick obscuring name in
-					details::CreateName(Scope::kObscurity, &data.obscurity, nullptr, actor);
-					// If name wasn't picked check whether original name can be used as title. In all other cases fallback to default obscuring name.
-					if (data.obscurity == empty) {
-						data.obscurity = !data.isTitleless ? originalName : Options::Obscurity::defaultName;
-					}
-				}
-			}
-
-			// Set default title after obscuring, so that it won't interfere with obscurity logic.
-			// Use original name as title if no custom one provided.
-			if (data.title == empty && !data.isTitleless) {
-				data.title = originalName;
-			}
+			MakeTitle(data, actor);
+			MakeObscureName(data, actor);
 
 			data.UpdateDisplayName();
 
@@ -352,9 +337,67 @@ namespace NND
 			}
 		}
 
+		void Manager::MakeTitle(NNDData& data, const RE::Actor* actor) const {
+			if (data.hasDefaultTitle || data.title == empty) {
+				const Scope titleScopes = details::CreateName(Scope::kTitle, &data.title, nullptr, actor);
+				data.hasDefaultTitle = false;
+				// Use original name as title if no custom one provided.
+				if (data.title == empty && !data.isTitleless) {
+					if (const auto npc = actor->GetActorBase()) {
+						data.title = npc->GetFullName();
+						data.hasDefaultTitle = data.title != empty;
+					}
+				}
+				data.isObscuringTitle = !data.hasDefaultTitle && data.title != empty && has(titleScopes, Scope::kObscurity);
+#ifndef NDEBUG
+				std::string nameType = allScopeNames(titleScopes);
+				logger::info("Title {} for [0x{:X}] can be used in {} scopes", data.title, actor->formID, nameType);
+#endif
+			}
+		}
+
+		void Manager::MakeObscureName(NNDData& data, const RE::Actor* actor) const {
+			if (data.isObscured && (data.hasDefaultObscurity || data.obscurity == empty)) {
+				// If custom title is provided and can be used in Obscurity scope - use it
+				if (data.isObscuringTitle) {
+					data.obscurity = data.title;
+				} else {
+					// If no custom title usable in obscurity, then try to pick obscuring name in
+					details::CreateName(Scope::kObscurity, &data.obscurity, nullptr, actor);
+					// If name wasn't picked check whether original name can be used as title. In all other cases fallback to default obscuring name.
+					if (data.obscurity == empty) {
+						auto originalName = empty;
+						if (const auto npc = actor->GetActorBase()) {
+							originalName = npc->GetFullName();
+						}
+						data.hasDefaultObscurity = data.isTitleless;
+						data.obscurity = data.hasDefaultObscurity || originalName == empty ? Options::Obscurity::defaultName : originalName;
+					}
+				}
+			}
+		}
+
 		void Manager::DeleteName(RE::FormID formId) {
 			WriteLocker lock(_lock);
 			names.erase(formId);
+		}
+		
+		void Manager::Refresh(NNDData& data, const RE::Actor* actor) {
+			if (has(data.updateMask, NNDData::UpdateMask::kDefinitions)) {
+				MakeTitle(data, actor);
+				MakeObscureName(data, actor);
+			} else if (has(data.updateMask, NNDData::UpdateMask::kObscureName)) {
+				// Only check obscurity if definitions weren't changed. Otherwise it's already handled.
+				if (data.isObscured && data.hasDefaultObscurity) {
+					data.obscurity = Options::Obscurity::defaultName;
+				}
+			}
+
+			if (has(data.updateMask, NNDData::UpdateMask::kDisplayName)) {
+				data.UpdateDisplayName();
+			}
+
+			data.updateMask = NNDData::UpdateMask::kNone;
 		}
 
 		Manager::Manager() :
