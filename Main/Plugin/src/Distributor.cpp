@@ -254,7 +254,7 @@ namespace NND
 					auto& data = names.at(actor->formID);
 					// For commanded actors always reveal their name, since Player... well.. commands them :)
 					// These are reanimates people.
-					if (actor->IsCommandedActor()) {
+					if (actor->IsCommandedActor() && actor->GetCommandingActor().get() == RE::PlayerCharacter::GetSingleton()) {
 						data.isObscured = false;
 					}
 					return data.GetName(style);
