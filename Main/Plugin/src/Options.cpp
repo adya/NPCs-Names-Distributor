@@ -47,8 +47,12 @@ namespace NND
 		if (ini.LoadFile(options.string().c_str()) >= 0) {
 			Obscurity::enabled = ini.GetBoolValue("Obscurity", "bEnabled", Obscurity::enabled);
 			Obscurity::defaultName = ini.GetValue("Obscurity", "sDefaultName", Obscurity::defaultName.data());
-
-			DisplayName::format = ini.GetValue("DisplayName", "sFormat", DisplayName::format.data());
+			
+			if (const auto format = ini.GetValue("DisplayName", "sFormat")) {
+				DisplayName::format = format;
+			} else if (const auto formatIndex = ini.GetLongValue("DisplayName", "iFormat", -1); formatIndex >= 0 && formatIndex < DisplayName::defaultFormats.size()) {
+				DisplayName::format = DisplayName::defaultFormats[formatIndex];
+			}
 
 			ReadStyle(ini, "sCrosshair", NameContext::kCrosshair);
 			ReadStyle(ini, "sCrosshairMinion", NameContext::kCrosshairMinion);

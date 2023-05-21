@@ -47,6 +47,17 @@ namespace NND
 
 		namespace DisplayName
 		{
+			constexpr std::array defaultFormats = {
+				"[name]"sv,                // 0
+				"[name][break][title]"sv,  // 1
+				"[name] ([title])"sv,      // 2
+				"[name] [[title]]"sv,      // 3
+				"[name], [title]"sv,       // 4
+				"[name]; [title]"sv,       // 5
+				"[name]. [title]"sv,       // 6
+				"[name] [title]"sv         // 7
+			};
+
 			/// Format string for DisplayName.
 			///	Supports placeholders:
 			///	- [name]: Substitutes full name
