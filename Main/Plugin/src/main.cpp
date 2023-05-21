@@ -2,6 +2,7 @@
 #include "LookupNameDefinitions.h"
 #include "NNDKeywords.h"
 #include "Serialization.h"
+#include "Options.h"
 
 // ReSharper disable once CppParameterMayBeConstPtrOrRef
 void MessageHandler(SKSE::MessagingInterface::Message* a_message)
@@ -9,6 +10,7 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_message)
 	switch (a_message->type) {
 	case SKSE::MessagingInterface::kDataLoaded:
 		if (NND::CacheKeywords() && NND::LoadNameDefinitions()) {
+			NND::Options::Load();
 			NND::Install();
 			NND::Distribution::Manager::Register();
 		}

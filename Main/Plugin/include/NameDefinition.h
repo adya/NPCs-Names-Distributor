@@ -19,7 +19,6 @@ namespace NND
 	};
 
 	constexpr inline NameRef empty = ""sv;
-	constexpr inline NameRef defaultObscure = "???"sv;
 
 	struct NameComponents
 	{

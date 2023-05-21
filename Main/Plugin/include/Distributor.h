@@ -1,29 +1,13 @@
 #pragma once
 #include "NameDefinition.h"
 #include <shared_mutex>
+#include "Options.h"
 
 namespace NND
 {
 	
 	namespace Distribution
 	{
-		enum NameFormat
-		{
-			/// Show a full name with a title.
-			kDisplayName,
-
-			/// Show only a name without a title.
-			kFullName,
-
-			/// Show short name if available, otherwise fallback to kFullName.
-			kShortName,
-
-			/// Show only a title if available, otherwise fallback to kFullName.
-			///
-			///	This includes both custom Title or default title if isTitleless = false.
-			kTitle
-		};
-
 		struct NNDData
 		{
 			RE::FormID formId {};
@@ -42,7 +26,7 @@ namespace NND
 
 			void UpdateDisplayName();
 
-			NameRef GetName(NameFormat, const RE::Actor* actor) const;
+			NameRef GetName(NameStyle) const;
 		};
 
 		class Manager : public RE::BSTEventSink<RE::TESFormDeleteEvent>
@@ -60,7 +44,7 @@ namespace NND
 			/// Reveals name for given RE::FormID if it was previously obscured.
 			void RevealName(RE::FormID);
 
-			NameRef  GetName(NameFormat, RE::Actor*, const char* originalName);
+			NameRef  GetName(NameStyle, RE::Actor*, const char* originalName);
 			NNDData& SetName(const NNDData&);
 
 			void            UpdateNames(std::function<void(NamesMap&)>);

@@ -22,7 +22,7 @@ namespace NND
 			}
 		}
 
-		NameRef NNDData::GetName(NameFormat format, const RE::Actor* actor) const {
+		NameRef NNDData::GetName(NameStyle style) const {
 			if (isObscured && obscurity != empty) {
 				return obscurity;
 			}
@@ -30,9 +30,10 @@ namespace NND
 			if (isUnique) {
 				return empty;
 			}
-			switch (format) {
+			switch (style) {
 			case kDisplayName:
 				return displayName;
+			default:
 			case kFullName:
 				return name;
 			case kShortName:
@@ -246,7 +247,7 @@ namespace NND
 			}
 		}
 
-		NameRef Manager::GetName(NameFormat format, RE::Actor* actor, const char* originalName) {
+		NameRef Manager::GetName(NameStyle style, RE::Actor* actor, const char* originalName) {
 			{  // Limit scope of lock for reading access to cached names.
 				ReadLocker lock(_lock);
 				if (names.contains(actor->formID)) {
@@ -256,7 +257,7 @@ namespace NND
 					if (actor->IsCommandedActor()) {
 						data.isObscured = false;
 					}
-					return data.GetName(format, actor);
+					return data.GetName(style);
 				}
 			}
 
@@ -307,7 +308,7 @@ namespace NND
 					details::CreateName(Scope::kObscurity, &data.obscurity, nullptr, actor);
 					// If name wasn't picked check whether original name can be used as title. In all other cases fallback to default obscuring name.
 					if (data.obscurity == empty) {
-						data.obscurity = !data.isTitleless ? originalName : defaultObscure;
+						data.obscurity = !data.isTitleless ? originalName : Options::Format::defaultObscure;
 					}
 				}
 			}
@@ -326,7 +327,7 @@ namespace NND
 			const auto duration = std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime).count();
 			logger::info("Generated name {} in {} ms", data.displayName, duration);
 
-			return SetName(data).GetName(format, actor);
+			return SetName(data).GetName(style);
 		}
 
 		NNDData& Manager::SetName(const NNDData& data) {

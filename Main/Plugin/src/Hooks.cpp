@@ -1,46 +1,21 @@
 #include "Hooks.h"
 #include "Distributor.h"
+#include "Options.h"
 
 namespace NND
 {
 	using namespace Distribution;
-
-	enum class NameContext
-	{
-		kDefault = 0,
-		kCrosshair,
-		kCrosshairMinion,
-		kSubtitles,
-		kDialogue,
-		kInventory,
-		kBarter,
-		kEnemyHUD
-	};
-
-	// TODO: Read from settings.
-	inline NameFormat GetFormatByContext(NameContext context) {
-		switch (context) {
-		default:
-		case NameContext::kDefault: return kFullName;
-		case NameContext::kCrosshair: return kDisplayName;
-		case NameContext::kCrosshairMinion: return kFullName;
-		case NameContext::kSubtitles: return kShortName;
-		case NameContext::kDialogue: return kFullName;
-		case NameContext::kInventory: return kFullName;
-		case NameContext::kBarter: return kShortName;
-		case NameContext::kEnemyHUD: return kFullName;
-		}
-	}
+	using namespace Options;
 
 	namespace Naming
 	{
-		static const char* GetName(NameContext context, RE::TESObjectREFR* ref, const char* originalName) {
+		static const char* GetName(NameStyle style, RE::TESObjectREFR* ref, const char* originalName) {
 			if (!ref || !ref->Is(RE::FormType::ActorCharacter)) {
 				return originalName;
 			}
 
 			if (const auto actor = ref->As<RE::Actor>(); actor != RE::PlayerCharacter::GetSingleton()) {
-				if (const auto name = Manager::GetSingleton()->GetName(GetFormatByContext(context), actor, originalName); name != empty) {
+				if (const auto name = Manager::GetSingleton()->GetName(style, actor, originalName); name != empty) {
 					return name.data();
 				}
 			}
@@ -57,7 +32,7 @@ namespace NND
 			{
 				static const char* thunk(RE::ExtraTextDisplayData* a_this, RE::TESObjectREFR* obj, float temperFactor) {
 					const auto originalName = a_this->GetDisplayName(obj->GetBaseObject(), temperFactor);
-					return GetName(NameContext::kDefault, obj, originalName);
+					return GetName(NameContext::kOther, obj, originalName);
 				}
 				static inline REL::Relocation<decltype(thunk)> func;
 			};
@@ -69,7 +44,7 @@ namespace NND
 			{
 				static const char* thunk(RE::TESObjectREFR* a_this) {
 					const auto originalName = a_this->GetBaseObject()->GetName();
-					return GetName(NameContext::kDefault, a_this, originalName);
+					return GetName(NameContext::kOther, a_this, originalName);
 				}
 				static inline REL::Relocation<decltype(thunk)> func;
 			};
@@ -83,7 +58,7 @@ namespace NND
 				{
 					static const char* thunk(RE::Actor* a_this) {
 						const auto originalName = a_this->GetDisplayFullName();
-						return GetName(NameContext::kDefault, a_this, originalName);
+						return GetName(NameContext::kOther, a_this, originalName);
 					}
 					static inline REL::Relocation<decltype(thunk)> func;
 				};

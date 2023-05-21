@@ -3,6 +3,7 @@ set(headers ${headers}
 	include/Distributor.h
 	include/NNDKeywords.h
 	include/Hooks.h
+	include/Options.h
 	include/LookupNameDefinitions.h
 	include/NameDefinition.h
 	include/NameDefinitionDecoder.h
