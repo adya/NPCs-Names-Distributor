@@ -5,7 +5,6 @@
 
 namespace NND
 {
-	
 	namespace Distribution
 	{
 		struct NNDData

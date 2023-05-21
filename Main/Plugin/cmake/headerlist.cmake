@@ -8,5 +8,6 @@ set(headers ${headers}
 	include/NameDefinition.h
 	include/NameDefinitionDecoder.h
 	include/Serialization.h
+	include/crc32.h
 	include/PCH.h
 )

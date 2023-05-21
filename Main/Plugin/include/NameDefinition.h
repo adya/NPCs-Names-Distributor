@@ -199,6 +199,8 @@ namespace NND
 		/// Name of the definition.
 		std::string name;
 
+		uint32_t crc32 = 0;
+
 		[[nodiscard]] bool HasDefaultScopes() const {
 			return scope == Scope::kDefault;
 		}

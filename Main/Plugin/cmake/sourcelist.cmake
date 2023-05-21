@@ -6,6 +6,7 @@ set(sources ${sources}
 	src/NameDefinition.cpp
 	src/NameDefinitionDecoder.cpp
 	src/Serialization.cpp
+	src/crc32.cpp
 	src/main.cpp
 	src/PCH.cpp
 )

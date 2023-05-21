@@ -1,6 +1,7 @@
 #include "LookupNameDefinitions.h"
 #include "CLIBUtil/distribution.hpp"
 #include "NameDefinitionDecoder.h"
+#include "crc32.h"
 
 namespace NND
 {
@@ -74,6 +75,19 @@ namespace NND
 		LogNameSegment("Last"sv, definition.lastName);
 	}
 
+	uint32_t ComputeCRC(std::filesystem::path path)
+	{
+		std::ifstream   file(path, std::ios::binary | std::ios::ate);
+		const std::streamsize size = file.tellg();
+		file.seekg(0, std::ios::beg);
+
+		auto buffer = new char[size];
+		if (file.read(buffer, size)) {
+			return crc32_fast(buffer, size);
+		}
+		return 0;
+	}
+
 	bool LoadNameDefinitions()
 	{
 		logger::info("{:*^30}", "NAME DEFINITIONS");
@@ -92,6 +106,7 @@ namespace NND
 			logger::info("Loading \"{}\"", name);
 			try {
 				auto definition = decoder.decode(file);
+				definition.crc32 = ComputeCRC(file);
 				definition.name = name;
 				if (has(definition.scope, NameDefinition::Scope::kName)) {
 					loadedDefinitions[NameDefinition::Scope::kName][name] = definition;
@@ -110,4 +125,24 @@ namespace NND
 		}
 		return validFiles > 0;
 	}
+
+	Snapshot MakeSnapshot() {
+		std::set<std::string> snapshots{};
+
+		for (const auto& scope : loadedDefinitions) {
+			for (const auto& [name, definition] : scope.second) {
+				std::stringstream stream{};
+				stream << name
+					   << "@"
+					   << std::setfill('0')
+					   << std::setw(sizeof(uint32_t) * 2)
+					   << std::uppercase
+					   << std::hex
+					   << definition.crc32;
+				snapshots.insert(stream.str());
+			}
+		}
+		return snapshots;
+	}
+
 }
