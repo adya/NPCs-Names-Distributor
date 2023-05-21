@@ -22,6 +22,13 @@ namespace NND
 
 	namespace Options
 	{
+		namespace Obscurity
+		{
+			inline bool enabled = true;
+			inline Name defaultName = "???";
+		}
+		
+
 		namespace NameContext
 		{
 			inline auto kCrosshair = kDisplayName;
@@ -39,11 +46,6 @@ namespace NND
 			inline auto kOther = kFullName;
 		}
 
-		namespace Format
-		{
-			inline NameRef defaultObscure = "???"sv;
-			constexpr inline NameRef defaultTest = "TEST"sv;
-		}
 		void Load();
 	}
 }

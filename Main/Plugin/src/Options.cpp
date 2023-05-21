@@ -16,18 +16,27 @@ namespace NND
 		}
 	}
 
-	void ReadStyle(const CSimpleIniA& ini, const char* name, NameStyle& style) {
+	bool ReadStyle(const CSimpleIniA& ini, const char* name, NameStyle& style) {
 		auto rawName = ini.GetValue("NameContext", name);
-		if (clib_util::string::iequals(rawName, "display"))
+		if (clib_util::string::iequals(rawName, "display")) {
 			style = kDisplayName;
-		if (clib_util::string::iequals(rawName, "full"))
+			return true;
+		}
+		if (clib_util::string::iequals(rawName, "full")) {
 			style = kFullName;
-		if (clib_util::string::iequals(rawName, "short"))
+			return true;
+		}
+		if (clib_util::string::iequals(rawName, "short")) {
 			style = kShortName;
-		if (clib_util::string::iequals(rawName, "title"))
+			return true;
+		}
+		if (clib_util::string::iequals(rawName, "title")) {
 			style = kTitle;
+			return true;
+		}
 
 		logger::warn("WARN: Unexpected value for NameContext:{}. Got '{}', but expected either: 'display', 'full', 'short', 'title'", name, rawName);
+		return false;
 	}
 
 	void Options::Load() {
@@ -36,18 +45,26 @@ namespace NND
 		CSimpleIniA           ini{};
 		ini.SetUnicode();
 		if (ini.LoadFile(options.string().c_str()) >= 0) {
-			ReadStyle(ini, "Crosshair", NameContext::kCrosshair);
-			ReadStyle(ini, "CrosshairMinion", NameContext::kCrosshairMinion);
-			ReadStyle(ini, "Subtitles", NameContext::kSubtitles);
-			ReadStyle(ini, "Dialogue", NameContext::kDialogue);
-			ReadStyle(ini, "Inventory", NameContext::kInventory);
-			ReadStyle(ini, "Barter", NameContext::kBarter);
-			ReadStyle(ini, "EnemyHUD", NameContext::kEnemyHUD);
-			ReadStyle(ini, "Other", NameContext::kOther);
+			Obscurity::enabled = ini.GetBoolValue("Obscurity", "bEnabled", Obscurity::enabled);
+			Obscurity::defaultName = ini.GetValue("Obscurity", "sDefaultName", Obscurity::defaultName.data());
+
+			ReadStyle(ini, "sCrosshair", NameContext::kCrosshair);
+			ReadStyle(ini, "sCrosshairMinion", NameContext::kCrosshairMinion);
+			ReadStyle(ini, "sSubtitles", NameContext::kSubtitles);
+			ReadStyle(ini, "sDialogue", NameContext::kDialogue);
+			ReadStyle(ini, "sInventory", NameContext::kInventory);
+			ReadStyle(ini, "sBarter", NameContext::kBarter);
+			ReadStyle(ini, "sEnemyHUD", NameContext::kEnemyHUD);
+			ReadStyle(ini, "sOther", NameContext::kOther);
 		} else {
 			logger::info(R"(Data\SKSE\Plugins\NPCsNamesDistributor.ini not found. Default options will be used.)");
+			logger::info("");
 		}
 
+		logger::info("Obscurity:");
+		logger::info("\t{}", Obscurity::enabled ? "Enabled" : "Disabled");
+		logger::info("\tDefault Name: {}", Obscurity::defaultName);
+		logger::info("");
 		logger::info("Name Contexts:");
 		logger::info("\tCrosshair: {}", name(NameContext::kCrosshair));
 		logger::info("\tCrosshairMinion: {}", name(NameContext::kCrosshairMinion));

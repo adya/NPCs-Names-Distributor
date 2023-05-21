@@ -23,7 +23,7 @@ namespace NND
 		}
 
 		NameRef NNDData::GetName(NameStyle style) const {
-			if (isObscured && obscurity != empty) {
+			if (Options::Obscurity::enabled && isObscured && obscurity != empty) {
 				return obscurity;
 			}
 
@@ -308,7 +308,7 @@ namespace NND
 					details::CreateName(Scope::kObscurity, &data.obscurity, nullptr, actor);
 					// If name wasn't picked check whether original name can be used as title. In all other cases fallback to default obscuring name.
 					if (data.obscurity == empty) {
-						data.obscurity = !data.isTitleless ? originalName : Options::Format::defaultObscure;
+						data.obscurity = !data.isTitleless ? originalName : Options::Obscurity::defaultName;
 					}
 				}
 			}

@@ -5,7 +5,6 @@
 namespace NND
 {
 	using namespace Distribution;
-	using namespace Options;
 
 	namespace Naming
 	{
@@ -32,7 +31,7 @@ namespace NND
 			{
 				static const char* thunk(RE::ExtraTextDisplayData* a_this, RE::TESObjectREFR* obj, float temperFactor) {
 					const auto originalName = a_this->GetDisplayName(obj->GetBaseObject(), temperFactor);
-					return GetName(NameContext::kOther, obj, originalName);
+					return GetName(Options::NameContext::kOther, obj, originalName);
 				}
 				static inline REL::Relocation<decltype(thunk)> func;
 			};
@@ -44,7 +43,7 @@ namespace NND
 			{
 				static const char* thunk(RE::TESObjectREFR* a_this) {
 					const auto originalName = a_this->GetBaseObject()->GetName();
-					return GetName(NameContext::kOther, a_this, originalName);
+					return GetName(Options::NameContext::kOther, a_this, originalName);
 				}
 				static inline REL::Relocation<decltype(thunk)> func;
 			};
@@ -58,7 +57,7 @@ namespace NND
 				{
 					static const char* thunk(RE::Actor* a_this) {
 						const auto originalName = a_this->GetDisplayFullName();
-						return GetName(NameContext::kOther, a_this, originalName);
+						return GetName(Options::NameContext::kOther, a_this, originalName);
 					}
 					static inline REL::Relocation<decltype(thunk)> func;
 				};
@@ -116,7 +115,7 @@ namespace NND
 			{
 				static const char* thunk(RE::TESObjectREFR* a_this) {
 					const auto originalName = func(a_this);
-					return GetName(NameContext::kSubtitles, a_this, originalName);
+					return GetName(Options::NameContext::kSubtitles, a_this, originalName);
 				}
 				static inline REL::Relocation<decltype(thunk)> func;
 			};
@@ -147,7 +146,7 @@ namespace NND
 			{
 				static const char* thunk(RE::TESObjectREFR* a_this) {
 					const auto originalName = func(a_this);
-					return GetName(NameContext::kEnemyHUD, a_this, originalName);
+					return GetName(Options::NameContext::kEnemyHUD, a_this, originalName);
 				}
 				static inline REL::Relocation<decltype(thunk)> func;
 			};
@@ -169,7 +168,7 @@ namespace NND
 			{
 				static const char* thunk(RE::TESObjectREFR* a_this) {
 					const auto originalName = func(a_this);
-					return GetName(NameContext::kCrosshairMinion, a_this, originalName);
+					return GetName(Options::NameContext::kCrosshairMinion, a_this, originalName);
 				}
 				static inline REL::Relocation<decltype(thunk)> func;
 			};
@@ -181,7 +180,7 @@ namespace NND
 			{
 				static const char* thunk(RE::TESObjectREFR* a_this) {
 					const auto originalName = func(a_this);
-					return GetName(NameContext::kCrosshair, a_this, originalName);
+					return GetName(Options::NameContext::kCrosshair, a_this, originalName);
 				}
 				static inline REL::Relocation<decltype(thunk)> func;
 			};
@@ -193,7 +192,7 @@ namespace NND
 			{
 				static const char* thunk(RE::TESObjectREFR* a_this) {
 					const auto originalName = func(a_this);
-					return GetName(NameContext::kCrosshair, a_this, originalName);
+					return GetName(Options::NameContext::kCrosshair, a_this, originalName);
 				}
 				static inline REL::Relocation<decltype(thunk)> func;
 			};
@@ -223,7 +222,7 @@ namespace NND
 			{
 				static const char* thunk(RE::TESObjectREFR* a_this) {
 					const auto originalName = func(a_this);
-					return GetName(NameContext::kDialogue, a_this, originalName);
+					return GetName(Options::NameContext::kDialogue, a_this, originalName);
 				}
 				static inline REL::Relocation<decltype(thunk)> func;
 			};
@@ -235,7 +234,7 @@ namespace NND
 			{
 				static const char* thunk(RE::TESObjectREFR* a_this) {
 					const auto originalName = func(a_this);
-					return GetName(NameContext::kDialogue, a_this, originalName);
+					return GetName(Options::NameContext::kDialogue, a_this, originalName);
 				}
 				static inline REL::Relocation<decltype(thunk)> func;
 			};
@@ -260,7 +259,7 @@ namespace NND
 			{
 				static const char* thunk(RE::TESObjectREFR* a_this) {
 					const auto originalName = func(a_this);
-					return GetName(NameContext::kInventory, a_this, originalName);
+					return GetName(Options::NameContext::kInventory, a_this, originalName);
 				}
 				static inline REL::Relocation<decltype(thunk)> func;
 			};
@@ -272,7 +271,7 @@ namespace NND
 			{
 				static const char* thunk(RE::TESObjectREFR* a_this) {
 					const auto originalName = func(a_this);
-					return GetName(NameContext::kInventory, a_this, originalName);
+					return GetName(Options::NameContext::kInventory, a_this, originalName);
 				}
 				static inline REL::Relocation<decltype(thunk)> func;
 			};
@@ -295,7 +294,7 @@ namespace NND
 			struct BarterMenu_GetShortName
 			{
 				static const char* thunk(RE::TESObjectREFR* a_this) {
-					return GetName(NameContext::kBarter, a_this, a_this->GetDisplayFullName());
+					return GetName(Options::NameContext::kBarter, a_this, a_this->GetDisplayFullName());
 				}
 				static inline REL::Relocation<decltype(thunk)> func;
 			};
