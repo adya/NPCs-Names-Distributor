@@ -15,8 +15,13 @@ namespace NND
 			/// Show only a name without a title.
 			kFullName,
 
-			/// Show short name if available.
-			kShortName
+			/// Show short name if available, otherwise fallback to kFullName.
+			kShortName,
+
+			/// Show only a title if available, otherwise fallback to kFullName.
+			///
+			///	This includes both custom Title or default title if isTitleless = false.
+			kTitle
 		};
 
 		struct NNDData

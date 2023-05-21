@@ -30,11 +30,16 @@ namespace NND
 			if (isUnique) {
 				return empty;
 			}
-
-			if (format == kShortName) {
+			switch (format) {
+			case kDisplayName:
+				return displayName;
+			case kFullName:
+				return name;
+			case kShortName:
 				return shortDisplayName != empty ? shortDisplayName : name;
+			case kTitle:
+				return title != empty ? title : name;
 			}
-			return format == kFullName ? name : displayName;
 		}
 	}
 
@@ -164,7 +169,7 @@ namespace NND
 					auto pickedFirstName = false;
 					auto pickedMiddleName = false;
 					auto pickedLastName = false;
-				
+
 					if (!resolvedFirstName) {
 						pickedFirstName = definition.GetRandomFirstName(sex, comps);
 						resolvedFirstName = pickedFirstName || !definition.firstName.shouldInherit;
@@ -178,7 +183,6 @@ namespace NND
 					if (!resolvedLastName) {
 						pickedLastName = definition.GetRandomLastName(sex, comps);
 						resolvedLastName = pickedLastName || !definition.lastName.shouldInherit;
-						
 					}
 
 					const auto pickedAnyName = pickedFirstName || pickedMiddleName || pickedLastName;
@@ -197,7 +201,7 @@ namespace NND
 					if (pickedAnyName && comps.shortSegments == NameSegmentType::kNone && definition.shortened != NameSegmentType::kNone) {
 						comps.shortSegments = definition.shortened;
 					}
-					
+
 					// If all segments are resolved, then we're ready :)
 					if (resolvedFirstName && resolvedMiddleName && resolvedLastName)
 						break;
@@ -343,7 +347,8 @@ namespace NND
 			names.erase(formId);
 		}
 
-		Manager::Manager(): talkedToPC(std::make_unique<RE::TESCondition>()) {
+		Manager::Manager() :
+			talkedToPC(std::make_unique<RE::TESCondition>()) {
 			RE::CONDITION_ITEM_DATA condData{};
 			condData.functionData.function = RE::FUNCTION_DATA::FunctionID::kGetTalkedToPC;
 			condData.flags.opCode = RE::CONDITION_ITEM_DATA::OpCode::kEqualTo;
