@@ -248,8 +248,8 @@ namespace NND
 		}
 
 		NameRef Manager::GetName(NameStyle style, RE::Actor* actor, const char* originalName) {
-			{  // Limit scope of lock for reading access to cached names.
-				ReadLocker lock(_lock);
+			{  // Limit scope of the lock to cached names.
+				WriteLocker lock(_lock);
 				if (names.contains(actor->formID)) {
 					auto& data = names.at(actor->formID);
 					// For commanded actors always reveal their name, since Player... well.. commands them :)
