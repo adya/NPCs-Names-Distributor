@@ -1,11 +1,11 @@
-#include "Serialization.h"
+#include "Persistency.h"
 
 #include "Distributor.h"
 #include "LookupNameDefinitions.h"
 
 namespace NND
 {
-	namespace Serialization
+	namespace Persistency
 	{
 		constexpr std::uint32_t serializationKey = 'NNDI';
 		constexpr std::uint32_t serializationVersion = 1;
@@ -148,7 +148,7 @@ namespace NND
 	}
 
 	// Public
-	namespace Serialization
+	namespace Persistency
 	{
 		void Setup() {
 			const auto serializationInterface = SKSE::GetSerializationInterface();

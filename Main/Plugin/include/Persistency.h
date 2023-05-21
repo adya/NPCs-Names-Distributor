@@ -2,7 +2,7 @@
 
 namespace NND
 {
-	namespace Serialization
+	namespace Persistency
 	{
 		void Setup();
 

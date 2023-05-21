@@ -7,7 +7,7 @@ set(headers ${headers}
 	include/LookupNameDefinitions.h
 	include/NameDefinition.h
 	include/NameDefinitionDecoder.h
-	include/Serialization.h
+	include/Persistency.h
 	include/crc32.h
 	include/PCH.h
 )
