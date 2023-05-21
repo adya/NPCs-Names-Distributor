@@ -78,6 +78,7 @@ namespace NND
 
 			const std::unique_ptr<RE::TESCondition> talkedToPC;
 
+			void MakeName(NNDData&, const RE::Actor*) const;
 			void MakeTitle(NNDData&, const RE::Actor*) const;
 			void MakeObscureName(NNDData&, const RE::Actor*) const;
 

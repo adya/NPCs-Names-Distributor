@@ -307,7 +307,7 @@ namespace NND
 			}
 
 			if (!data.isUnique) {
-				details::CreateName(Scope::kName, &data.name, &data.shortDisplayName, actor);
+				MakeName(data, actor);
 			}
 
 			MakeTitle(data, actor);
@@ -334,6 +334,12 @@ namespace NND
 			WriteLocker lock(_lock);
 			if (const auto& it = names.find(formId); it != names.end()) {
 				it->second.isObscured = false;
+			}
+		}
+
+		void Manager::MakeName(NNDData& data, const RE::Actor* actor) const {
+			if (!data.isUnique && data.name == empty) {
+				details::CreateName(Scope::kName, &data.name, &data.shortDisplayName, actor);
 			}
 		}
 
@@ -384,19 +390,23 @@ namespace NND
 		
 		void Manager::Refresh(NNDData& data, const RE::Actor* actor) {
 			if (has(data.updateMask, NNDData::UpdateMask::kDefinitions)) {
+				MakeName(data, actor);
 				MakeTitle(data, actor);
 				MakeObscureName(data, actor);
-			} else if (has(data.updateMask, NNDData::UpdateMask::kObscureName)) {
-				// Only check obscurity if definitions weren't changed. Otherwise it's already handled.
-				if (data.isObscured && data.hasDefaultObscurity) {
-					data.obscurity = Options::Obscurity::defaultName;
+				data.UpdateDisplayName();
+			} else {
+				if (has(data.updateMask, NNDData::UpdateMask::kObscureName)) {
+					// Only check obscurity if definitions weren't changed. Otherwise it's already handled.
+					if (data.isObscured && data.hasDefaultObscurity) {
+						data.obscurity = Options::Obscurity::defaultName;
+					}
+				}
+
+				if (has(data.updateMask, NNDData::UpdateMask::kDisplayName)) {
+					data.UpdateDisplayName();
 				}
 			}
-
-			if (has(data.updateMask, NNDData::UpdateMask::kDisplayName)) {
-				data.UpdateDisplayName();
-			}
-
+			
 			data.updateMask = NNDData::UpdateMask::kNone;
 		}
 
