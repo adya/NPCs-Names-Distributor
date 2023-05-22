@@ -156,10 +156,10 @@ namespace NND
 				std::ranges::sort(definitions, definitions_priority_greater());
 #ifndef NDEBUG
 				std::vector<std::string> defNames;
-				std::string              nameType = rawScopeName(scope);
+				
 
 				std::ranges::transform(definitions.begin(), definitions.end(), std::back_inserter(defNames), [](const auto& d) { return d.get().name; });
-				logger::info("Generating {} for {} from: [{}]", nameType, actor->GetName(), clib_util::string::join(defNames, ", "));
+				logger::info("\t\tFrom: [{}]", clib_util::string::join(defNames, ", "));
 #endif
 				// Assemble a name.
 				NameComponents comps;
@@ -231,13 +231,16 @@ namespace NND
 			 */
 			Scope CreateName(Scope scope, Name* name, Name* shortened, const RE::Actor* actor) {
 				Scope      commonScopes = scope;
+#ifndef NDEBUG
+				std::string nameType = rawScopeName(scope);
+				logger::info("\tCreating {}:", nameType);
+#endif
 				const auto components = MakeNameComponents(scope, actor, commonScopes);
 				if (components.has_value()) {
 					const auto fullName = components->Assemble();
 					if (fullName.has_value() && !fullName->empty()) {
 #ifndef NDEBUG
-						std::string nameType = rawScopeName(scope);
-						logger::info("Caching new {} '{}' for '{}' [0x{:X}]", nameType, *fullName, std::string(actor->GetName()), actor->formID);
+						logger::info("\t\tPicked: '{}'", *fullName);
 #endif
 						*name = *fullName;
 
@@ -245,11 +248,15 @@ namespace NND
 							const auto shortName = components->AssembleShort();
 							if (shortName.has_value() && !shortName->empty() && *shortName != *fullName) {
 #ifndef NDEBUG
-								logger::info("Caching new short {} '{}' for '{}' [0x{:X}]", nameType, *shortName, std::string(actor->GetName()), actor->formID);
+								logger::info("\t\tShort: '{}'", *shortName);
 #endif
 								*shortened = *shortName;
 							}
 						}
+#ifndef NDEBUG
+					} else {
+						logger::info("\t\tDefault will be used");
+#endif
 					}
 				}
 				return commonScopes;
@@ -262,54 +269,66 @@ namespace NND
 				if (names.contains(actor->formID)) {
 					auto& data = names.at(actor->formID);
 
-					if (data.updateMask != NNDData::UpdateMask::kNone) {
-#ifndef NDEBUG
-						logger::info("Refreshing [0x{:X}] {} ({})...", data.formId, data.name, data.title);
-#endif
-						Refresh(data, actor);
-					}
-					// For commanded actors always reveal their name, since Player... well.. commands them :)
-					// These are reanimates people.
-					if (actor->IsCommandedActor() && actor->GetCommandingActor().get() == RE::PlayerCharacter::GetSingleton()) {
+					if (!ActorSupportsObscurity(actor))
 						data.isObscured = false;
-					}
 					return data.GetName(style);
 				}
 			}
+#ifndef NDEBUG
+			logger::warn("WARN: Pre-cached name for [0x{:X}] ('{}') not found. Name will be created in-place.", actor->formID, actor->GetActorBase()->GetName());
+#endif
+			return CreateData(actor).GetName(style);
+		}
 
+		NNDData& Manager::SetData(const NNDData& data) {
+			WriteLocker lock(_lock);
+			names[data.formId] = data;
+			return names.at(data.formId);
+		}
+
+		NNDData& Manager::RefreshData(NNDData& data, RE::Actor* actor) {
+			data.isUnique = actor->HasKeyword(unique);
+			data.isTitleless = actor->HasKeyword(titleless);
+			data.isObscured = !actor->HasKeyword(known) && ActorSupportsObscurity(actor);
+#ifndef NDEBUG
+			logger::info("\tIsUnique: {}", data.isUnique);
+			logger::info("\tIsTitleless: {}", data.isTitleless);
+			logger::info("\tIsObscured: {}", data.isObscured);
+			logger::info("\tCanBeObscured: {}", ActorSupportsObscurity(actor));
+#endif
+			return data;
+		}
+
+		NNDData& Manager::CreateData(RE::Actor* actor) {
+			{
+				WriteLocker lock(_lock);
+				if (names.contains(actor->formID)) {
+					auto& data = names.at(actor->formID);
+#ifndef NDEBUG
+					logger::info("An old actor touches the NND: [0x{:X}] ('{}'):", actor->formID, actor->GetActorBase()->GetName());
+#endif
+					RefreshData(data, actor);
+					if (data.updateMask != NNDData::UpdateMask::kNone) {
+#ifndef NDEBUG
+						logger::info("\tIsOutdated: {}", true);
+#endif
+						UpdateData(data, actor);
+					}
+					return data;
+				}
+			}
+#ifndef NDEBUG
+			logger::info("A new actor touches the NND: [0x{:X}] ({}):", actor->formID, actor->GetActorBase()->GetName());
+#endif
 			const auto startTime = std::chrono::steady_clock::now();
 
 			NNDData data{};
 
 			data.formId = actor->formID;
 
-			/// A flag indicating whether given actor can be introduced to the player.
-			///	For that actor:
-			/// - must be able to talk with the player in any capacity
-			///	- had zero conversations with the player prior to that. (mid-game installation support)
-			const auto canBeIntroduced = actor->CanTalkToPlayer() && !talkedToPC->IsTrue(actor, nullptr);
+			RefreshData(data, actor);
 
-			// This is a little bit weird check, I'm 98% sure that I could just use actor, but... there is this 2% chance.. :)
-			if (const auto npc = actor->GetActorBase()) {
-				data.isUnique = npc->HasKeyword(unique);
-				data.isTitleless = npc->HasKeyword(titleless);
-				data.isObscured = canBeIntroduced && !actor->IsCommandedActor() && !npc->HasKeyword(known);
-			} else {
-				data.isUnique = actor->HasKeyword(unique);
-				data.isTitleless = actor->HasKeyword(titleless);
-				data.isObscured = canBeIntroduced && !actor->IsCommandedActor() && !actor->HasKeyword(known);
-			}
-
-			// Ignore marked as unique NPCs that are not obscured.
-			if (data.isUnique && !data.isObscured) {
-				SetName(data);
-				return empty;
-			}
-
-			if (!data.isUnique) {
-				MakeName(data, actor);
-			}
-
+			MakeName(data, actor);
 			MakeTitle(data, actor);
 			MakeObscureName(data, actor);
 
@@ -319,21 +338,22 @@ namespace NND
 			// (not NDEBUG, since I'd want to measure performance on Release from time to time)
 			const auto endTime = std::chrono::steady_clock::now();
 			const auto duration = std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime).count();
-			logger::info("Generated name {} in {} ms", data.displayName, duration);
-
-			return SetName(data).GetName(style);
-		}
-
-		NNDData& Manager::SetName(const NNDData& data) {
-			WriteLocker lock(_lock);
-			names[data.formId] = data;
-			return names.at(data.formId);
+#ifndef NDEBUG
+			logger::info("\tDisplayName: {}", data.displayName);
+			logger::info("\tDuration: {} ms", duration);
+#else
+			logger::info("Generated name '{}' for [0x{:X}] ({}) in {} ms", data.displayName, actor->formID, actor->GetActorBase()->GetName(), duration);
+#endif
+			return SetData(data);
 		}
 
 		void Manager::RevealName(RE::FormID formId) {
 			WriteLocker lock(_lock);
 			if (const auto& it = names.find(formId); it != names.end()) {
 				it->second.isObscured = false;
+#ifndef NDEBUG
+				logger::info("Revealing [0x{:X}] ({})", formId, it->second.displayName);
+#endif
 			}
 		}
 
@@ -356,8 +376,11 @@ namespace NND
 				}
 				data.isObscuringTitle = !data.hasDefaultTitle && data.title != empty && has(titleScopes, Scope::kObscurity);
 #ifndef NDEBUG
-				std::string nameType = allScopeNames(titleScopes);
-				logger::info("Title {} for [0x{:X}] can be used in {} scopes", data.title, actor->formID, nameType);
+				if (data.title != empty) {
+					std::string nameType = allScopeNames(titleScopes);
+					if (has(titleScopes, Scope::kTitle))
+						logger::info("\t\tCan be used in obscurity");
+				}
 #endif
 			}
 		}
@@ -386,10 +409,16 @@ namespace NND
 		void Manager::DeleteName(RE::FormID formId) {
 			WriteLocker lock(_lock);
 			names.erase(formId);
+#ifndef NDEBUG
+			logger::info("Deleted name for [0x{:X}]", formId);
+#endif
 		}
 		
-		void Manager::Refresh(NNDData& data, const RE::Actor* actor) {
+		void Manager::UpdateData(NNDData& data, const RE::Actor* actor) {
 			if (has(data.updateMask, NNDData::UpdateMask::kDefinitions)) {
+#ifndef NDEBUG
+				logger::info("\t\tUpdating name..");
+#endif
 				MakeName(data, actor);
 				MakeTitle(data, actor);
 				MakeObscureName(data, actor);
@@ -398,16 +427,38 @@ namespace NND
 				if (has(data.updateMask, NNDData::UpdateMask::kObscureName)) {
 					// Only check obscurity if definitions weren't changed. Otherwise it's already handled.
 					if (data.isObscured && data.hasDefaultObscurity) {
+#ifndef NDEBUG
+						logger::info("\t\tUpdating default obscurity name");
+#endif
 						data.obscurity = Options::Obscurity::defaultName;
 					}
 				}
 
 				if (has(data.updateMask, NNDData::UpdateMask::kDisplayName)) {
+#ifndef NDEBUG
+					logger::info("\t\tUpdating display name format");
+#endif
 					data.UpdateDisplayName();
 				}
 			}
 			
 			data.updateMask = NNDData::UpdateMask::kNone;
+		}
+
+		bool Manager::ActorSupportsObscurity(RE::Actor* actor) const {
+			// For commanded actors always reveal their name, since Player... well.. commands them :)
+			// These are reanimates people.
+			if (actor->IsCommandedActor() && actor->GetCommandingActor().get() == RE::PlayerCharacter::GetSingleton()) {
+				return false;
+			}
+
+			/// A flag indicating whether given actor can be introduced to the player.
+			///	For that actor:
+			/// - must be able to talk with the player in any capacity
+			///	- had zero conversations with the player prior to that. (mid-game installation support)
+			const auto canBeIntroduced = actor->CanTalkToPlayer() && !talkedToPC->IsTrue(actor, nullptr);
+
+			return canBeIntroduced;
 		}
 
 		Manager::Manager() :

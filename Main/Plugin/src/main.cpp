@@ -2,19 +2,22 @@
 #include "Hooks.h"
 #include "LookupNameDefinitions.h"
 #include "NNDKeywords.h"
-#include "Persistency.h"
 #include "Options.h"
+#include "Persistency.h"
 
 // ReSharper disable once CppParameterMayBeConstPtrOrRef
-void MessageHandler(SKSE::MessagingInterface::Message* a_message)
-{
+void MessageHandler(SKSE::MessagingInterface::Message* a_message) {
 	switch (a_message->type) {
+	case SKSE::MessagingInterface::kPostLoad:
+		NND::LoadNameDefinitions();
+		break;
+	case SKSE::MessagingInterface::kPostPostLoad:
+		NND::Options::Load();
+		NND::Install();
+		NND::Distribution::Manager::Register();
+		break;
 	case SKSE::MessagingInterface::kDataLoaded:
-		if (NND::CacheKeywords() && NND::LoadNameDefinitions()) {
-			NND::Options::Load();
-			NND::Install();
-			NND::Distribution::Manager::Register();
-		}
+		NND::CacheKeywords();
 		break;
 	default:
 		break;
@@ -34,8 +37,7 @@ extern "C" DLLEXPORT constinit auto SKSEPlugin_Version = []() {
 	return v;
 }();
 #else
-extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Query(const SKSE::QueryInterface* a_skse, SKSE::PluginInfo* a_info)
-{
+extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Query(const SKSE::QueryInterface* a_skse, SKSE::PluginInfo* a_info) {
 	a_info->infoVersion = SKSE::PluginInfo::kVersion;
 	a_info->name = "NPCsNamesDistributor";
 	a_info->version = Version::MAJOR;
@@ -55,8 +57,7 @@ extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Query(const SKSE::QueryInterface* a
 }
 #endif
 
-void InitializeLog()
-{
+void InitializeLog() {
 	auto path = logger::log_directory();
 	if (!path) {
 		stl::report_and_fail("Failed to find standard logging directory"sv);
@@ -76,8 +77,7 @@ void InitializeLog()
 	logger::info(FMT_STRING("{} v{}"), Version::PROJECT, Version::NAME);
 }
 
-extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* a_skse)
-{
+extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* a_skse) {
 	InitializeLog();
 
 	logger::info("Game version : {}", a_skse->RuntimeVersion().string());

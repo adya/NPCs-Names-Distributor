@@ -201,7 +201,7 @@ namespace NND
 						if (Data::Load(interface, data)) {
 							data.updateMask |= mask;
 #ifndef NDEBUG
-							logger::info("Loaded [0x{:X}] {} ({})", data.formId, data.name, data.title);
+							logger::info("\tLoaded [0x{:X}] {} ({})", data.formId, data.name, data.title);
 #endif
 							names[data.formId] = data;
 							++loadedCount;
@@ -227,6 +227,9 @@ namespace NND
 					logger::error("Failed to save name for [0x{:X}]", data.formId);
 					continue;
 				}
+#ifndef NDEBUG
+				logger::info("\tSaved [0x{:X}] {} ({})", data.formId, data.name, data.title);
+#endif
 				++savedCount;
 			}
 

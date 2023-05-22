@@ -6,6 +6,27 @@ namespace NND
 {
 	using namespace Distribution;
 
+	namespace Cache
+	{
+		struct Character_Load3D
+		{
+			static bool thunk(RE::Character* a_this) {
+				Manager::GetSingleton()->CreateData(a_this);
+				return func(a_this);
+			}
+			static inline REL::Relocation<decltype(thunk)> func;
+
+			static inline constexpr std::size_t index{ 0 };
+			static inline constexpr std::size_t size{ 0x6A };
+		};
+
+
+		void Install() {
+			stl::write_vfunc<RE::Character, Character_Load3D>();
+			logger::info("Installed Character hooks");
+		}
+	}
+
 	namespace Naming
 	{
 		static const char* GetName(NameStyle style, RE::TESObjectREFR* ref, const char* originalName) {
@@ -326,13 +347,13 @@ namespace NND
 	{
 		struct Character_SetDialogueWithPlayer
 		{
-			static bool thunk(RE::Character* a_this, bool inDialgoue, bool forceGreet, RE::TESTopicInfo* a_topic) {
-				if (a_this && inDialgoue) {
+			static bool thunk(RE::Character* a_this, bool inDialogue, bool forceGreet, RE::TESTopicInfo* a_topic) {
+				if (a_this && inDialogue) {
 					// TODO: Handle force greet with custom options.
 					Manager::GetSingleton()->RevealName(a_this->formID);
 					RE::PlayerCharacter::GetSingleton()->UpdateCrosshairs();
 				}
-				return func(a_this, inDialgoue, forceGreet, a_topic);
+				return func(a_this, inDialogue, forceGreet, a_topic);
 			}
 			static inline REL::Relocation<decltype(thunk)> func;
 
@@ -351,5 +372,6 @@ namespace NND
 		logger::info("{:*^30}", "HOOKS");
 		Naming::Install();
 		Obscurity::Install();
+		Cache::Install();
 	}
 }
