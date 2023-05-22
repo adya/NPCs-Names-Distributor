@@ -12,9 +12,7 @@ namespace NND
 		struct Character_Load3D
 		{
 			static RE::NiAVObject* thunk(RE::Character* a_this, bool a_backgroundLoading) {
-				if (Persistency::Manager::GetSingleton()->IsLoadingGame())
-					Persistency::Manager::GetSingleton()->QueueActor(a_this);
-				else
+				if (!Persistency::Manager::GetSingleton()->IsLoadingGame())
 					Manager::GetSingleton()->CreateData(a_this);
 				return func(a_this, a_backgroundLoading);
 			}

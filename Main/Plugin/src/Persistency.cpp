@@ -188,8 +188,6 @@ namespace NND
 		void Manager::Load(SKSE::SerializationInterface* interface) {
 			logger::info("{:*^30}", "LOADING");
 
-			auto& queuedActors = GetSingleton()->queuedActors;
-
 			const auto&   manager = Distribution::Manager::GetSingleton();
 			std::uint32_t loadedCount = 0;
 
@@ -205,8 +203,8 @@ namespace NND
 						Distribution::NNDData data{};
 						if (Data::Load(interface, data)) {
 							data.updateMask |= mask;
-							if (const auto actor = queuedActors[data.formId]) {
-								manager->UpdateData(data, actor);
+							if (const auto actor = RE::TESForm::LookupByID(data.formId); actor->formType == RE::FormType::ActorCharacter) {
+								manager->UpdateData(data, actor->As<RE::Actor>());
 							}
 #ifndef NDEBUG
 							logger::info("\tLoaded [0x{:X}] {} ({})", data.formId, data.name, data.title);

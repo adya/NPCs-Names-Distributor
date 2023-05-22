@@ -25,16 +25,6 @@ namespace NND
 
 			void FinishLoadingGame() {
 				isLoadingGame = false;
-				queuedActors.clear();
-			}
-
-			/// Queues Actors who's been loaded before Persistency Manager was able to Load their data.
-			///
-			///	All actors who are located in the current cell when game loads must be queued,
-			///	so that they can be updated accordingly by Distribution Manager.
-			///	The queue will be cleared when Loading is finished.
-			void QueueActor(const RE::Actor* actor) {
-				queuedActors[actor->formID] = actor;
 			}
 
 		private:
@@ -43,8 +33,6 @@ namespace NND
 			static void Revert(SKSE::SerializationInterface*);
 
 			bool isLoadingGame = false;
-
-			ActorQueue queuedActors{};
 
 			// Singleton stuff :)
 			Manager() = default;
