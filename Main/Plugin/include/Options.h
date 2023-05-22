@@ -25,6 +25,7 @@ namespace NND
 		namespace Obscurity
 		{
 			inline bool enabled = true;
+			inline bool greetings = false;
 			inline Name defaultName = "???";
 		}
 

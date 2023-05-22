@@ -23,8 +23,7 @@ namespace NND
 				}
 			} else if (name != empty) {
 				displayName = name;
-			}
-			else if (title != empty && !hasDefaultTitle && !isTitleless && !isUnique) {
+			} else if (title != empty && !hasDefaultTitle && !isTitleless && !isUnique) {
 				// If we have a custom title and actor is not unique or titleless
 				// then we can use this custom title separately.
 				displayName = title;
@@ -158,7 +157,6 @@ namespace NND
 				std::ranges::sort(definitions, definitions_priority_greater());
 #ifndef NDEBUG
 				std::vector<std::string> defNames;
-				
 
 				std::ranges::transform(definitions.begin(), definitions.end(), std::back_inserter(defNames), [](const auto& d) { return d.get().name; });
 				logger::info("\t\tFrom: [{}]", clib_util::string::join(defNames, ", "));
@@ -232,7 +230,7 @@ namespace NND
 			 *			If name components were picked from multiple Name Definitions then only the common scopes are used.
 			 */
 			Scope CreateName(Scope scope, Name* name, Name* shortened, const RE::Actor* actor) {
-				Scope      commonScopes = scope;
+				Scope commonScopes = scope;
 #ifndef NDEBUG
 				std::string nameType = rawScopeName(scope);
 				logger::info("\tCreating {}:", nameType);
@@ -240,7 +238,7 @@ namespace NND
 				const auto components = MakeNameComponents(scope, actor, commonScopes);
 				if (components.has_value()) {
 					const auto fullName = components->Assemble();
-					if (fullName.has_value() && !fullName->empty()) {
+					if (fullName.has_value() && fullName != empty) {
 #ifndef NDEBUG
 						logger::info("\t\tPicked: '{}'", *fullName);
 #endif
@@ -271,8 +269,16 @@ namespace NND
 				if (names.contains(actor->formID)) {
 					auto& data = names.at(actor->formID);
 
-					if (!ActorSupportsObscurity(actor))
+					// For commanded actors always reveal their name, since Player... well.. commands them :)
+					// These are reanimates people.
+					if (data.isObscured && actor->IsCommandedActor() && actor->GetCommandingActor().get() == RE::PlayerCharacter::GetSingleton()) {
 						data.isObscured = false;
+						RE::PlayerCharacter::GetSingleton()->UpdateCrosshairs();
+#ifndef NDEBUG
+						logger::info("Revealing [0x{:X}] ({}) who is now a minion", actor->formID, data.name != empty ? data.displayName : actor->GetActorBase()->GetFullName());
+#endif
+					}
+						
 					return data.GetName(style);
 				}
 			}
@@ -291,12 +297,11 @@ namespace NND
 		NNDData& Manager::UpdateDataFlags(NNDData& data, RE::Actor* actor) const {
 			data.isUnique = actor->HasKeyword(unique);
 			data.isTitleless = actor->HasKeyword(titleless);
-			data.isObscured = !actor->HasKeyword(known) && ActorSupportsObscurity(actor);
+			data.isObscured = !actor->HasKeyword(known);
 #ifndef NDEBUG
 			logger::info("\tIsUnique: {}", data.isUnique);
 			logger::info("\tIsTitleless: {}", data.isTitleless);
 			logger::info("\tIsObscured: {}", data.isObscured);
-			logger::info("\tCanBeObscured: {}", ActorSupportsObscurity(actor));
 #endif
 			return data;
 		}
@@ -310,6 +315,11 @@ namespace NND
 					logger::info("An old actor touches the NND: [0x{:X}] ('{}'):", actor->formID, actor->GetActorBase()->GetName());
 #endif
 					UpdateDataFlags(data, actor);
+					// Check if actor support obscurity only once when creating the data
+					data.isObscured = data.isObscured && ActorSupportsObscurity(actor);
+#ifndef NDEBUG
+					logger::info("\tCanBeObscured: {}", ActorSupportsObscurity(actor));
+#endif
 					if (data.updateMask != NNDData::UpdateMask::kNone) {
 #ifndef NDEBUG
 						logger::info("\tIsOutdated: {}", true);
@@ -341,9 +351,7 @@ namespace NND
 			const auto endTime = std::chrono::steady_clock::now();
 			const auto duration = std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime).count();
 #ifndef NDEBUG
-			if (data.name != empty) {
-				logger::info("\tDisplayName: {}", data.displayName);
-			}
+			logger::info("\tDisplayName: {}", data.name != empty ? data.displayName : actor->GetActorBase()->GetName());
 			logger::info("\tDuration: {} ms", duration);
 #else
 			if (data.name != empty)
@@ -352,14 +360,19 @@ namespace NND
 			return SetData(data);
 		}
 
-		void Manager::RevealName(RE::FormID formId) {
+		bool Manager::RevealName(const RE::Actor* actor, bool forceGreet) {
+			if (forceGreet && !Options::Obscurity::greetings)
+				return false;
 			WriteLocker lock(_lock);
-			if (const auto& it = names.find(formId); it != names.end()) {
+			if (const auto& it = names.find(actor->formID); it != names.end() && it->second.isObscured) {
 				it->second.isObscured = false;
 #ifndef NDEBUG
-				logger::info("Revealing [0x{:X}] ({})", formId, it->second.name != empty ? it->second.name : it->second.title);
+				logger::info("Revealing [0x{:X}] ({})", actor->formID, it->second.name != empty ? it->second.name : actor->GetActorBase()->GetName());
 #endif
+				return true;
 			}
+
+			return false;
 		}
 
 		void Manager::MakeName(NNDData& data, const RE::Actor* actor) const {
@@ -413,17 +426,20 @@ namespace NND
 
 		void Manager::DeleteName(RE::FormID formId) {
 			WriteLocker lock(_lock);
-			names.erase(formId);
 #ifndef NDEBUG
-			logger::info("Deleted name for [0x{:X}]", formId);
+			if (names.erase(formId))
+				logger::info("Deleted name for [0x{:X}]", formId);
+#else
+			names.erase(formId);
 #endif
 		}
-		
-		NNDData& Manager::UpdateData(NNDData& data, const RE::Actor* actor) const {
+
+		NNDData& Manager::UpdateData(NNDData& data, RE::Actor* actor) const {
 			if (has(data.updateMask, NNDData::UpdateMask::kDefinitions)) {
 #ifndef NDEBUG
 				logger::info("\t\tUpdating name..");
 #endif
+				UpdateDataFlags(data, actor);
 				MakeName(data, actor);
 				MakeTitle(data, actor);
 				MakeObscureName(data, actor);
@@ -446,7 +462,7 @@ namespace NND
 					data.UpdateDisplayName();
 				}
 			}
-			
+
 			data.updateMask = NNDData::UpdateMask::kNone;
 			return data;
 		}

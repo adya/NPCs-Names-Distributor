@@ -46,6 +46,7 @@ namespace NND
 		ini.SetUnicode();
 		if (ini.LoadFile(options.string().c_str()) >= 0) {
 			Obscurity::enabled = ini.GetBoolValue("Obscurity", "bEnabled", Obscurity::enabled);
+			Obscurity::greetings = ini.GetBoolValue("Obscurity", "bGreetings", Obscurity::greetings);
 			Obscurity::defaultName = ini.GetValue("Obscurity", "sDefaultName", Obscurity::defaultName.data());
 			
 			if (const auto format = ini.GetValue("DisplayName", "sFormat")) {
@@ -69,6 +70,7 @@ namespace NND
 
 		logger::info("Obscurity:");
 		logger::info("\t{}", Obscurity::enabled ? "Enabled" : "Disabled");
+		logger::info("\tCan be revealed {}", Obscurity::greetings ? "by both Player and NPC" : "only by Player");
 		logger::info("\tDefault Name: {}", Obscurity::defaultName);
 		logger::info("");
 

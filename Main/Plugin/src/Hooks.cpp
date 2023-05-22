@@ -102,7 +102,7 @@ namespace NND
 				// Yeah, these will need to be re-hooked to somewhere where Actor is used.
 				const REL::Relocation<std::uintptr_t> displayFullName{ RE::Offset::TESObjectREFR::GetDisplayFullName };
 
-				// Swaps the argument to pass TESObjectREFR* obj instead of obj->GetBaseObject() 
+				// Swaps the argument to pass TESObjectREFR* obj instead of obj->GetBaseObject()
 				// mov rcx, [r15+40h] (49 8B 4F 40)
 				//                     v  v  v  +
 				// mov rcx, r15       (4C 89 F9) + 90
@@ -112,7 +112,7 @@ namespace NND
 				REL::safe_fill(displayFullName.address() + OFFSET(0, 0x22B), 0x90, 1);
 				stl::write_thunk_call<GetDisplayFullName_GetFormName>(displayFullName.address() + OFFSET(0, 0x22C));
 
-				// Swaps 2nd argument to pass TESObjectREFR* obj instead of obj->GetBaseObject() 
+				// Swaps 2nd argument to pass TESObjectREFR* obj instead of obj->GetBaseObject()
 				// mov rdx, [r15+40h] (49 8B 57 40)
 				//                     v  v  v   +
 				// mov rdx, r15       (4C 89 FA) + 90
@@ -194,7 +194,7 @@ namespace NND
 				}
 				static inline REL::Relocation<decltype(thunk)> func;
 			};
-			
+
 			/// Vanilla: Full.
 			///	    NND: Full.
 			/// Default activation name (e.g. Talk, Steal, Pickpocket, etc.)
@@ -261,8 +261,7 @@ namespace NND
 				static inline REL::Relocation<decltype(thunk)> func;
 			};
 
-			inline void Install()
-			{
+			inline void Install() {
 				const REL::Relocation<std::uintptr_t> dialogueMenu{ RELOCATION_ID(0, 35282) };
 				stl::write_thunk_call<MenuTopicManager_GetDisplayFullName>(dialogueMenu.address() + OFFSET(0, 0x587));
 
@@ -323,7 +322,7 @@ namespace NND
 
 			inline void Install() {
 				const REL::Relocation<std::uintptr_t> barterMenuGold{ RELOCATION_ID(0, 50957) };
-				// Swaps the argument to pass TESObjectREFR* obj instead of obj->GetBaseObject() 
+				// Swaps the argument to pass TESObjectREFR* obj instead of obj->GetBaseObject()
 				// mov rcx, [rbx+40h] (48 8B 4B 40)
 				//                           v  v
 				// mov rcx, [rbp+30h] (48 8B 4D 30)
@@ -350,9 +349,7 @@ namespace NND
 		{
 			static bool thunk(RE::Character* a_this, bool inDialogue, bool forceGreet, RE::TESTopicInfo* a_topic) {
 				if (a_this && inDialogue) {
-					// TODO: Handle force greet with custom options.
-					Manager::GetSingleton()->RevealName(a_this->formID);
-					RE::PlayerCharacter::GetSingleton()->UpdateCrosshairs();
+					Manager::GetSingleton()->RevealName(a_this, forceGreet);
 				}
 				return func(a_this, inDialogue, forceGreet, a_topic);
 			}
@@ -362,8 +359,7 @@ namespace NND
 			static inline constexpr std::size_t size{ 0x41 };
 		};
 
-		inline void Install()
-		{
+		inline void Install() {
 			stl::write_vfunc<RE::Character, Character_SetDialogueWithPlayer>();
 			logger::info("Installed SetDialogueWithPlayer hook");
 		}
