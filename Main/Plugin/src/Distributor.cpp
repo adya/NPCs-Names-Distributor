@@ -24,7 +24,9 @@ namespace NND
 			} else if (name != empty) {
 				displayName = name;
 			}
-			else if (title != empty) {
+			else if (title != empty && !hasDefaultTitle && !isTitleless && !isUnique) {
+				// If we have a custom title and actor is not unique or titleless
+				// then we can use this custom title separately.
 				displayName = title;
 			} else {
 				displayName = empty;  // fall back to original name.
@@ -339,10 +341,13 @@ namespace NND
 			const auto endTime = std::chrono::steady_clock::now();
 			const auto duration = std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime).count();
 #ifndef NDEBUG
-			logger::info("\tDisplayName: {}", data.displayName);
+			if (data.name != empty) {
+				logger::info("\tDisplayName: {}", data.displayName);
+			}
 			logger::info("\tDuration: {} ms", duration);
 #else
-			logger::info("Generated name '{}' for [0x{:X}] ({}) in {} ms", data.displayName, actor->formID, actor->GetActorBase()->GetName(), duration);
+			if (data.name != empty)
+				logger::info("Generated name '{}' for [0x{:X}] ({}) in {} ms", data.displayName, actor->formID, actor->GetActorBase()->GetName(), duration);
 #endif
 			return SetData(data);
 		}
@@ -352,7 +357,7 @@ namespace NND
 			if (const auto& it = names.find(formId); it != names.end()) {
 				it->second.isObscured = false;
 #ifndef NDEBUG
-				logger::info("Revealing [0x{:X}] ({})", formId, it->second.displayName);
+				logger::info("Revealing [0x{:X}] ({})", formId, it->second.name != empty ? it->second.name : it->second.title);
 #endif
 			}
 		}
