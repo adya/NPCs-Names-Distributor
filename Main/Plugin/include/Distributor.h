@@ -61,9 +61,12 @@ namespace NND
 
 			NameRef  GetName(NameStyle, RE::Actor*);
 			NNDData& SetData(const NNDData&);
-			NNDData& RefreshData(NNDData&, RE::Actor*);
 			NNDData& CreateData(RE::Actor*);
 
+			NNDData& UpdateDataFlags(NNDData&, RE::Actor*) const;
+			NNDData& UpdateData(NNDData&, const RE::Actor*) const;
+
+			
 			void            UpdateNames(std::function<void(NamesMap&)>);
 			const NamesMap& GetAllNames();
 
@@ -85,8 +88,6 @@ namespace NND
 			void MakeObscureName(NNDData&, const RE::Actor*) const;
 
 			void DeleteName(RE::FormID);
-			void UpdateData(NNDData&, const RE::Actor*);
-
 			bool ActorSupportsObscurity(RE::Actor*) const;
 
 			// Singleton stuff :)

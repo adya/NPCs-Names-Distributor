@@ -19,6 +19,12 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_message) {
 	case SKSE::MessagingInterface::kDataLoaded:
 		NND::CacheKeywords();
 		break;
+	case SKSE::MessagingInterface::kPreLoadGame:
+		NND::Persistency::Manager::GetSingleton()->StartLoadingGame();
+		break;
+	case SKSE::MessagingInterface::kPostLoadGame:
+		NND::Persistency::Manager::GetSingleton()->FinishLoadingGame();
+		break;
 	default:
 		break;
 	}
@@ -86,7 +92,7 @@ extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* a_s
 
 	SKSE::GetMessagingInterface()->RegisterListener(MessageHandler);
 
-	NND::Persistency::Setup();
+	NND::Persistency::Manager::Register();
 
 	return true;
 }

@@ -288,7 +288,7 @@ namespace NND
 			return names.at(data.formId);
 		}
 
-		NNDData& Manager::RefreshData(NNDData& data, RE::Actor* actor) {
+		NNDData& Manager::UpdateDataFlags(NNDData& data, RE::Actor* actor) const {
 			data.isUnique = actor->HasKeyword(unique);
 			data.isTitleless = actor->HasKeyword(titleless);
 			data.isObscured = !actor->HasKeyword(known) && ActorSupportsObscurity(actor);
@@ -309,7 +309,7 @@ namespace NND
 #ifndef NDEBUG
 					logger::info("An old actor touches the NND: [0x{:X}] ('{}'):", actor->formID, actor->GetActorBase()->GetName());
 #endif
-					RefreshData(data, actor);
+					UpdateDataFlags(data, actor);
 					if (data.updateMask != NNDData::UpdateMask::kNone) {
 #ifndef NDEBUG
 						logger::info("\tIsOutdated: {}", true);
@@ -328,7 +328,7 @@ namespace NND
 
 			data.formId = actor->formID;
 
-			RefreshData(data, actor);
+			UpdateDataFlags(data, actor);
 
 			MakeName(data, actor);
 			MakeTitle(data, actor);
@@ -419,7 +419,7 @@ namespace NND
 #endif
 		}
 		
-		void Manager::UpdateData(NNDData& data, const RE::Actor* actor) {
+		NNDData& Manager::UpdateData(NNDData& data, const RE::Actor* actor) const {
 			if (has(data.updateMask, NNDData::UpdateMask::kDefinitions)) {
 #ifndef NDEBUG
 				logger::info("\t\tUpdating name..");
@@ -448,6 +448,7 @@ namespace NND
 			}
 			
 			data.updateMask = NNDData::UpdateMask::kNone;
+			return data;
 		}
 
 		bool Manager::ActorSupportsObscurity(RE::Actor* actor) const {

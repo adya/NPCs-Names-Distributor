@@ -1,6 +1,7 @@
 #include "Hooks.h"
 #include "Distributor.h"
 #include "Options.h"
+#include "Persistency.h"
 
 namespace NND
 {
@@ -10,16 +11,18 @@ namespace NND
 	{
 		struct Character_Load3D
 		{
-			static bool thunk(RE::Character* a_this) {
-				Manager::GetSingleton()->CreateData(a_this);
-				return func(a_this);
+			static RE::NiAVObject* thunk(RE::Character* a_this, bool a_backgroundLoading) {
+				if (Persistency::Manager::GetSingleton()->IsLoadingGame())
+					Persistency::Manager::GetSingleton()->QueueActor(a_this);
+				else
+					Manager::GetSingleton()->CreateData(a_this);
+				return func(a_this, a_backgroundLoading);
 			}
 			static inline REL::Relocation<decltype(thunk)> func;
 
 			static inline constexpr std::size_t index{ 0 };
 			static inline constexpr std::size_t size{ 0x6A };
 		};
-
 
 		void Install() {
 			stl::write_vfunc<RE::Character, Character_Load3D>();

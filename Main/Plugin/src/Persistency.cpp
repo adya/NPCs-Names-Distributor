@@ -113,7 +113,7 @@ namespace NND
 
 					if (!details::Write(interface, snapshot.size()))
 						return false;
-					
+
 					for (const auto& entry : snapshot) {
 						logger::info("\t{}", entry);
 						if (!details::Write(interface, entry))
@@ -171,12 +171,13 @@ namespace NND
 				return true;
 			}
 		}
+
+		
 	}
 
-	// Public
 	namespace Persistency
 	{
-		void Setup() {
+		void Manager::Register() {
 			const auto serializationInterface = SKSE::GetSerializationInterface();
 			serializationInterface->SetUniqueID(serializationKey);
 			serializationInterface->SetSaveCallback(Save);
@@ -184,11 +185,15 @@ namespace NND
 			serializationInterface->SetRevertCallback(Revert);
 		}
 
-		void Load(SKSE::SerializationInterface* interface) {
+		void Manager::Load(SKSE::SerializationInterface* interface) {
 			logger::info("{:*^30}", "LOADING");
 
+			auto& queuedActors = GetSingleton()->queuedActors;
+
+			const auto&   manager = Distribution::Manager::GetSingleton();
 			std::uint32_t loadedCount = 0;
-			Distribution::Manager::GetSingleton()->UpdateNames([&interface, &loadedCount](auto& names) {
+
+			manager->UpdateNames([&](auto& names) {
 				std::uint32_t type, version, length;
 				names.clear();
 				auto mask = Distribution::NNDData::UpdateMask::kNone;
@@ -200,6 +205,9 @@ namespace NND
 						Distribution::NNDData data{};
 						if (Data::Load(interface, data)) {
 							data.updateMask |= mask;
+							if (const auto actor = queuedActors[data.formId]) {
+								manager->UpdateData(data, actor);
+							}
 #ifndef NDEBUG
 							logger::info("\tLoaded [0x{:X}] {} ({})", data.formId, data.name, data.title);
 #endif
@@ -213,7 +221,7 @@ namespace NND
 			logger::info("Loaded {} names", loadedCount);
 		}
 
-		void Save(SKSE::SerializationInterface* interface) {
+		void Manager::Save(SKSE::SerializationInterface* interface) {
 			logger::info("{:*^30}", "SAVING");
 			Snapshot::Save(interface);
 
@@ -236,7 +244,7 @@ namespace NND
 			logger::info("Saved {} names", savedCount);
 		}
 
-		void Revert(SKSE::SerializationInterface* interface) {
+		void Manager::Revert(SKSE::SerializationInterface* interface) {
 			logger::info("{:*^30}", "REVERTING");
 			Distribution::Manager::GetSingleton()->UpdateNames([](auto& names) {
 				names.clear();
