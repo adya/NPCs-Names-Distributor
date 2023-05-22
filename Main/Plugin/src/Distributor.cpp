@@ -256,7 +256,7 @@ namespace NND
 			}
 		}
 
-		NameRef Manager::GetName(NameStyle style, RE::Actor* actor, const char* originalName) {
+		NameRef Manager::GetName(NameStyle style, RE::Actor* actor) {
 			{  // Limit scope of the lock to cached names.
 				WriteLocker lock(_lock);
 				if (names.contains(actor->formID)) {
@@ -303,7 +303,7 @@ namespace NND
 			// Ignore marked as unique NPCs that are not obscured.
 			if (data.isUnique && !data.isObscured) {
 				SetName(data);
-				return originalName;
+				return empty;
 			}
 
 			if (!data.isUnique) {
@@ -347,7 +347,7 @@ namespace NND
 			if (data.hasDefaultTitle || data.title == empty) {
 				const Scope titleScopes = details::CreateName(Scope::kTitle, &data.title, nullptr, actor);
 				data.hasDefaultTitle = false;
-				// Use original name as title if no custom one provided.
+				// Use original full name as title if no custom one provided.
 				if (data.title == empty && !data.isTitleless) {
 					if (const auto npc = actor->GetActorBase()) {
 						data.title = npc->GetFullName();
