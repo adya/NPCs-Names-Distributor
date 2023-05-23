@@ -349,7 +349,8 @@ namespace NND
 		{
 			static bool thunk(RE::Character* a_this, bool inDialogue, bool forceGreet, RE::TESTopicInfo* a_topic) {
 				if (a_this && inDialogue) {
-					Manager::GetSingleton()->RevealName(a_this, forceGreet);
+					if (Manager::GetSingleton()->RevealName(a_this, forceGreet))
+						RE::PlayerCharacter::GetSingleton()->UpdateCrosshairs();
 				}
 				return func(a_this, inDialogue, forceGreet, a_topic);
 			}
