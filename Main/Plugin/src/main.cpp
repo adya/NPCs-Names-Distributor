@@ -23,6 +23,7 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_message) {
 		NND::Persistency::Manager::GetSingleton()->StartLoadingGame();
 		break;
 	case SKSE::MessagingInterface::kPostLoadGame:
+		NND::Options::Load();
 		NND::Persistency::Manager::GetSingleton()->FinishLoadingGame();
 		break;
 	default:
