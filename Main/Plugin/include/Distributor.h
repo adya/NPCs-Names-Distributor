@@ -9,16 +9,6 @@ namespace NND
 	{
 		struct NNDData
 		{
-			enum class UpdateMask : uint8_t
-			{
-				kNone = 0b000,
-				kDisplayName = 0b001,
-				kObscureName = 0b010,
-				kDefinitions = 0b100,
-
-				kAll = kDisplayName | kObscureName | kDefinitions
-			};
-
 			RE::FormID formId{};
 
 			Name name{};
@@ -34,14 +24,15 @@ namespace NND
 			bool isTitleless = false;
 
 			bool isObscuringTitle = false;
-			bool hasDefaultObscurity = false;
-			bool hasDefaultTitle = false;
 		
-			UpdateMask updateMask = UpdateMask::kNone;
+			void UpdateDisplayName(const RE::Actor*);
 
-			void UpdateDisplayName();
+			NameRef GetName(NameStyle, const RE::Actor*) const;
 
-			NameRef GetName(NameStyle) const;
+			friend class Manager;
+		private:
+			NameRef GetTitle(const RE::Actor*) const;
+			NameRef GetObscurity(const RE::Actor*) const;
 		};
 
 		class Manager : public RE::BSTEventSink<RE::TESFormDeleteEvent>
@@ -64,8 +55,7 @@ namespace NND
 			NNDData& CreateData(RE::Actor*);
 
 			NNDData& UpdateDataFlags(NNDData&, RE::Actor*) const;
-			NNDData& UpdateData(NNDData&, RE::Actor*) const;
-
+			NNDData& UpdateData(NNDData&, RE::Actor*, bool definitionsChanged) const;
 			
 			void            UpdateNames(std::function<void(NamesMap&)>);
 			const NamesMap& GetAllNames();
@@ -102,9 +92,3 @@ namespace NND
 		};
 	}
 }
-
-template <>
-struct enable_bitmask_operators<NND::Distribution::NNDData::UpdateMask>
-{
-	static constexpr bool enable = true;
-};

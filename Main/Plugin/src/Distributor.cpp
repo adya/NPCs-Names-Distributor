@@ -10,31 +10,53 @@ namespace NND
 	namespace Distribution
 	{
 		// Here we'll handle all styles and whatnot.
-		void NNDData::UpdateDisplayName() {
-			if (name != empty && title != empty) {
+		void NNDData::UpdateDisplayName(const RE::Actor* actor) {
+			const Name effectiveTitle(GetTitle(actor));
+			if (name != empty && effectiveTitle != empty) {
 				Name formattedDisplayName = Options::DisplayName::format;
 				if (formattedDisplayName != empty) {
 					clib_util::string::replace_first_instance(formattedDisplayName, "[name]", name);
-					clib_util::string::replace_first_instance(formattedDisplayName, "[title]", title);
+					clib_util::string::replace_first_instance(formattedDisplayName, "[title]", effectiveTitle);
 					clib_util::string::replace_first_instance(formattedDisplayName, "[break]", "\n");
 					displayName = formattedDisplayName;
 				} else {
-					displayName = name + " (" + title + ")";
+					displayName = name + " (" + effectiveTitle + ")";
 				}
 			} else if (name != empty) {
 				displayName = name;
-			} else if (title != empty && !hasDefaultTitle && !isTitleless && !isUnique) {
-				// If we have a custom title and actor is not unique or titleless
-				// then we can use this custom title separately.
-				displayName = title;
+			} else if (this->title != empty && !isUnique) {
+				// If we have a custom title and actor is not unique
+				// then we can use this custom title as a standalone name.
+				displayName = this->title;
 			} else {
 				displayName = empty;  // fall back to original name.
 			}
 		}
 
-		NameRef NNDData::GetName(NameStyle style) const {
-			if (Options::Obscurity::enabled && isObscured && obscurity != empty) {
+		NameRef NNDData::GetTitle(const RE::Actor* actor) const {
+			if (title != empty)
+				return title;
+			if (!isTitleless)
+				return actor->GetActorBase()->GetFullName();
+			return empty;
+		}
+
+		NameRef NNDData::GetObscurity(const RE::Actor* actor) const {
+			if (obscurity != empty)
 				return obscurity;
+			if (isObscuringTitle) {
+				if (const auto title = GetTitle(actor); title != empty)
+					return title;
+			}
+			return Options::Obscurity::defaultName;
+		}
+
+		NameRef NNDData::GetName(NameStyle style, const RE::Actor* actor) const {
+			if (Options::Obscurity::enabled && isObscured) {
+				if (const auto obscurity = GetObscurity(actor); obscurity != empty)
+					return obscurity;
+				logger::warn("WARN: Obscuring name is empty. Make sure you don't have Obscurity:sDefaultName set to empty value in INI.");
+				return empty;
 			}
 
 			if (isUnique) {
@@ -49,7 +71,9 @@ namespace NND
 			case kShortName:
 				return shortDisplayName != empty ? shortDisplayName : name;
 			case kTitle:
-				return title != empty ? title : name;
+				if (const auto title = GetTitle(actor); title != empty)
+					return title;
+				return name;
 			}
 		}
 	}
@@ -231,6 +255,7 @@ namespace NND
 			 */
 			Scope CreateName(Scope scope, Name* name, Name* shortened, const RE::Actor* actor) {
 				Scope commonScopes = scope;
+
 #ifndef NDEBUG
 				std::string nameType = rawScopeName(scope);
 				logger::info("\tCreating {}:", nameType);
@@ -258,6 +283,10 @@ namespace NND
 						logger::info("\t\tDefault will be used");
 #endif
 					}
+#ifndef NDEBUG
+				} else {
+					logger::info("\t\tDefault will be used");
+#endif
 				}
 				return commonScopes;
 			}
@@ -275,17 +304,17 @@ namespace NND
 						data.isObscured = false;
 						RE::PlayerCharacter::GetSingleton()->UpdateCrosshairs();
 #ifndef NDEBUG
-						logger::info("Revealing [0x{:X}] ({}) who is now a minion", actor->formID, data.name != empty ? data.displayName : actor->GetActorBase()->GetFullName());
+						logger::info("Revealing [0x{:X}] ('{}') who is now a minion", actor->formID, data.name != empty ? data.displayName : actor->GetActorBase()->GetFullName());
 #endif
 					}
 						
-					return data.GetName(style);
+					return data.GetName(style, actor);
 				}
 			}
 #ifndef NDEBUG
 			logger::warn("WARN: Pre-cached name for [0x{:X}] ('{}') not found. Name will be created in-place.", actor->formID, actor->GetActorBase()->GetName());
 #endif
-			return CreateData(actor).GetName(style);
+			return CreateData(actor).GetName(style, actor);
 		}
 
 		NNDData& Manager::SetData(const NNDData& data) {
@@ -297,12 +326,7 @@ namespace NND
 		NNDData& Manager::UpdateDataFlags(NNDData& data, RE::Actor* actor) const {
 			data.isUnique = actor->HasKeyword(unique);
 			data.isTitleless = actor->HasKeyword(titleless);
-			data.isObscured = !actor->HasKeyword(known);
-#ifndef NDEBUG
-			logger::info("\tIsUnique: {}", data.isUnique);
-			logger::info("\tIsTitleless: {}", data.isTitleless);
-			logger::info("\tIsObscured: {}", data.isObscured);
-#endif
+			data.isObscured = data.isObscured && !actor->HasKeyword(known); // we don't want to turn obscurity back on when removing known keyword.
 			return data;
 		}
 
@@ -315,22 +339,11 @@ namespace NND
 					logger::info("An old actor touches the NND: [0x{:X}] ('{}'):", actor->formID, actor->GetActorBase()->GetName());
 #endif
 					UpdateDataFlags(data, actor);
-					// Check if actor support obscurity only once when creating the data
-					data.isObscured = data.isObscured && ActorSupportsObscurity(actor);
-#ifndef NDEBUG
-					logger::info("\tCanBeObscured: {}", ActorSupportsObscurity(actor));
-#endif
-					if (data.updateMask != NNDData::UpdateMask::kNone) {
-#ifndef NDEBUG
-						logger::info("\tIsOutdated: {}", true);
-#endif
-						UpdateData(data, actor);
-					}
 					return data;
 				}
 			}
 #ifndef NDEBUG
-			logger::info("A new actor touches the NND: [0x{:X}] ({}):", actor->formID, actor->GetActorBase()->GetName());
+			logger::info("A new actor touches the NND: [0x{:X}] ('{}'):", actor->formID, actor->GetActorBase()->GetName());
 #endif
 			const auto startTime = std::chrono::steady_clock::now();
 
@@ -338,13 +351,20 @@ namespace NND
 
 			data.formId = actor->formID;
 
+			// Enable obscurity by default if actor supports it. We do this only once during first data creation.
+			data.isObscured = ActorSupportsObscurity(actor);
 			UpdateDataFlags(data, actor);
-
+#ifndef NDEBUG
+			logger::info("\tIsUnique: {}", data.isUnique);
+			logger::info("\tIsTitleless: {}", data.isTitleless);
+			logger::info("\tIsObscured: {}", data.isObscured);
+			logger::info("\tCanBeObscured: {}", ActorSupportsObscurity(actor));
+#endif
 			MakeName(data, actor);
 			MakeTitle(data, actor);
 			MakeObscureName(data, actor);
 
-			data.UpdateDisplayName();
+			data.UpdateDisplayName(actor);
 
 			// TODO: Comment this for releases.
 			// (not NDEBUG, since I'd want to measure performance on Release from time to time)
@@ -367,7 +387,7 @@ namespace NND
 			if (const auto& it = names.find(actor->formID); it != names.end() && it->second.isObscured) {
 				it->second.isObscured = false;
 #ifndef NDEBUG
-				logger::info("Revealing [0x{:X}] ({})", actor->formID, it->second.name != empty ? it->second.name : actor->GetActorBase()->GetName());
+				logger::info("Revealing [0x{:X}] ('{}')", actor->formID, it->second.name != empty ? it->second.name : actor->GetActorBase()->GetName());
 #endif
 				return true;
 			}
@@ -382,17 +402,9 @@ namespace NND
 		}
 
 		void Manager::MakeTitle(NNDData& data, const RE::Actor* actor) const {
-			if (data.hasDefaultTitle || data.title == empty) {
+			if (data.title == empty) {
 				const Scope titleScopes = details::CreateName(Scope::kTitle, &data.title, nullptr, actor);
-				data.hasDefaultTitle = false;
-				// Use original full name as title if no custom one provided.
-				if (data.title == empty && !data.isTitleless) {
-					if (const auto npc = actor->GetActorBase()) {
-						data.title = npc->GetFullName();
-						data.hasDefaultTitle = data.title != empty;
-					}
-				}
-				data.isObscuringTitle = !data.hasDefaultTitle && data.title != empty && has(titleScopes, Scope::kObscurity);
+				data.isObscuringTitle = (data.title != empty && has(titleScopes, Scope::kObscurity)) || !data.isTitleless;
 #ifndef NDEBUG
 				if (data.title != empty) {
 					std::string nameType = allScopeNames(titleScopes);
@@ -404,66 +416,42 @@ namespace NND
 		}
 
 		void Manager::MakeObscureName(NNDData& data, const RE::Actor* actor) const {
-			if (data.isObscured && (data.hasDefaultObscurity || data.obscurity == empty)) {
-				// If custom title is provided and can be used in Obscurity scope - use it
-				if (data.isObscuringTitle) {
-					data.obscurity = data.title;
-				} else {
-					// If no custom title usable in obscurity, then try to pick obscuring name in
-					details::CreateName(Scope::kObscurity, &data.obscurity, nullptr, actor);
-					// If name wasn't picked check whether original name can be used as title. In all other cases fallback to default obscuring name.
-					if (data.obscurity == empty) {
-						auto originalName = empty;
-						if (const auto npc = actor->GetActorBase()) {
-							originalName = npc->GetFullName();
-						}
-						data.hasDefaultObscurity = data.isTitleless;
-						data.obscurity = data.hasDefaultObscurity || originalName == empty ? Options::Obscurity::defaultName : originalName;
-					}
-				}
+			if (data.isObscured && !data.isObscuringTitle && data.obscurity == empty) {
+				details::CreateName(Scope::kObscurity, &data.obscurity, nullptr, actor);
 			}
 		}
 
 		void Manager::DeleteName(RE::FormID formId) {
 			WriteLocker lock(_lock);
 #ifndef NDEBUG
-			if (names.erase(formId))
-				logger::info("Deleted name for [0x{:X}]", formId);
+			if (names.contains(formId)) {
+				const auto data = names.at(formId);
+				if (names.erase(formId))
+					logger::info("Deleted name for [0x{:X}] ('')", formId, data.displayName);				
+			}
 #else
 			names.erase(formId);
 #endif
 		}
 
-		NNDData& Manager::UpdateData(NNDData& data, RE::Actor* actor) const {
-			if (has(data.updateMask, NNDData::UpdateMask::kDefinitions)) {
+		NNDData& Manager::UpdateData(NNDData& data, RE::Actor* actor, bool definitionsChanged) const {
+			UpdateDataFlags(data, actor);
+#ifndef NDEBUG
+			logger::info("\t\tIsUnique: {}", data.isUnique);
+			logger::info("\t\tIsTitleless: {}", data.isTitleless);
+			logger::info("\t\tIsObscured: {}", data.isObscured);
+#endif
+			if (definitionsChanged) {
 #ifndef NDEBUG
 				logger::info("\t\tUpdating name..");
 #endif
-				UpdateDataFlags(data, actor);
 				MakeName(data, actor);
 				MakeTitle(data, actor);
 				MakeObscureName(data, actor);
-				data.UpdateDisplayName();
-			} else {
-				if (has(data.updateMask, NNDData::UpdateMask::kObscureName)) {
-					// Only check obscurity if definitions weren't changed. Otherwise it's already handled.
-					if (data.isObscured && data.hasDefaultObscurity) {
-#ifndef NDEBUG
-						logger::info("\t\tUpdating default obscurity name");
-#endif
-						data.obscurity = Options::Obscurity::defaultName;
-					}
-				}
-
-				if (has(data.updateMask, NNDData::UpdateMask::kDisplayName)) {
-#ifndef NDEBUG
-					logger::info("\t\tUpdating display name format");
-#endif
-					data.UpdateDisplayName();
-				}
 			}
 
-			data.updateMask = NNDData::UpdateMask::kNone;
+			data.UpdateDisplayName(actor);
+
 			return data;
 		}
 

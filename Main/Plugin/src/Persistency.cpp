@@ -60,10 +60,7 @@ namespace NND
 				                    details::Read(interface, data.isUnique) &&
 				                    details::Read(interface, data.isObscured) &&
 				                    details::Read(interface, data.isTitleless) &&
-				                    details::Read(interface, data.isObscuringTitle) &&
-				                    details::Read(interface, data.hasDefaultObscurity) &&
-				                    details::Read(interface, data.hasDefaultTitle) &&
-				                    details::Read(interface, data.updateMask);
+				                    details::Read(interface, data.isObscuringTitle);
 
 				if (!result || !interface->ResolveFormID(data.formId, data.formId)) {
 					logger::warn("Failed to load name for NPCs with FormID [0x{:X}]", data.formId);
@@ -87,10 +84,7 @@ namespace NND
 				       details::Write(interface, data.isUnique) &&
 				       details::Write(interface, data.isObscured) &&
 				       details::Write(interface, data.isTitleless) &&
-				       details::Write(interface, data.isObscuringTitle) &&
-				       details::Write(interface, data.hasDefaultObscurity) &&
-				       details::Write(interface, data.hasDefaultTitle) &&
-				       details::Write(interface, data.updateMask);
+				       details::Write(interface, data.isObscuringTitle);
 			}
 		}
 
@@ -102,10 +96,6 @@ namespace NND
 				if (!interface->OpenRecord(recordType, serializationVersion)) {
 					return false;
 				}
-				logger::info("Saving options...");
-				if (!details::Write(interface, Options::DisplayName::format) ||
-				    !details::Write(interface, Options::Obscurity::defaultName))
-					return false;
 
 				const auto snapshot = MakeSnapshot();
 				if (!snapshot.empty()) {
@@ -123,22 +113,8 @@ namespace NND
 				return true;
 			}
 
-			bool Load(SKSE::SerializationInterface* interface, Distribution::NNDData::UpdateMask& mask) {
-				logger::info("Loading options...");
-
-				std::string oldFormat;
-				std::string oldObscurity;
-
-				if (!details::Read(interface, oldFormat) ||
-				    !details::Read(interface, oldObscurity))
-					return false;
-
-				if (oldFormat != Options::DisplayName::format)
-					mask |= Distribution::NNDData::UpdateMask::kDisplayName;
-				if (oldObscurity != Options::Obscurity::defaultName)
-					mask |= Distribution::NNDData::UpdateMask::kObscureName;
-
-				std::size_t snapshotSize;
+			bool Load(SKSE::SerializationInterface* interface, bool& definitionsChanged) {
+				size_t snapshotSize;
 				if (!details::Read(interface, snapshotSize))
 					return false;
 				if (snapshotSize == 0)
@@ -148,7 +124,7 @@ namespace NND
 				const auto    currentSnapshot = MakeSnapshot();
 
 				logger::info("Loading {} snapshots:", snapshotSize);
-				for (int i = 0; i < snapshotSize; ++i) {
+				for (size_t i = 0; i < snapshotSize; ++i) {
 					std::string entry;
 					if (!details::Read(interface, entry))
 						return false;
@@ -165,7 +141,7 @@ namespace NND
 						logger::info("\t{}", entry);
 					}
 					logger::info("Data will be updated.");
-					mask |= Distribution::NNDData::UpdateMask::kDefinitions;
+					definitionsChanged = true;
 				}
 
 				return true;
@@ -194,21 +170,20 @@ namespace NND
 			manager->UpdateNames([&](auto& names) {
 				std::uint32_t type, version, length;
 				names.clear();
-				auto mask = Distribution::NNDData::UpdateMask::kNone;
+				bool definitionsChanged = false;
 				while (interface->GetNextRecordInfo(type, version, length)) {
 					if (type == Snapshot::recordType) {
-						Snapshot::Load(interface, mask);
+						Snapshot::Load(interface, definitionsChanged);
 						logger::info("Loading names...");
 					} else if (type == Data::recordType) {
 						Distribution::NNDData data{};
 						if (Data::Load(interface, data)) {
-							data.updateMask |= mask;
 							if (const auto actor = RE::TESForm::LookupByID(data.formId); actor->formType == RE::FormType::ActorCharacter) {
-								manager->UpdateData(data, actor->As<RE::Actor>());
-							}
 #ifndef NDEBUG
-							logger::info("\tLoaded [0x{:X}] {} ({})", data.formId, data.name, data.title);
+								logger::info("\tLoaded [0x{:X}] ('{}')", data.formId, data.name != empty ? data.displayName : actor->As<RE::Actor>()->GetActorBase()->GetFullName());
 #endif
+								manager->UpdateData(data, actor->As<RE::Actor>(), definitionsChanged);
+							}
 							names[data.formId] = data;
 							++loadedCount;
 						}
