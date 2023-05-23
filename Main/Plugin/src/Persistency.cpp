@@ -59,7 +59,8 @@ namespace NND
 				                    details::Read(interface, data.displayName) &&
 				                    details::Read(interface, data.isUnique) &&
 				                    details::Read(interface, data.isObscured) &&
-				                    details::Read(interface, data.isTitleless) &&
+				                    details::Read(interface, data.allowDefaultTitle) &&
+				                    details::Read(interface, data.allowDefaultObscurity) &&
 				                    details::Read(interface, data.isObscuringTitle);
 
 				if (!result || !interface->ResolveFormID(data.formId, data.formId)) {
@@ -83,7 +84,8 @@ namespace NND
 				       details::Write(interface, data.displayName) &&
 				       details::Write(interface, data.isUnique) &&
 				       details::Write(interface, data.isObscured) &&
-				       details::Write(interface, data.isTitleless) &&
+				       details::Write(interface, data.allowDefaultTitle) &&
+				       details::Write(interface, data.allowDefaultObscurity) &&
 				       details::Write(interface, data.isObscuringTitle);
 			}
 		}

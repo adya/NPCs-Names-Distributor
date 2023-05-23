@@ -21,8 +21,12 @@ namespace NND
 
 			bool isUnique = false;
 			bool isObscured = false;
-			bool isTitleless = false;
 
+			bool allowDefaultTitle = true;
+			bool allowDefaultObscurity = true;
+
+			/// Flag indicating that current title was picked from a Name Definition
+			/// that is also used on Obscuring scope, thus obscurity should reuse that title instead of creating another one.
 			bool isObscuringTitle = false;
 		
 			void UpdateDisplayName(const RE::Actor*);

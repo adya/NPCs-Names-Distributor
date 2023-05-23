@@ -16,7 +16,7 @@ namespace NND
 
 		/// Show only a title if available, otherwise fallback to kFullName.
 		///
-		///	This includes both custom Title or default title if isTitleless = false.
+		///	This includes both custom Title or default title if allowDefaultTitle = true.
 		kTitle
 	};
 

@@ -36,7 +36,7 @@ namespace NND
 		NameRef NNDData::GetTitle(const RE::Actor* actor) const {
 			if (title != empty)
 				return title;
-			if (!isTitleless)
+			if (allowDefaultTitle)
 				return actor->GetActorBase()->GetFullName();
 			return empty;
 		}
@@ -44,10 +44,11 @@ namespace NND
 		NameRef NNDData::GetObscurity(const RE::Actor* actor) const {
 			if (obscurity != empty)
 				return obscurity;
-			if (isObscuringTitle) {
-				if (const auto title = GetTitle(actor); title != empty)
-					return title;
-			}
+			if (isObscuringTitle && title != empty)
+				return title;
+			if (allowDefaultObscurity)
+				return actor->GetActorBase()->GetFullName();
+			
 			return Options::Obscurity::defaultName;
 		}
 
@@ -325,7 +326,8 @@ namespace NND
 
 		NNDData& Manager::UpdateDataFlags(NNDData& data, RE::Actor* actor) const {
 			data.isUnique = actor->HasKeyword(unique);
-			data.isTitleless = actor->HasKeyword(titleless);
+			data.allowDefaultTitle = !actor->HasKeyword(disableDefaultTitle);
+			data.allowDefaultObscurity = !actor->HasKeyword(disableDefaultObscurity);
 			data.isObscured = data.isObscured && !actor->HasKeyword(known); // we don't want to turn obscurity back on when removing known keyword.
 			return data;
 		}
@@ -356,8 +358,9 @@ namespace NND
 			UpdateDataFlags(data, actor);
 #ifndef NDEBUG
 			logger::info("\tIsUnique: {}", data.isUnique);
-			logger::info("\tIsTitleless: {}", data.isTitleless);
+			logger::info("\tAllowsDefaultTitle: {}", data.allowDefaultTitle);
 			logger::info("\tIsObscured: {}", data.isObscured);
+			logger::info("\tAllowsDefaultObscurity: {}", data.allowDefaultObscurity);
 			logger::info("\tCanBeObscured: {}", ActorSupportsObscurity(actor));
 #endif
 			MakeName(data, actor);
@@ -404,7 +407,7 @@ namespace NND
 		void Manager::MakeTitle(NNDData& data, const RE::Actor* actor) const {
 			if (data.title == empty) {
 				const Scope titleScopes = details::CreateName(Scope::kTitle, &data.title, nullptr, actor);
-				data.isObscuringTitle = (data.title != empty && has(titleScopes, Scope::kObscurity)) || !data.isTitleless;
+				data.isObscuringTitle = data.title != empty && has(titleScopes, Scope::kObscurity);
 #ifndef NDEBUG
 				if (data.title != empty) {
 					std::string nameType = allScopeNames(titleScopes);
@@ -438,8 +441,9 @@ namespace NND
 			UpdateDataFlags(data, actor);
 #ifndef NDEBUG
 			logger::info("\t\tIsUnique: {}", data.isUnique);
-			logger::info("\t\tIsTitleless: {}", data.isTitleless);
+			logger::info("\t\tAllowsDefaultTitle: {}", data.allowDefaultTitle);
 			logger::info("\t\tIsObscured: {}", data.isObscured);
+			logger::info("\t\tAllowsDefaultObscurity: {}", data.allowDefaultObscurity);
 #endif
 			if (definitionsChanged) {
 #ifndef NDEBUG
