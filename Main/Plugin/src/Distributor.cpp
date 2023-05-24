@@ -13,7 +13,7 @@ namespace NND
 		void NNDData::UpdateDisplayName(const RE::Actor* actor) {
 			const Name effectiveTitle(GetTitle(actor));
 			if (name != empty && effectiveTitle != empty) {
-				Name formattedDisplayName = Options::DisplayName::format;
+				Name formattedDisplayName{ Options::DisplayName::format };
 				if (formattedDisplayName != empty) {
 					clib_util::string::replace_first_instance(formattedDisplayName, "[name]", name);
 					clib_util::string::replace_first_instance(formattedDisplayName, "[title]", effectiveTitle);
@@ -312,8 +312,10 @@ namespace NND
 					return data.GetName(style, actor);
 				}
 			}
+			// This is the case when user hit "Regenerate" name.
+			// Also this is called at the very beginning of the loading for some weird npcs.
 #ifndef NDEBUG
-			logger::warn("WARN: Pre-cached name for [0x{:X}] ('{}') not found. Name will be created in-place.", actor->formID, actor->GetActorBase()->GetName());
+			logger::info("Pre-cached name for [0x{:X}] ('{}') not found. Name will be created in-place.", actor->formID, actor->GetActorBase()->GetName());
 #endif
 			return CreateData(actor).GetName(style, actor);
 		}
@@ -374,13 +376,26 @@ namespace NND
 			const auto endTime = std::chrono::steady_clock::now();
 			const auto duration = std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime).count();
 #ifndef NDEBUG
-			logger::info("\tDisplayName: {}", data.name != empty ? data.displayName : actor->GetActorBase()->GetName());
+			logger::info("\tDisplayName: '{}'", data.name != empty ? data.displayName : actor->GetActorBase()->GetName());
 			logger::info("\tDuration: {} ms", duration);
 #else
 			if (data.name != empty)
-				logger::info("Generated name '{}' for [0x{:X}] ({}) in {} ms", data.displayName, actor->formID, actor->GetActorBase()->GetName(), duration);
+				logger::info("Generated name '{}' for [0x{:X}] ('{}') in {} ms", data.displayName, actor->formID, actor->GetActorBase()->GetName(), duration);
 #endif
 			return SetData(data);
+		}
+
+		void Manager::DeleteData(RE::Actor* actor) {
+			WriteLocker lock(_lock);
+#ifndef NDEBUG
+			if (names.contains(actor->formID)) {
+				const NNDData data = names.at(actor->formID);
+				if (names.erase(actor->formID))
+					logger::info("Deleted cache for [0x{:X}] ('{}')", actor->formID, data.name != empty ? data.displayName : actor->GetActorBase()->GetFullName());
+			}
+#else
+			names.erase(actor->formID);
+#endif
 		}
 
 		bool Manager::RevealName(const RE::Actor* actor, bool forceGreet) {
@@ -428,7 +443,7 @@ namespace NND
 			WriteLocker lock(_lock);
 #ifndef NDEBUG
 			if (names.contains(formId)) {
-				const auto data = names.at(formId);
+				const NNDData data = names.at(formId);
 				if (names.erase(formId))
 					logger::info("Deleted name for [0x{:X}] ('')", formId, data.displayName);				
 			}

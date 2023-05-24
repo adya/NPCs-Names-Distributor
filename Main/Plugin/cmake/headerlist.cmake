@@ -2,6 +2,7 @@ set(headers ${headers}
 	include/json.hpp
 	include/Distributor.h
 	include/NNDKeywords.h
+	include/Hotkeys.h
 	include/Hooks.h
 	include/Options.h
 	include/LookupNameDefinitions.h

@@ -1,6 +1,7 @@
 set(sources ${sources}
 	src/Hooks.cpp
 	src/Options.cpp
+	src/Hotkeys.cpp
 	src/Distributor.cpp
 	src/LookupNameDefinitions.cpp
 	src/NameDefinition.cpp

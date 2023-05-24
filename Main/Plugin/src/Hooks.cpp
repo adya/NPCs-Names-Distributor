@@ -145,7 +145,7 @@ namespace NND
 			/// Short circuit the condition to be always true, to force DisplayNextSubtitle to always call GetDisplayFullName.
 			struct DisplayNextSubtitle_ExtraDataList
 			{
-				static std::uintptr_t thunk(RE::ExtraDataList* a_this) {
+				static std::uintptr_t thunk(RE::ExtraDataList*) {
 					return 1;
 				}
 				static inline REL::Relocation<decltype(thunk)> func;

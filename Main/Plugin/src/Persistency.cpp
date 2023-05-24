@@ -219,7 +219,7 @@ namespace NND
 			logger::info("Saved {} names", savedCount);
 		}
 
-		void Manager::Revert(SKSE::SerializationInterface* interface) {
+		void Manager::Revert(SKSE::SerializationInterface*) {
 			logger::info("{:*^30}", "REVERTING");
 			Distribution::Manager::GetSingleton()->UpdateNames([](auto& names) {
 				names.clear();

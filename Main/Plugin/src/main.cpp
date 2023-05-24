@@ -1,5 +1,6 @@
 #include "Distributor.h"
 #include "Hooks.h"
+#include "Hotkeys.h"
 #include "LookupNameDefinitions.h"
 #include "NNDKeywords.h"
 #include "Options.h"
@@ -18,6 +19,7 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_message) {
 		break;
 	case SKSE::MessagingInterface::kDataLoaded:
 		NND::CacheKeywords();
+		NND::Hotkeys::Manager::Register();
 		break;
 	case SKSE::MessagingInterface::kPreLoadGame:
 		NND::Persistency::Manager::GetSingleton()->StartLoadingGame();
@@ -94,6 +96,6 @@ extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* a_s
 	SKSE::GetMessagingInterface()->RegisterListener(MessageHandler);
 
 	NND::Persistency::Manager::Register();
-
+	
 	return true;
 }

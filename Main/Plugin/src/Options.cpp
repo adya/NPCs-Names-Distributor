@@ -1,5 +1,7 @@
 #include "Options.h"
 
+#include "Hotkeys.h"
+
 namespace NND
 {
 	constexpr std::string name(const NameStyle& style) {
@@ -39,6 +41,17 @@ namespace NND
 		return false;
 	}
 
+	bool ReadHotkey(const CSimpleIniA& ini, const char* name, std::string_view& pattern, Hotkeys::KeyCombination& hotkey) {
+		if (const auto rawPattern = ini.GetValue("Hotkeys", name)) {
+			if (hotkey.SetPattern(rawPattern)) {
+				pattern = rawPattern;
+				return true;
+			}
+			logger::error("Failed to set '{}' as a hotkey for {}", pattern, name);
+		}
+		return false;
+	}
+
 	void Options::Load() {
 		logger::info("{:*^30}", "OPTIONS");
 		std::filesystem::path options = R"(Data\SKSE\Plugins\NPCsNamesDistributor.ini)";
@@ -63,10 +76,24 @@ namespace NND
 			ReadStyle(ini, "sBarter", NameContext::kBarter);
 			ReadStyle(ini, "sEnemyHUD", NameContext::kEnemyHUD);
 			ReadStyle(ini, "sOther", NameContext::kOther);
+
+			const auto manager = NND::Hotkeys::Manager::GetSingleton();
+			ReadHotkey(ini, "sToggleObscurity", Hotkeys::toggleObscurity, manager->toggleObscurity);
+			ReadHotkey(ini, "sGenerateNames", Hotkeys::generateAll, manager->generateAll);
+			ReadHotkey(ini, "sGenerateNameTarget", Hotkeys::generateTarget, manager->generateTarget);
+			ReadHotkey(ini, "sReloadSettings", Hotkeys::reloadSettings, manager->reloadSettings);
+			
 		} else {
 			logger::info(R"(Data\SKSE\Plugins\NPCsNamesDistributor.ini not found. Default options will be used.)");
 			logger::info("");
 		}
+
+		logger::info("Hotkeys:");
+		logger::info("\tToggle Obscurity: {}", Hotkeys::toggleObscurity);
+		logger::info("\tReload Settings: {}", Hotkeys::reloadSettings);
+		logger::info("\tRegenerate All Names: {}", Hotkeys::generateAll);
+		logger::info("\tRegenerate Target Name: {}", Hotkeys::generateTarget);
+		logger::info("");
 
 		logger::info("Obscurity:");
 		logger::info("\t{}", Obscurity::enabled ? "Enabled" : "Disabled");

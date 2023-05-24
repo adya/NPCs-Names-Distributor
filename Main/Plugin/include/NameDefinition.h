@@ -1,5 +1,5 @@
 #pragma once
-#include "CLIBUtil/Bitmasks.hpp"
+#include "CLIBUtil/bitmasks.hpp"
 
 namespace NND
 {
