@@ -42,14 +42,14 @@ Delete cache?
 				const auto uiStrHolder = RE::InterfaceStrings::GetSingleton();
 
 				if (factoryManager && uiStrHolder) {
-					auto factory = factoryManager->GetCreator<RE::MessageBoxData>(uiStrHolder->messageBoxData);
-					auto messageBox = factory ? factory->Create() : nullptr;
-					if (messageBox) {
-						messageBox->unk4C = 4;
-						messageBox->unk38 = 10;
-						messageBox->bodyText = a_message;
+					if (const auto factory = factoryManager->GetCreator<RE::MessageBoxData>(uiStrHolder->messageBoxData)) {
+						if (const auto messageBox = factory->Create()) {
+							messageBox->unk4C = 4;
+							messageBox->unk38 = 10;
+							messageBox->bodyText = a_message;
 
-						return messageBox;
+							return messageBox;
+						}
 					}
 				}
 
