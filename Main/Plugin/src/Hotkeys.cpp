@@ -31,6 +31,7 @@ Delete cache?
 						Distribution::Manager::GetSingleton()->UpdateNames([](auto& names) {
 							names.clear();
 						});
+						// In case we're looking at someone when reseting the cache..
 						RE::PlayerCharacter::GetSingleton()->UpdateCrosshairs();
 					}
 				}
@@ -84,6 +85,7 @@ Delete cache?
 				if (const auto actor = actorRef->As<RE::Actor>()) {
 					logger::info("Resetting name for target..");
 					Distribution::Manager::GetSingleton()->DeleteData(actor);
+					// Immediately refresh the name for NPC we are looking at.
 					RE::PlayerCharacter::GetSingleton()->UpdateCrosshairs();
 				}
 			}
@@ -92,12 +94,16 @@ Delete cache?
 		void Manager::ReloadSettingsTrigger(const KeyCombination* keys) {
 			logger::info("Reloading settings..");
 			Options::Load();
+			// In case we're looking at someone when reloading options (like default names or formats).
+			RE::PlayerCharacter::GetSingleton()->UpdateCrosshairs();
 		}
 
 		void Manager::ToggleObscurityTrigger(const KeyCombination* keys) {
 			Options::Obscurity::enabled = !Options::Obscurity::enabled;
+			// In case we're looking at someone when toggling obscurity.
 			RE::PlayerCharacter::GetSingleton()->UpdateCrosshairs();
 			logger::info("Toggled obscurity {}", Options::Obscurity::enabled ? "ON"sv : "OFF"sv);
+			Options::Save();
 		}
 
 		RE::BSEventNotifyControl Manager::ProcessEvent(RE::InputEvent* const* a_event,

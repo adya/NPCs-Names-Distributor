@@ -115,4 +115,15 @@ namespace NND
 		logger::info("\tEnemyHUD: {}", name(NameContext::kEnemyHUD));
 		logger::info("\tOther: {}", name(NameContext::kOther));
 	}
+
+	void Options::Save() {
+		std::filesystem::path options = R"(Data\SKSE\Plugins\NPCsNamesDistributor.ini)";
+		CSimpleIniA           ini{};
+		ini.SetUnicode();
+		ini.LoadFile(options.string().c_str());
+		ini.SetBoolValue("Obscurity", "bEnabled", Obscurity::enabled);
+
+		ini.SaveFile(options.string().c_str());
+	}
+
 }

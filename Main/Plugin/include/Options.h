@@ -75,6 +75,7 @@ namespace NND
 			inline std::string_view reloadSettings = "RCtrl+L"sv;
 		}
 
+		void Save();
 		void Load();
 	}
 }
