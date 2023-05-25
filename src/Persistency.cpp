@@ -13,30 +13,30 @@ namespace NND
 		namespace details
 		{
 			template <typename T>
-			bool Write(SKSE::SerializationInterface* interface, const T& data) {
-				return interface->WriteRecordData(&data, sizeof(T));
+			bool Write(SKSE::SerializationInterface* a_interface, const T& data) {
+				return a_interface->WriteRecordData(&data, sizeof(T));
 			}
 
 			template <>
-			bool Write(SKSE::SerializationInterface* interface, const std::string& data) {
+			bool Write(SKSE::SerializationInterface* a_interface, const std::string& data) {
 				const std::size_t size = data.length();
-				return interface->WriteRecordData(size) && interface->WriteRecordData(data.data(), static_cast<std::uint32_t>(size));
+				return a_interface->WriteRecordData(size) && a_interface->WriteRecordData(data.data(), static_cast<std::uint32_t>(size));
 			}
 
 			template <typename T>
-			bool Read(SKSE::SerializationInterface* interface, T& result) {
-				return interface->ReadRecordData(&result, sizeof(T));
+			bool Read(SKSE::SerializationInterface* a_interface, T& result) {
+				return a_interface->ReadRecordData(&result, sizeof(T));
 			}
 
 			template <>
-			bool Read(SKSE::SerializationInterface* interface, std::string& result) {
+			bool Read(SKSE::SerializationInterface* a_interface, std::string& result) {
 				std::size_t size = 0;
-				if (!interface->ReadRecordData(size)) {
+				if (!a_interface->ReadRecordData(size)) {
 					return false;
 				}
 				if (size > 0) {
 					result.resize(size);
-					if (!interface->ReadRecordData(result.data(), static_cast<std::uint32_t>(size))) {
+					if (!a_interface->ReadRecordData(result.data(), static_cast<std::uint32_t>(size))) {
 						return false;
 					}
 				} else {
@@ -50,20 +50,20 @@ namespace NND
 		{
 			constexpr std::uint32_t recordType = 'DATA';
 
-			bool Load(SKSE::SerializationInterface* interface, Distribution::NNDData& data) {
-				const bool result = details::Read(interface, data.formId) &&
-				                    details::Read(interface, data.name) &&
-				                    details::Read(interface, data.title) &&
-				                    details::Read(interface, data.obscurity) &&
-				                    details::Read(interface, data.shortDisplayName) &&
-				                    details::Read(interface, data.displayName) &&
-				                    details::Read(interface, data.isUnique) &&
-				                    details::Read(interface, data.isObscured) &&
-				                    details::Read(interface, data.allowDefaultTitle) &&
-				                    details::Read(interface, data.allowDefaultObscurity) &&
-				                    details::Read(interface, data.isObscuringTitle);
+			bool Load(SKSE::SerializationInterface* a_interface, Distribution::NNDData& data) {
+				const bool result = details::Read(a_interface, data.formId) &&
+				                    details::Read(a_interface, data.name) &&
+				                    details::Read(a_interface, data.title) &&
+				                    details::Read(a_interface, data.obscurity) &&
+				                    details::Read(a_interface, data.shortDisplayName) &&
+				                    details::Read(a_interface, data.displayName) &&
+				                    details::Read(a_interface, data.isUnique) &&
+				                    details::Read(a_interface, data.isObscured) &&
+				                    details::Read(a_interface, data.allowDefaultTitle) &&
+				                    details::Read(a_interface, data.allowDefaultObscurity) &&
+				                    details::Read(a_interface, data.isObscuringTitle);
 
-				if (!result || !interface->ResolveFormID(data.formId, data.formId)) {
+				if (!result || !a_interface->ResolveFormID(data.formId, data.formId)) {
 					logger::warn("Failed to load name for NPCs with FormID [0x{:X}]", data.formId);
 					return false;
 				}
@@ -71,22 +71,22 @@ namespace NND
 				return true;
 			}
 
-			bool Save(SKSE::SerializationInterface* interface, const Distribution::NNDData& data) {
-				if (!interface->OpenRecord(recordType, serializationVersion)) {
+			bool Save(SKSE::SerializationInterface* a_interface, const Distribution::NNDData& data) {
+				if (!a_interface->OpenRecord(recordType, serializationVersion)) {
 					return false;
 				}
 
-				return details::Write(interface, data.formId) &&
-				       details::Write(interface, data.name) &&
-				       details::Write(interface, data.title) &&
-				       details::Write(interface, data.obscurity) &&
-				       details::Write(interface, data.shortDisplayName) &&
-				       details::Write(interface, data.displayName) &&
-				       details::Write(interface, data.isUnique) &&
-				       details::Write(interface, data.isObscured) &&
-				       details::Write(interface, data.allowDefaultTitle) &&
-				       details::Write(interface, data.allowDefaultObscurity) &&
-				       details::Write(interface, data.isObscuringTitle);
+				return details::Write(a_interface, data.formId) &&
+				       details::Write(a_interface, data.name) &&
+				       details::Write(a_interface, data.title) &&
+				       details::Write(a_interface, data.obscurity) &&
+				       details::Write(a_interface, data.shortDisplayName) &&
+				       details::Write(a_interface, data.displayName) &&
+				       details::Write(a_interface, data.isUnique) &&
+				       details::Write(a_interface, data.isObscured) &&
+				       details::Write(a_interface, data.allowDefaultTitle) &&
+				       details::Write(a_interface, data.allowDefaultObscurity) &&
+				       details::Write(a_interface, data.isObscuringTitle);
 			}
 		}
 
@@ -94,8 +94,8 @@ namespace NND
 		{
 			constexpr std::uint32_t recordType = 'CRC';
 
-			bool Save(SKSE::SerializationInterface* interface) {
-				if (!interface->OpenRecord(recordType, serializationVersion)) {
+			bool Save(SKSE::SerializationInterface* a_interface) {
+				if (!a_interface->OpenRecord(recordType, serializationVersion)) {
 					return false;
 				}
 
@@ -103,21 +103,21 @@ namespace NND
 				if (!snapshot.empty()) {
 					logger::info("Saving {} snapshots:", snapshot.size());
 
-					if (!details::Write(interface, snapshot.size()))
+					if (!details::Write(a_interface, snapshot.size()))
 						return false;
 
 					for (const auto& entry : snapshot) {
 						logger::info("\t{}", entry);
-						if (!details::Write(interface, entry))
+						if (!details::Write(a_interface, entry))
 							return false;
 					}
 				}
 				return true;
 			}
 
-			bool Load(SKSE::SerializationInterface* interface, bool& definitionsChanged) {
+			bool Load(SKSE::SerializationInterface* a_interface, bool& definitionsChanged) {
 				size_t snapshotSize;
-				if (!details::Read(interface, snapshotSize))
+				if (!details::Read(a_interface, snapshotSize))
 					return false;
 				if (snapshotSize == 0)
 					return true;
@@ -128,7 +128,7 @@ namespace NND
 				logger::info("Loading {} snapshots:", snapshotSize);
 				for (size_t i = 0; i < snapshotSize; ++i) {
 					std::string entry;
-					if (!details::Read(interface, entry))
+					if (!details::Read(a_interface, entry))
 						return false;
 					oldSnapshot.insert(entry);
 					logger::info("\t{}", entry);
@@ -162,7 +162,7 @@ namespace NND
 			serializationInterface->SetRevertCallback(Revert);
 		}
 
-		void Manager::Load(SKSE::SerializationInterface* interface) {
+		void Manager::Load(SKSE::SerializationInterface* a_interface) {
 			logger::info("{:*^30}", "LOADING");
 
 			const auto&   manager = Distribution::Manager::GetSingleton();
@@ -172,13 +172,13 @@ namespace NND
 				std::uint32_t type, version, length;
 				names.clear();
 				bool definitionsChanged = false;
-				while (interface->GetNextRecordInfo(type, version, length)) {
+				while (a_interface->GetNextRecordInfo(type, version, length)) {
 					if (type == Snapshot::recordType) {
-						Snapshot::Load(interface, definitionsChanged);
+						Snapshot::Load(a_interface, definitionsChanged);
 						logger::info("Loading names...");
 					} else if (type == Data::recordType) {
 						Distribution::NNDData data{};
-						if (Data::Load(interface, data)) {
+						if (Data::Load(a_interface, data)) {
 							if (const auto actor = RE::TESForm::LookupByID(data.formId); actor->formType == RE::FormType::ActorCharacter) {
 #ifndef NDEBUG
 								logger::info("\tLoaded [0x{:X}] ('{}')", data.formId, data.name != empty ? data.displayName : actor->As<RE::Actor>()->GetActorBase()->GetFullName());
@@ -195,9 +195,9 @@ namespace NND
 			logger::info("Loaded {} names", loadedCount);
 		}
 
-		void Manager::Save(SKSE::SerializationInterface* interface) {
+		void Manager::Save(SKSE::SerializationInterface* a_interface) {
 			logger::info("{:*^30}", "SAVING");
-			Snapshot::Save(interface);
+			Snapshot::Save(a_interface);
 
 			auto names = Distribution::Manager::GetSingleton()->GetAllNames();
 
@@ -205,7 +205,7 @@ namespace NND
 
 			std::uint32_t savedCount = 0;
 			for (const auto& data : names | std::views::values) {
-				if (!Data::Save(interface, data)) {
+				if (!Data::Save(a_interface, data)) {
 					logger::error("Failed to save name for [0x{:X}]", data.formId);
 					continue;
 				}
