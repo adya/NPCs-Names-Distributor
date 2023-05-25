@@ -57,7 +57,7 @@ namespace NND
 			NameRef  GetName(NameStyle, RE::Actor*);
 			NNDData& SetData(const NNDData&);
 			NNDData& CreateData(RE::Actor*);
-			void     DeleteData(RE::Actor*);
+			void     DeleteData(const RE::Actor* actor);
 
 			NNDData& UpdateDataFlags(NNDData&, RE::Actor*) const;
 			NNDData& UpdateData(NNDData&, RE::Actor*, bool definitionsChanged) const;

@@ -11,5 +11,6 @@ set(headers ${headers}
 	include/Persistency.h
 	include/crc32.h
 	include/NameFixer.h
+	include/NameRegenerator.h
 	include/PCH.h
 )

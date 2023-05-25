@@ -388,7 +388,7 @@ namespace NND
 			return SetData(data);
 		}
 
-		void Manager::DeleteData(RE::Actor* actor) {
+		void Manager::DeleteData(const RE::Actor* actor) {
 			WriteLocker lock(_lock);
 #ifndef NDEBUG
 			if (names.contains(actor->formID)) {
