@@ -60,6 +60,9 @@ namespace NND
 				return empty;
 			}
 
+			if (!Options::General::enabled)
+				return empty;
+
 			if (isUnique) {
 				return empty;
 			}

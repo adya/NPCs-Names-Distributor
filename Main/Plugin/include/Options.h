@@ -22,6 +22,11 @@ namespace NND
 
 	namespace Options
 	{
+		namespace General
+		{
+			inline bool enabled = true;
+		}
+
 		namespace Obscurity
 		{
 			inline bool enabled = true;
@@ -72,6 +77,7 @@ namespace NND
 			inline std::string_view generateAll = "RCtrl+RShift+G"sv;
 			inline std::string_view generateTarget = "RCtrl+G"sv;
 			inline std::string_view toggleObscurity = "RCtrl+O"sv;
+			inline std::string_view toggleNames = "RCtrl+N"sv;
 			inline std::string_view reloadSettings = "RCtrl+L"sv;
 		}
 

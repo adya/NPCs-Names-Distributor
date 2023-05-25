@@ -106,6 +106,14 @@ Delete cache?
 			Options::Save();
 		}
 
+		void Manager::ToggleNamesTrigger(const KeyCombination*) {
+			Options::General::enabled = !Options::General::enabled;
+			// In case we're looking at someone when toggling names.
+			RE::PlayerCharacter::GetSingleton()->UpdateCrosshairs();
+			logger::info("Toggled names {}", Options::General::enabled ? "ON"sv : "OFF"sv);
+			Options::Save();
+		}
+
 		RE::BSEventNotifyControl Manager::ProcessEvent(RE::InputEvent* const* a_event,
 		                                               RE::BSTEventSource<RE::InputEvent*>*) {
 			using EventType = RE::INPUT_EVENT_TYPE;
@@ -122,7 +130,8 @@ Delete cache?
 			generateAll.Process(a_event) ||
 				generateTarget.Process(a_event) ||
 				reloadSettings.Process(a_event) ||
-				toggleObscurity.Process(a_event);
+				toggleObscurity.Process(a_event) ||
+				toggleNames.Process(a_event);
 
 			return Result::kContinue;
 		}
@@ -136,6 +145,8 @@ Delete cache?
 				logger::error("Failed to set Key Combination '{}' for reloadSettings", Options::Hotkeys::reloadSettings);
 			if (!toggleObscurity.SetPattern(Options::Hotkeys::toggleObscurity))
 				logger::error("Failed to set Key Combination '{}' for toggleObscurity", Options::Hotkeys::toggleObscurity);
+			if (!toggleNames.SetPattern(Options::Hotkeys::toggleNames))
+				logger::error("Failed to set Key Combination '{}' for toggleNames", Options::Hotkeys::toggleNames);
 		}
 	}
 

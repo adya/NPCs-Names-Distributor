@@ -58,6 +58,8 @@ namespace NND
 		CSimpleIniA           ini{};
 		ini.SetUnicode();
 		if (ini.LoadFile(options.string().c_str()) >= 0) {
+			General::enabled = ini.GetBoolValue("General", "bEnabled", General::enabled);
+
 			Obscurity::enabled = ini.GetBoolValue("Obscurity", "bEnabled", Obscurity::enabled);
 			Obscurity::greetings = ini.GetBoolValue("Obscurity", "bGreetings", Obscurity::greetings);
 			Obscurity::defaultName = ini.GetValue("Obscurity", "sDefaultName", Obscurity::defaultName.data());
@@ -78,6 +80,7 @@ namespace NND
 			ReadStyle(ini, "sOther", NameContext::kOther);
 
 			const auto manager = NND::Hotkeys::Manager::GetSingleton();
+			ReadHotkey(ini, "sToggleNames", Hotkeys::toggleNames, manager->toggleNames);
 			ReadHotkey(ini, "sToggleObscurity", Hotkeys::toggleObscurity, manager->toggleObscurity);
 			ReadHotkey(ini, "sGenerateNames", Hotkeys::generateAll, manager->generateAll);
 			ReadHotkey(ini, "sGenerateNameTarget", Hotkeys::generateTarget, manager->generateTarget);
@@ -88,7 +91,11 @@ namespace NND
 			logger::info("");
 		}
 
+		logger::info("General:");
+		logger::info("\tNames distribution {}", General::enabled ? "enabled" : "disabled");
+
 		logger::info("Hotkeys:");
+		logger::info("\tToggle Names: {}", Hotkeys::toggleNames);
 		logger::info("\tToggle Obscurity: {}", Hotkeys::toggleObscurity);
 		logger::info("\tReload Settings: {}", Hotkeys::reloadSettings);
 		logger::info("\tRegenerate All Names: {}", Hotkeys::generateAll);
@@ -117,11 +124,12 @@ namespace NND
 	}
 
 	void Options::Save() {
-		std::filesystem::path options = R"(Data\SKSE\Plugins\NPCsNamesDistributor.ini)";
+		const std::filesystem::path options = R"(Data\SKSE\Plugins\NPCsNamesDistributor.ini)";
 		CSimpleIniA           ini{};
 		ini.SetUnicode();
 		ini.LoadFile(options.string().c_str());
 		ini.SetBoolValue("Obscurity", "bEnabled", Obscurity::enabled);
+		ini.SetBoolValue("General", "bEnabled", General::enabled);
 
 		ini.SaveFile(options.string().c_str());
 	}

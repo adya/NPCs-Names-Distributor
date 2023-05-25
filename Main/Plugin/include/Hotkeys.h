@@ -21,11 +21,13 @@ namespace NND
 			static void GenerateTargetTrigger(const KeyCombination*);
 			static void ReloadSettingsTrigger(const KeyCombination*);
 			static void ToggleObscurityTrigger(const KeyCombination*);
+			static void ToggleNamesTrigger(const KeyCombination*);
 
 			KeyCombination generateAll{ GenerateAllTrigger };
 			KeyCombination generateTarget{ GenerateTargetTrigger };
 			KeyCombination reloadSettings{ ReloadSettingsTrigger };
 			KeyCombination toggleObscurity{ ToggleObscurityTrigger };
+			KeyCombination toggleNames{ ToggleNamesTrigger };
 
 		protected:
 			RE::BSEventNotifyControl ProcessEvent(RE::InputEvent* const* a_event, RE::BSTEventSource<RE::InputEvent*>* a_eventSource) override;
