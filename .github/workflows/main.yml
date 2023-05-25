@@ -14,7 +14,6 @@ jobs:
   release:
     uses: adya/pack-skse-mod/.github/workflows/pack.yml@dev
     with:
-      CMAKE_PROJECT_DIR: "Main"
       CMAKE_SE_BUILD_PRESET: 'vs2022-windows-vcpkg-se'
       CMAKE_AE_BUILD_PRESET: 'vs2022-windows-vcpkg-ae'
       CMAKE_VR_CONFIG_PRESET: ''
@@ -27,7 +26,6 @@ jobs:
   debug:
     uses: adya/pack-skse-mod/.github/workflows/pack.yml@dev
     with:
-      CMAKE_PROJECT_DIR: "Main"
       CMAKE_SE_BUILD_PRESET: 'vs2022-windows-vcpkg-se-debug'
       CMAKE_AE_BUILD_PRESET: 'vs2022-windows-vcpkg-ae-debug'
       CMAKE_VR_CONFIG_PRESET: ''
