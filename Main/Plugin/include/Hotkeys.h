@@ -1,12 +1,12 @@
 #pragma once
-#include "Options.h"
 #include "CLIBUtil/hotkeys.hpp"
+#include "Options.h"
 
 namespace NND
 {
 	namespace Hotkeys
 	{
-		using namespace	clib_util::hotkeys;
+		using namespace clib_util::hotkeys;
 		class Manager : public RE::BSTEventSink<RE::InputEvent*>
 		{
 		public:
@@ -37,7 +37,6 @@ namespace NND
 			RE::BSEventNotifyControl ProcessEvent(RE::InputEvent* const* a_event, RE::BSTEventSource<RE::InputEvent*>* a_eventSource) override;
 
 		private:
-		
 			// Singleton stuff :)
 			Manager();
 			Manager(const Manager&) = delete;

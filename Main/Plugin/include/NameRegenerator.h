@@ -70,8 +70,7 @@ Delete cache?
 			}
 		}
 
-		inline void RegenerateTarget(const RE::Actor* actor)
-		{
+		inline void RegenerateTarget(const RE::Actor* actor) {
 			logger::info("Resetting name for target..");
 			Distribution::Manager::GetSingleton()->DeleteData(actor);
 			// Immediately refresh the name for NPC we are looking at.

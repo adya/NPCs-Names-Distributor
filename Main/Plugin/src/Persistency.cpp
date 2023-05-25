@@ -150,7 +150,6 @@ namespace NND
 			}
 		}
 
-		
 	}
 
 	namespace Persistency

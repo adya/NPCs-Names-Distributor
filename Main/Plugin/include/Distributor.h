@@ -28,12 +28,13 @@ namespace NND
 			/// Flag indicating that current title was picked from a Name Definition
 			/// that is also used on Obscuring scope, thus obscurity should reuse that title instead of creating another one.
 			bool isObscuringTitle = false;
-		
+
 			void UpdateDisplayName(const RE::Actor*);
 
 			NameRef GetName(NameStyle, const RE::Actor*) const;
 
 			friend class Manager;
+
 		private:
 			NameRef GetTitle(const RE::Actor*) const;
 			NameRef GetObscurity(const RE::Actor*) const;
@@ -61,7 +62,7 @@ namespace NND
 
 			NNDData& UpdateDataFlags(NNDData&, RE::Actor*) const;
 			NNDData& UpdateData(NNDData&, RE::Actor*, bool definitionsChanged) const;
-			
+
 			void            UpdateNames(std::function<void(NamesMap&)>);
 			const NamesMap& GetAllNames();
 

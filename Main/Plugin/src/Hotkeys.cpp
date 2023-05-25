@@ -9,7 +9,7 @@ namespace NND
 	// Events
 	namespace Hotkeys
 	{
-			void Manager::Register() {
+		void Manager::Register() {
 			if (const auto scripts = RE::BSInputDeviceManager::GetSingleton()) {
 				scripts->AddEventSink<RE::InputEvent*>(GetSingleton());
 				logger::info("Registered for {}", typeid(RE::InputEvent).name());

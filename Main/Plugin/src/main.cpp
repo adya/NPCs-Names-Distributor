@@ -96,6 +96,6 @@ extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* a_s
 	SKSE::GetMessagingInterface()->RegisterListener(MessageHandler);
 
 	NND::Persistency::Manager::Register();
-	
+
 	return true;
 }

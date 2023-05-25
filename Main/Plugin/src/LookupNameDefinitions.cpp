@@ -5,8 +5,7 @@
 
 namespace NND
 {
-	void LogNamesVariant(std::string_view name, const NameDefinition::NamesVariant& variant, bool useCircumfix)
-	{
+	void LogNamesVariant(std::string_view name, const NameDefinition::NamesVariant& variant, bool useCircumfix) {
 		if (const auto size = variant.names.size(); size > 0) {
 			logger::info("\t\t{}: {}", name, size);
 			const auto prefix = variant.prefix.names.size();
@@ -34,8 +33,7 @@ namespace NND
 		}
 	}
 
-	void LogNameSegment(std::string_view name, const NameDefinition::NameSegment& namePart)
-	{
+	void LogNameSegment(std::string_view name, const NameDefinition::NameSegment& namePart) {
 		const auto inherits = namePart.shouldInherit;
 
 		if (!inherits && namePart.IsEmpty())
@@ -54,8 +52,7 @@ namespace NND
 		LogNamesVariant("Any"sv, namePart.any, namePart.useCircumfix);
 	}
 
-	void LogDefinition(const NameDefinition& definition)
-	{
+	void LogDefinition(const NameDefinition& definition) {
 		std::vector<std::string> scopes{};
 		if (has(definition.scope, NameDefinition::Scope::kName)) {
 			scopes.emplace_back("Names");
@@ -75,9 +72,8 @@ namespace NND
 		LogNameSegment("Last"sv, definition.lastName);
 	}
 
-	uint32_t ComputeCRC(std::filesystem::path path)
-	{
-		std::ifstream   file(path, std::ios::binary | std::ios::ate);
+	uint32_t ComputeCRC(std::filesystem::path path) {
+		std::ifstream         file(path, std::ios::binary | std::ios::ate);
 		const std::streamsize size = file.tellg();
 		file.seekg(0, std::ios::beg);
 
@@ -88,8 +84,7 @@ namespace NND
 		return 0;
 	}
 
-	bool LoadNameDefinitions()
-	{
+	bool LoadNameDefinitions() {
 		logger::info("{:*^30}", "NAME DEFINITIONS");
 		const auto files = clib_util::distribution::get_configs_paths(R"(Data\SKSE\Plugins\NPCsNamesDistributor)", ".json"sv);
 

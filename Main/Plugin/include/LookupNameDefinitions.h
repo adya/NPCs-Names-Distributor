@@ -13,8 +13,8 @@ namespace NND
 	/// Snapshots all loaded definitions in a form of pair of definition's name and its CRC32 hash.
 	Snapshot MakeSnapshot();
 
-    /// A map of Name Definitions grouped by their names.
-    ///
-    ///	This map is populated by LoadNameDefinitions().
+	/// A map of Name Definitions grouped by their names.
+	///
+	///	This map is populated by LoadNameDefinitions().
 	inline std::unordered_map<NameDefinition::Scope, std::unordered_map<std::string, NameDefinition>> loadedDefinitions{};
 }

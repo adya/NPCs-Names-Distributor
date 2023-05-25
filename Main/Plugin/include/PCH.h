@@ -3,9 +3,9 @@
 #include "RE/Skyrim.h"
 #include "SKSE/SKSE.h"
 
+#include <ClibUtil/simpleINI.hpp>
 #include <spdlog/sinks/basic_file_sink.h>
 #include <xbyak/xbyak.h>
-#include <ClibUtil/simpleINI.hpp>
 
 #define DLLEXPORT __declspec(dllexport)
 
@@ -16,16 +16,14 @@ namespace stl
 {
 	using namespace SKSE::stl;
 
-    template <class F, class T>
-	void write_vfunc()
-	{
+	template <class F, class T>
+	void write_vfunc() {
 		REL::Relocation<std::uintptr_t> vtbl{ F::VTABLE[0] };
 		T::func = vtbl.write_vfunc(T::size, T::thunk);
 	}
 
 	template <class T>
-	void write_thunk_call(std::uintptr_t a_src)
-	{
+	void write_thunk_call(std::uintptr_t a_src) {
 		auto& trampoline = SKSE::GetTrampoline();
 		SKSE::AllocTrampoline(14);
 

@@ -48,7 +48,7 @@ namespace NND
 				return title;
 			if (allowDefaultObscurity)
 				return actor->GetActorBase()->GetFullName();
-			
+
 			return Options::Obscurity::defaultName;
 		}
 
@@ -104,7 +104,6 @@ namespace NND
 	// Names Manager
 	namespace Distribution
 	{
-
 #ifndef NDEBUG
 		std::string rawScopeName(const Scope scope) {
 			switch (scope) {
@@ -311,7 +310,7 @@ namespace NND
 						logger::info("Revealing [0x{:X}] ('{}') who is now a minion", actor->formID, data.name != empty ? data.displayName : actor->GetActorBase()->GetFullName());
 #endif
 					}
-						
+
 					return data.GetName(style, actor);
 				}
 			}
@@ -333,7 +332,7 @@ namespace NND
 			data.isUnique = actor->HasKeyword(unique);
 			data.allowDefaultTitle = !actor->HasKeyword(disableDefaultTitle);
 			data.allowDefaultObscurity = !actor->HasKeyword(disableDefaultObscurity);
-			data.isObscured = data.isObscured && !actor->HasKeyword(known); // we don't want to turn obscurity back on when removing known keyword.
+			data.isObscured = data.isObscured && !actor->HasKeyword(known);  // we don't want to turn obscurity back on when removing known keyword.
 			return data;
 		}
 
@@ -448,7 +447,7 @@ namespace NND
 			if (names.contains(formId)) {
 				const NNDData data = names.at(formId);
 				if (names.erase(formId))
-					logger::info("Deleted name for [0x{:X}] ('')", formId, data.displayName);				
+					logger::info("Deleted name for [0x{:X}] ('')", formId, data.displayName);
 			}
 #else
 			names.erase(formId);

@@ -63,7 +63,7 @@ namespace NND
 			Obscurity::enabled = ini.GetBoolValue("Obscurity", "bEnabled", Obscurity::enabled);
 			Obscurity::greetings = ini.GetBoolValue("Obscurity", "bGreetings", Obscurity::greetings);
 			Obscurity::defaultName = ini.GetValue("Obscurity", "sDefaultName", Obscurity::defaultName.data());
-			
+
 			if (const auto format = ini.GetValue("DisplayName", "sFormat")) {
 				DisplayName::format = format;
 			} else if (const auto formatIndex = ini.GetLongValue("DisplayName", "iFormat", -1); formatIndex >= 0 && formatIndex < DisplayName::defaultFormats.size()) {
@@ -86,7 +86,7 @@ namespace NND
 			ReadHotkey(ini, "sGenerateNameTarget", Hotkeys::generateTarget, manager->generateTarget);
 			ReadHotkey(ini, "sReloadSettings", Hotkeys::reloadSettings, manager->reloadSettings);
 			ReadHotkey(ini, "sFixStuckName", Hotkeys::fixStuckName, manager->fixStuckName);
-			
+
 		} else {
 			logger::info(R"(Data\SKSE\Plugins\NPCsNamesDistributor.ini not found. Default options will be used.)");
 			logger::info("");
@@ -127,7 +127,7 @@ namespace NND
 
 	void Options::Save() {
 		const std::filesystem::path options = R"(Data\SKSE\Plugins\NPCsNamesDistributor.ini)";
-		CSimpleIniA           ini{};
+		CSimpleIniA                 ini{};
 		ini.SetUnicode();
 		ini.LoadFile(options.string().c_str());
 		ini.SetBoolValue("Obscurity", "bEnabled", Obscurity::enabled);

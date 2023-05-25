@@ -72,8 +72,8 @@ namespace NND
 			inline std::string_view format = "[name] ([title])"sv;
 		}
 
-		namespace Hotkeys {
-
+		namespace Hotkeys
+		{
 			inline std::string_view generateAll = "RCtrl+RShift+G"sv;
 			inline std::string_view generateTarget = "RCtrl+G"sv;
 			inline std::string_view toggleObscurity = "RCtrl+O"sv;

@@ -48,7 +48,6 @@ namespace NND
 		[[nodiscard]] std::optional<Name> AssembleShort() const;
 	};
 
-
 	struct NameDefinition
 	{
 		/// Priority
@@ -76,13 +75,13 @@ namespace NND
 			kTotal
 		};
 
-		enum class Scope: uint8_t
+		enum class Scope : uint8_t
 		{
-			kNone		= 0b000,
+			kNone = 0b000,
 
-			kName		= 0b001,
-			kTitle		= 0b010,
-			kObscurity	= 0b100,
+			kName = 0b001,
+			kTitle = 0b010,
+			kObscurity = 0b100,
 
 			kDefault = kName,
 			kAll = kName | kTitle | kObscurity
@@ -115,7 +114,7 @@ namespace NND
 			[[nodiscard]] std::pair<NameRef, NameIndex> GetRandom(NameIndex maxIndex) const;
 
 			[[nodiscard]] std::pair<NameRef, size_t> GetRandom() const {
-				return GetRandom(names.size()-1);
+				return GetRandom(names.size() - 1);
 			}
 
 			[[nodiscard]] NameRef GetRandomName(NameIndex maxIndex) const {

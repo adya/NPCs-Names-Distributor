@@ -208,29 +208,29 @@ namespace NND
 
 		// Remove keyword priorities and write them to the Name Definition instead
 		const auto distrs = clib_util::distribution::get_configs_paths("Data", "_DISTR"sv, ".ini"sv);
-		for (const auto & distr : distrs) {
+		for (const auto& distr : distrs) {
 			std::ifstream ifile(distr);
 			if (ifile.is_open()) {
 				const std::string content((std::istreambuf_iterator<char>(ifile)),
-				                    (std::istreambuf_iterator<char>()));
+				                          (std::istreambuf_iterator<char>()));
 				ifile.close();
 				std::string       name = a_path.stem().string();
 				const std::string pattern = name + "_(Race|Class|Faction|Forced)";
-				const std::regex  re(pattern); 
-				std::smatch match;
+				const std::regex  re(pattern);
+				std::smatch       match;
 				std::regex_search(content, match, re);
 				if (match.size() > 1) {
 					const std::string new_content = std::regex_replace(content, re, name);  // Replace all occurrences
 
 					auto priority = match[1].str();
-					if (priority == "Forced") // Rename Forced priority
+					if (priority == "Forced")  // Rename Forced priority
 						priority = convert::toRawPriority(Priority::kIndividual);
 					modernized["/Priority"] = priority;
 					wasModernized = true;
 					std::ofstream ofile(distr);  // Open the file for output
 					if (ofile.is_open()) {
 						ofile << new_content;  // Write the new string to the file
-						ofile.close();          // Close the output file
+						ofile.close();         // Close the output file
 						logger::info("Removed keyword priorities in \"{}\"", distr.filename().string());
 					}
 				}
