@@ -87,6 +87,16 @@
       "name": "vs2022-windows-vcpkg-se",
       "configurePreset": "vs2022-windows-vcpkg-se",
       "configuration": "Release"
+    },
+    {
+      "name": "vs2022-windows-vcpkg-ae-debug",
+      "configurePreset": "vs2022-windows-vcpkg-ae",
+      "configuration": "Debug"
+    },
+    {
+      "name": "vs2022-windows-vcpkg-se-debug",
+      "configurePreset": "vs2022-windows-vcpkg-se",
+      "configuration": "Debug"
     }
   ]
 }
