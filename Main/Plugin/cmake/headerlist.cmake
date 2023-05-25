@@ -10,5 +10,6 @@ set(headers ${headers}
 	include/NameDefinitionDecoder.h
 	include/Persistency.h
 	include/crc32.h
+	include/NameFixer.h
 	include/PCH.h
 )

@@ -1,6 +1,7 @@
 #include "Hotkeys.h"
 
 #include "Distributor.h"
+#include "NameFixer.h"
 
 namespace NND
 {
@@ -114,6 +115,14 @@ Delete cache?
 			Options::Save();
 		}
 
+		void Manager::FixStuckNameTrigger(const KeyCombination*) {
+			if (const auto actorRef = RE::CrosshairPickData::GetSingleton()->targetActor.get().get()) {
+				if (const auto actor = actorRef->As<RE::Actor>()) {
+					NameFixer::FixName(actor);
+				}
+			}
+		}
+
 		RE::BSEventNotifyControl Manager::ProcessEvent(RE::InputEvent* const* a_event,
 		                                               RE::BSTEventSource<RE::InputEvent*>*) {
 			using EventType = RE::INPUT_EVENT_TYPE;
@@ -131,7 +140,8 @@ Delete cache?
 				generateTarget.Process(a_event) ||
 				reloadSettings.Process(a_event) ||
 				toggleObscurity.Process(a_event) ||
-				toggleNames.Process(a_event);
+				toggleNames.Process(a_event) ||
+				fixStuckName.Process(a_event);
 
 			return Result::kContinue;
 		}
@@ -147,6 +157,8 @@ Delete cache?
 				logger::error("Failed to set Key Combination '{}' for toggleObscurity", Options::Hotkeys::toggleObscurity);
 			if (!toggleNames.SetPattern(Options::Hotkeys::toggleNames))
 				logger::error("Failed to set Key Combination '{}' for toggleNames", Options::Hotkeys::toggleNames);
+			if (!fixStuckName.SetPattern(Options::Hotkeys::fixStuckName))
+				logger::error("Failed to set Key Combination '{}' for fixStuckName", Options::Hotkeys::fixStuckName);
 		}
 	}
 

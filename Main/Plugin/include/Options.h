@@ -79,6 +79,8 @@ namespace NND
 			inline std::string_view toggleObscurity = "RCtrl+O"sv;
 			inline std::string_view toggleNames = "RCtrl+N"sv;
 			inline std::string_view reloadSettings = "RCtrl+L"sv;
+
+			inline std::string_view fixStuckName = "RCtrl+Backspace"sv;
 		}
 
 		void Save();

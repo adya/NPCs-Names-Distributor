@@ -85,6 +85,7 @@ namespace NND
 			ReadHotkey(ini, "sGenerateNames", Hotkeys::generateAll, manager->generateAll);
 			ReadHotkey(ini, "sGenerateNameTarget", Hotkeys::generateTarget, manager->generateTarget);
 			ReadHotkey(ini, "sReloadSettings", Hotkeys::reloadSettings, manager->reloadSettings);
+			ReadHotkey(ini, "sFixStuckName", Hotkeys::fixStuckName, manager->fixStuckName);
 			
 		} else {
 			logger::info(R"(Data\SKSE\Plugins\NPCsNamesDistributor.ini not found. Default options will be used.)");
@@ -100,6 +101,7 @@ namespace NND
 		logger::info("\tReload Settings: {}", Hotkeys::reloadSettings);
 		logger::info("\tRegenerate All Names: {}", Hotkeys::generateAll);
 		logger::info("\tRegenerate Target Name: {}", Hotkeys::generateTarget);
+		logger::info("\tFix Stuck Names (pre NND 2.0): {}", Hotkeys::fixStuckName);
 		logger::info("");
 
 		logger::info("Obscurity:");
