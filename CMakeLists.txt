@@ -8,26 +8,20 @@ set(AE_VERSION 1)
 option(COPY_BUILD "Copy the build output to the Skyrim directory." TRUE)
 option(BUILD_SKYRIMAE "Build for Skyrim AE" OFF)
 
+# ---- Project ----
+
+project(
+	${NAME}
+	VERSION ${VERSION}
+	LANGUAGES CXX
+)
+
 # ---- Cache build vars ----
 
 macro(set_from_environment VARIABLE)
 	if (NOT DEFINED ${VARIABLE} AND DEFINED ENV{${VARIABLE}})
 		set(${VARIABLE} $ENV{${VARIABLE}})
 	endif ()
-endmacro()
-
-macro(find_commonlib_path)
-	if (CommonLibName AND NOT ${CommonLibName} STREQUAL "")
-		# Check extern
-		find_path(CommonLibPath
-		include/REL/Relocation.h
-		PATHS extern/${CommonLibName})
-		if (${CommonLibPath} STREQUAL "CommonLibPath-NOTFOUND")
-			#Check path
-			set_from_environment(${CommonLibName}Path)
-			set(CommonLibPath ${${CommonLibName}Path})
-		endif()
-	endif()
 endmacro()
 
 set_from_environment(VCPKG_ROOT)
@@ -45,7 +39,8 @@ else()
 	set(SkyrimPath ${Skyrim64Path})
 	set(SkyrimVersion "Skyrim SSE")
 endif()
-find_commonlib_path()
+
+set(CommonLibPath "${PROJECT_SOURCE_DIR}/extern/${CommonLibName}")
 message(
 	STATUS
 	"Building ${NAME} ${VERSION} for ${SkyrimVersion} at ${SkyrimPath} with ${CommonLibName} at ${CommonLibPath}."
@@ -63,14 +58,6 @@ endif ()
 
 set(Boost_USE_STATIC_RUNTIME OFF CACHE BOOL "")
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>" CACHE STRING "")
-
-# ---- Project ----
-
-project(
-	${NAME}
-	VERSION ${VERSION}
-	LANGUAGES CXX
-)
 
 configure_file(
 	${CMAKE_CURRENT_SOURCE_DIR}/cmake/Version.h.in
@@ -114,12 +101,46 @@ set(Boost_USE_STATIC_LIBS ON)
 
 # ---- Dependencies ----
 
-if (DEFINED CommonLibPath AND NOT ${CommonLibPath} STREQUAL "" AND IS_DIRECTORY ${CommonLibPath})
-	add_subdirectory(${CommonLibPath} ${CommonLibName})
-else ()
+add_subdirectory(${CommonLibPath} ${CommonLibName})
+
+message(
+	STATUS
+	"CommonLibPath is ${CommonLibPath}"
+)
+
+if (DEFINED CommonLibPath)
 	message(
-		FATAL_ERROR
-		"Variable ${CommonLibName}Path is not set or in extern/."
+		STATUS
+		"CommonLibPath is defined"
+	)
+	else()
+	message(
+		STATUS
+		"CommonLibPath is NOT DEFINED"
+	)
+endif()
+
+if (NOT ${CommonLibPath} STREQUAL "")
+	message(
+		STATUS
+		"CommonLibPath is not empty"
+	)
+	else()
+	message(
+		STATUS
+		"CommonLibPath IS EMPTY"
+	)
+endif()
+
+if (IS_DIRECTORY ${CommonLibPath})
+	message(
+		STATUS
+		"CommonLibPath is a directory"
+	)
+	else()
+	message(
+		STATUS
+		"CommonLibPath is NOT A DIRECTORY"
 	)
 endif()
 
