@@ -30,6 +30,7 @@ jobs:
       CMAKE_AE_BUILD_PRESET: 'vs2022-windows-vcpkg-ae-debug'
       CMAKE_VR_CONFIG_PRESET: ''
       CMAKE_VR_BUILD_PRESET: ''
+      CMAKE_BUILD_CONFIGURATION: 'Debug'
       FOMOD_INCLUDE_PDB: true
       FOMOD_MOD_NAME: "NPCs Names Distributor Debug"
       FOMOD_MOD_AUTHOR: "sasnikol"
