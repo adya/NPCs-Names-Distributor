@@ -14,7 +14,7 @@ namespace NND
 			}
 
 			inline bool NeedsFixing(std::string_view name) {
-				return name == "???" || IsNestedName(name);
+				return name == empty || name == "???" || IsNestedName(name);
 			}
 		}
 
