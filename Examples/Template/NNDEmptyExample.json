@@ -157,7 +157,6 @@
     "Scopes": ["Name"],
 
     "commentPriority": "Default priority of this Name Definition. The values are: Race, Class, Faction, Clan, Individual",
-    "commentPriority2": "When Keyword associated with this Name Definition also include priority (e.g. _Faction) it will override the one specified here",
     "Priority": "Race",
 
     "commentShortened":"Short names list specifies which segments of the name can be used to form a Short Name",

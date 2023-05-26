@@ -53,20 +53,20 @@ namespace NND
 		/// Priority
 		enum Priority : uint8_t
 		{
-			/// Definition with `kRace` priority contains base names specific for races or otherwise a large group that shares an innate trait that cannot be changed.
+			/// Definition with `kRace` priority contains base names specific to races or otherwise a large group that shares an innate trait that cannot be changed.
 			/// This is the default one and may be omitted.
 			kRace = 0,
 
 			/// Default priority is `kRace`.
 			kDefault = kRace,
 
-			/// Definition with `kClass` priority contains names for a more narrow group that shares an innate trait, which also cannot be changed.
+			/// Definition with `kClass` priority contains names for a narrower group that shares an innate trait, which also cannot be changed.
 			kClass,
 
 			/// Definition with `kFaction` priority contains names for a medium sized group that are united by some common idea or belief, that are scattered across the world.
 			kFaction,
 
-			/// Definition with `kClan` priority contains names for a small group that are united are united by some common idea or belief, but typically located in a single area.
+			/// Definition with `kClan` priority contains names for a small group that are united by some common idea or belief, but typically located in a single area.
 			kClan,
 
 			/// Definition with `kIndividual` priority contains names for distinct individuals that are usually hand-picked.
