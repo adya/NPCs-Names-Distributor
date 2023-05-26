@@ -29,7 +29,7 @@ namespace NND
 					// If we have a custom title and actor is unique
 					// then we can attach that title to actor's original name.
 					const Name originalName = actor->GetActorBase()->GetFullName();
-					Name formattedDisplayName{ Options::DisplayName::format };
+					Name       formattedDisplayName{ Options::DisplayName::format };
 					if (formattedDisplayName != empty) {
 						clib_util::string::replace_first_instance(formattedDisplayName, "[name]", originalName);
 						clib_util::string::replace_first_instance(formattedDisplayName, "[title]", this->title);
