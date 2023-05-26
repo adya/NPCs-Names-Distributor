@@ -1,0 +1,13 @@
+{
+  "name": "nnd",
+  "version-string": "2.0.0",
+  "description": "Framework that allows customizable names distribution",
+  "homepage": "https://github.com/adya/NPCs-Names-Distributor",
+  "license": "MIT",
+  "dependencies": [
+    "boost-stl-interfaces",
+    "rsm-binary-io",
+    "spdlog",
+    "xbyak"
+  ]
+}

@@ -1,0 +1,8 @@
+[submodule "extern/CommonLibSSE"]
+	path = extern/CommonLibSSE
+	url = https://github.com/powerof3/CommonLibSSE
+	branch = dev
+[submodule "extern/CLibUtil"]
+	path = extern/CLibUtil
+	url = https://github.com/adya/CLibUtil.git
+	branch = master

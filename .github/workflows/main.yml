@@ -1,0 +1,38 @@
+name: Main
+
+on:
+  push:
+    tags:
+    - '[0-9]+.[0-9]+.[0-9]+'
+    - '[0-9]+.[0-9]+.[0-9]+.rc[0-9]+'
+
+concurrency:
+  group: ${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  release:
+    uses: adya/pack-skse-mod/.github/workflows/pack.yml@dev
+    with:
+      CMAKE_SE_BUILD_PRESET: 'vs2022-windows-vcpkg-se'
+      CMAKE_AE_BUILD_PRESET: 'vs2022-windows-vcpkg-ae'
+      CMAKE_VR_CONFIG_PRESET: ''
+      CMAKE_VR_BUILD_PRESET: ''
+      FOMOD_INCLUDE_PDB: true
+      FOMOD_MOD_NAME: "NPCs Names Distributor"
+      FOMOD_MOD_AUTHOR: "sasnikol"
+      FOMOD_MOD_NEXUS_ID: "73081"
+      FOMOD_DEFAULT_IMAGE: "FOMOD/images/cover.png"
+  debug:
+    uses: adya/pack-skse-mod/.github/workflows/pack.yml@dev
+    with:
+      CMAKE_SE_BUILD_PRESET: 'vs2022-windows-vcpkg-se-debug'
+      CMAKE_AE_BUILD_PRESET: 'vs2022-windows-vcpkg-ae-debug'
+      CMAKE_VR_CONFIG_PRESET: ''
+      CMAKE_VR_BUILD_PRESET: ''
+      CMAKE_BUILD_CONFIGURATION: 'Debug'
+      FOMOD_INCLUDE_PDB: true
+      FOMOD_MOD_NAME: "NPCs Names Distributor Debug"
+      FOMOD_MOD_AUTHOR: "sasnikol"
+      FOMOD_MOD_NEXUS_ID: "73081"
+      FOMOD_DEFAULT_IMAGE: "FOMOD/images/cover.png"
