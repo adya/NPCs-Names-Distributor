@@ -24,10 +24,25 @@ namespace NND
 				}
 			} else if (name != empty) {
 				displayName = name;
-			} else if (this->title != empty && !isUnique) {
-				// If we have a custom title and actor is not unique
-				// then we can use this custom title as a standalone name.
-				displayName = this->title;
+			} else if (this->title != empty) {
+				if (isUnique) {
+					// If we have a custom title and actor is unique
+					// then we can attach that title to actor's original name.
+					const Name originalName = actor->GetActorBase()->GetFullName();
+					Name formattedDisplayName{ Options::DisplayName::format };
+					if (formattedDisplayName != empty) {
+						clib_util::string::replace_first_instance(formattedDisplayName, "[name]", originalName);
+						clib_util::string::replace_first_instance(formattedDisplayName, "[title]", this->title);
+						clib_util::string::replace_first_instance(formattedDisplayName, "[break]", "\n");
+						displayName = formattedDisplayName;
+					} else {
+						displayName = originalName + " (" + this->title + ")";
+					}
+				} else {
+					// If we have a custom title and actor is not unique
+					// then we can use this custom title as a standalone name.
+					displayName = this->title;
+				}
 			} else {
 				displayName = empty;  // fall back to original name.
 			}
@@ -63,9 +78,11 @@ namespace NND
 			if (!Options::General::enabled)
 				return empty;
 
+			// Check if unique actor has a custom title. In Display Name style we can combine those.
 			if (isUnique) {
-				return empty;
+				return title != empty && style == kDisplayName ? displayName : empty;
 			}
+
 			switch (style) {
 			case kDisplayName:
 				return displayName;
