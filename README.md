@@ -3,7 +3,7 @@ NPCs Names Distributor
 
 </h1>
 
-![Splash](https://staticdelivery.nexusmods.com/mods/1704/images/headers/73081_1660167581.jpg)
+![Splash](https://github.com/adya/NPCs-Names-Distributor/blob/main/images/Splash.png)
 
 A framework that allows to generate and distribute names to any NPCs using SPID. Highly customizable through configuration files. Supports any NPCs from any mods.
 
