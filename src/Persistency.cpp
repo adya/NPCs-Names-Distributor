@@ -160,7 +160,7 @@ namespace NND
 			serializationInterface->SetSaveCallback(Save);
 			serializationInterface->SetLoadCallback(Load);
 			serializationInterface->SetRevertCallback(Revert);
-		}
+		}//
 
 		void Manager::Load(SKSE::SerializationInterface* a_interface) {
 			logger::info("{:*^30}", "LOADING");
@@ -179,7 +179,7 @@ namespace NND
 					} else if (type == Data::recordType) {
 						Distribution::NNDData data{};
 						if (Data::Load(a_interface, data)) {
-							if (const auto actor = RE::TESForm::LookupByID(data.formId); actor->formType == RE::FormType::ActorCharacter) {
+							if (const auto actor = RE::TESForm::LookupByID(data.formId); actor && actor->formType == RE::FormType::ActorCharacter) {
 #ifndef NDEBUG
 								logger::info("\tLoaded [0x{:X}] ('{}')", data.formId, data.name != empty ? data.displayName : actor->As<RE::Actor>()->GetActorBase()->GetFullName());
 #endif

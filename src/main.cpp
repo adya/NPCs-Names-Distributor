@@ -18,8 +18,8 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_message) {
 		NND::Distribution::Manager::Register();
 		break;
 	case SKSE::MessagingInterface::kDataLoaded:
-		NND::CacheKeywords();
 		NND::Hotkeys::Manager::Register();
+		NND::CacheKeywords();
 		break;
 	case SKSE::MessagingInterface::kPreLoadGame:
 		NND::Persistency::Manager::GetSingleton()->StartLoadingGame();
