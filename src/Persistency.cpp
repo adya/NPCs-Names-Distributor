@@ -160,7 +160,7 @@ namespace NND
 			serializationInterface->SetSaveCallback(Save);
 			serializationInterface->SetLoadCallback(Load);
 			serializationInterface->SetRevertCallback(Revert);
-		}//
+		}
 
 		void Manager::Load(SKSE::SerializationInterface* a_interface) {
 			logger::info("{:*^30}", "LOADING");
