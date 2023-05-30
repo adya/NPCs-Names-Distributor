@@ -37,4 +37,4 @@ jobs:
       FOMOD_MOD_NAME: "NPCs Names Distributor Debug"
       FOMOD_MOD_AUTHOR: "sasnikol"
       FOMOD_MOD_NEXUS_ID: "73081"
-      FOMOD_DEFAULT_IMAGE: "FOMOD/images/cover-debug.png"
+      FOMOD_DEFAULT_IMAGE: "FOMOD/images/cover_debug.png"
