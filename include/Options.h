@@ -81,6 +81,7 @@ namespace NND
 			inline std::string reloadSettings = "RCtrl+L";
 
 			inline std::string fixStuckName = "RCtrl+Backspace";
+			inline std::string unsafeFixStuckName = "RCtrl+RShift+Backspace";
 		}
 
 		void Save();

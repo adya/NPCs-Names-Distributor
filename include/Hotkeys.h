@@ -24,6 +24,7 @@ namespace NND
 			static void ToggleNamesTrigger(const KeyCombination*);
 
 			static void FixStuckNameTrigger(const KeyCombination*);
+			static void UnsafeFixStuckNameTrigger(const KeyCombination*);
 
 			KeyCombination generateAll{ GenerateAllTrigger };
 			KeyCombination generateTarget{ GenerateTargetTrigger };
@@ -32,6 +33,7 @@ namespace NND
 			KeyCombination toggleNames{ ToggleNamesTrigger };
 
 			KeyCombination fixStuckName{ FixStuckNameTrigger };
+			KeyCombination unsafeFixStuckName{ UnsafeFixStuckNameTrigger };
 
 		protected:
 			RE::BSEventNotifyControl ProcessEvent(RE::InputEvent* const* a_event, RE::BSTEventSource<RE::InputEvent*>* a_eventSource) override;

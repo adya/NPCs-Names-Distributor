@@ -73,6 +73,14 @@ namespace NND
 			}
 		}
 
+		void Manager::UnsafeFixStuckNameTrigger(const KeyCombination*) {
+			if (const auto actorRef = RE::CrosshairPickData::GetSingleton()->targetActor.get().get()) {
+				if (const auto actor = actorRef->As<RE::Actor>()) {
+					NameFixer::FixNameUnsafe(actor);
+				}
+			}
+		}
+
 		RE::BSEventNotifyControl Manager::ProcessEvent(RE::InputEvent* const* a_event,
 		                                               RE::BSTEventSource<RE::InputEvent*>*) {
 			using EventType = RE::INPUT_EVENT_TYPE;
@@ -91,7 +99,8 @@ namespace NND
 				reloadSettings.Process(a_event) ||
 				toggleObscurity.Process(a_event) ||
 				toggleNames.Process(a_event) ||
-				fixStuckName.Process(a_event);
+				fixStuckName.Process(a_event) ||
+				unsafeFixStuckName.Process(a_event);
 
 			return Result::kContinue;
 		}
@@ -109,6 +118,8 @@ namespace NND
 				logger::error("Failed to set Key Combination '{}' for toggleNames", Options::Hotkeys::toggleNames);
 			if (!fixStuckName.SetPattern(Options::Hotkeys::fixStuckName))
 				logger::error("Failed to set Key Combination '{}' for fixStuckName", Options::Hotkeys::fixStuckName);
+			if (!unsafeFixStuckName.SetPattern(Options::Hotkeys::unsafeFixStuckName))
+				logger::error("Failed to set Key Combination '{}' for unsafeFixStuckName", Options::Hotkeys::unsafeFixStuckName);
 		}
 	}
 
