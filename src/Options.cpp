@@ -62,7 +62,11 @@ namespace NND
 
 			Obscurity::enabled = ini.GetBoolValue("Obscurity", "bEnabled", Obscurity::enabled);
 			Obscurity::greetings = ini.GetBoolValue("Obscurity", "bGreetings", Obscurity::greetings);
-			Obscurity::defaultName = ini.GetValue("Obscurity", "sDefaultName", Obscurity::defaultName.data());
+			if (const auto defaultName = ini.GetValue("Obscurity", "sDefaultName", Obscurity::defaultName.data()); defaultName != empty) {
+				Obscurity::defaultName = defaultName;
+			} else {
+				logger::warn("Obscurity:sDefaultName cannot be empty. Previous value ('{}') will be used.", Obscurity::defaultName);
+			}
 
 			if (const auto format = ini.GetValue("DisplayName", "sFormat")) {
 				DisplayName::format = format;

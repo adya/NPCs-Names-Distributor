@@ -61,19 +61,15 @@ namespace NND
 				return obscurity;
 			if (isObscuringTitle && title != empty)
 				return title;
-			if (allowDefaultObscurity)
+			if (allowDefaultObscurity && actor->GetActorBase()->GetFullName() != empty)
 				return actor->GetActorBase()->GetFullName();
 
 			return Options::Obscurity::defaultName;
 		}
 
 		NameRef NNDData::GetName(NameStyle style, const RE::Actor* actor) const {
-			if (Options::Obscurity::enabled && isObscured) {
-				if (const auto obscurity = GetObscurity(actor); obscurity != empty)
-					return obscurity;
-				logger::warn("WARN: Obscuring name is empty. Make sure you don't have Obscurity:sDefaultName set to empty value in INI.");
-				return empty;
-			}
+			if (Options::Obscurity::enabled && isObscured)
+				return GetObscurity(actor);
 
 			if (!Options::General::enabled)
 				return empty;

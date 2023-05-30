@@ -41,7 +41,6 @@ namespace NND
 #else
 						manager->UpdateData(pair.second, actor->As<RE::Actor>(), false);
 #endif
-
 					}
 				}
 			});
