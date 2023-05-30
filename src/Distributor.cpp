@@ -471,13 +471,19 @@ namespace NND
 #endif
 		}
 
+		#ifndef NDEBUG
+		NNDData& Manager::UpdateData(NNDData& data, RE::Actor* actor, bool definitionsChanged, bool silenceLog) const {
+#else
 		NNDData& Manager::UpdateData(NNDData& data, RE::Actor* actor, bool definitionsChanged) const {
+#endif
 			UpdateDataFlags(data, actor);
 #ifndef NDEBUG
-			logger::info("\t\tIsUnique: {}", data.isUnique);
-			logger::info("\t\tAllowsDefaultTitle: {}", data.allowDefaultTitle);
-			logger::info("\t\tIsObscured: {}", data.isObscured);
-			logger::info("\t\tAllowsDefaultObscurity: {}", data.allowDefaultObscurity);
+			if (!silenceLog) {
+				logger::info("\t\tIsUnique: {}", data.isUnique);
+				logger::info("\t\tAllowsDefaultTitle: {}", data.allowDefaultTitle);
+				logger::info("\t\tIsObscured: {}", data.isObscured);
+				logger::info("\t\tAllowsDefaultObscurity: {}", data.allowDefaultObscurity);
+			}
 #endif
 			if (definitionsChanged) {
 #ifndef NDEBUG

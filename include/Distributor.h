@@ -61,7 +61,12 @@ namespace NND
 			void     DeleteData(const RE::Actor* actor);
 
 			NNDData& UpdateDataFlags(NNDData&, RE::Actor*) const;
+#ifndef NDEBUG
+			NNDData& UpdateData(NNDData&, RE::Actor*, bool definitionsChanged, bool silenceLog = false) const;
+#else
 			NNDData& UpdateData(NNDData&, RE::Actor*, bool definitionsChanged) const;
+#endif
+			
 
 			void            UpdateNames(std::function<void(NamesMap&)>);
 			const NamesMap& GetAllNames();

@@ -41,7 +41,7 @@ namespace NND
 		return false;
 	}
 
-	bool ReadHotkey(const CSimpleIniA& ini, const char* name, std::string_view& pattern, Hotkeys::KeyCombination& hotkey) {
+	bool ReadHotkey(const CSimpleIniA& ini, const char* name, std::string& pattern, Hotkeys::KeyCombination& hotkey) {
 		if (const auto rawPattern = ini.GetValue("Hotkeys", name)) {
 			if (hotkey.SetPattern(rawPattern)) {
 				pattern = rawPattern;

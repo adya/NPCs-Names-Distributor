@@ -69,18 +69,18 @@ namespace NND
 			///	- [name]: Substitutes full name
 			///	- [title]: Substitutes title
 			///	- [break]: Substitutes new line.
-			inline std::string_view format = "[name] ([title])"sv;
+			inline std::string format = "[name] ([title])";
 		}
 
 		namespace Hotkeys
 		{
-			inline std::string_view generateAll = "RCtrl+RShift+G"sv;
-			inline std::string_view generateTarget = "RCtrl+G"sv;
-			inline std::string_view toggleObscurity = "RCtrl+O"sv;
-			inline std::string_view toggleNames = "RCtrl+N"sv;
-			inline std::string_view reloadSettings = "RCtrl+L"sv;
+			inline std::string generateAll = "RCtrl+RShift+G";
+			inline std::string generateTarget = "RCtrl+G";
+			inline std::string toggleObscurity = "RCtrl+O";
+			inline std::string toggleNames = "RCtrl+N";
+			inline std::string reloadSettings = "RCtrl+L";
 
-			inline std::string_view fixStuckName = "RCtrl+Backspace"sv;
+			inline std::string fixStuckName = "RCtrl+Backspace";
 		}
 
 		void Save();
