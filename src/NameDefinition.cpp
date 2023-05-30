@@ -5,26 +5,33 @@ namespace NND
 {
 	inline clib_util::RNG staticRNG{};
 
-	inline bool AssignRandomNameVariant(const NameDefinition::NamesVariant& variant, bool useCircumfix, NameRef* nameComp, NameRef* prefixComp, NameRef* suffixComp) {
-		*nameComp = variant.GetRandom().first;
+	inline bool AssignRandomNameVariant(const NameDefinition::NamesVariant& variant, const NameDefinition::NamesVariant& anyVariant, bool useCircumfix, NameRef* nameComp, NameRef* prefixComp, NameRef* suffixComp) {
+		// When variant doesn't contain options fall back to default anyVariant.
+		const auto&                  effectiveNamesVariant = variant.IsEmpty() ? anyVariant : variant;
+		const NameDefinition::Adfix& prefixes = variant.prefix.IsEmpty() ? anyVariant.prefix : variant.prefix;
+		const NameDefinition::Adfix& suffixes = variant.suffix.IsEmpty() ? anyVariant.suffix : variant.suffix;
+
+		*nameComp = effectiveNamesVariant.GetRandom().first;
 		if (*nameComp == empty)
 			return false;
+
 		// Reset adfixes if components already had one (from previous definition)
 		*prefixComp = empty;
 		*suffixComp = empty;
+
 		// Oh, yeah. This doesn't look too good :)
 		if (useCircumfix) {
-			if (const auto circumfixSize = std::min(variant.prefix.GetSize(), variant.suffix.GetSize()); circumfixSize > 0) {
-				if (const auto [prefix, index] = variant.prefix.GetRandom(circumfixSize); prefix != empty) {
-					if (const auto suffix = variant.suffix.GetNameAt(index); suffix != empty) {
+			if (const auto circumfixSize = std::min(prefixes.GetSize(), suffixes.GetSize()); circumfixSize > 0) {
+				if (const auto [prefix, index] = prefixes.GetRandom(circumfixSize); prefix != empty) {
+					if (const auto suffix = suffixes.GetNameAt(index); suffix != empty) {
 						*prefixComp = prefix;
 						*suffixComp = suffix;
 					}
 				}
 			}
 		} else {
-			*prefixComp = variant.prefix.GetRandomName();
-			*suffixComp = variant.suffix.GetRandomName();
+			*prefixComp = prefixes.GetRandomName();
+			*suffixComp = suffixes.GetRandomName();
 		}
 
 		return *nameComp != empty;
@@ -39,6 +46,7 @@ namespace NND
 
 	bool NameDefinition::GetRandomFirstName(RE::SEX sex, NameComponents& components) const {
 		return AssignRandomNameVariant(firstName.GetVariant(sex),
+		                               firstName.any,
 		                               firstName.useCircumfix,
 		                               &components.firstName,
 		                               &components.firstPrefix,
@@ -47,6 +55,7 @@ namespace NND
 
 	bool NameDefinition::GetRandomMiddleName(RE::SEX sex, NameComponents& components) const {
 		return AssignRandomNameVariant(middleName.GetVariant(sex),
+		                               middleName.any,
 		                               middleName.useCircumfix,
 		                               &components.middleName,
 		                               &components.middlePrefix,
@@ -55,6 +64,7 @@ namespace NND
 
 	bool NameDefinition::GetRandomLastName(RE::SEX sex, NameComponents& components) const {
 		return AssignRandomNameVariant(lastName.GetVariant(sex),
+		                               lastName.any,
 		                               lastName.useCircumfix,
 		                               &components.lastName,
 		                               &components.lastPrefix,
@@ -69,10 +79,10 @@ namespace NND
 	/// Gets NamesVariant that matches given `sex`.
 	const NameDefinition::NamesVariant& NameDefinition::NameSegment::GetVariant(const RE::SEX sex) const {
 		if (sex == RE::SEX::kMale) {
-			return male.IsEmpty() ? any : male;
+			return male;
 		}
 		if (sex == RE::SEX::kFemale) {
-			return female.IsEmpty() ? any : female;
+			return female;
 		}
 		return any;
 	}
