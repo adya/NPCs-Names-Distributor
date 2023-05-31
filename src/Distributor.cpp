@@ -358,6 +358,19 @@ namespace NND
 					logger::info("An old actor touches the NND: [0x{:X}] ('{}'):", actor->formID, actor->GetActorBase()->GetName());
 #endif
 					UpdateDataFlags(data, actor);
+					data.UpdateDisplayName(actor);
+#ifndef NDEBUG
+					logger::info("\tIsUnique: {}", data.isUnique);
+					logger::info("\tAllowsDefaultTitle: {}", data.allowDefaultTitle);
+					logger::info("\tIsObscured: {}", data.isObscured);
+					logger::info("\tAllowsDefaultObscurity: {}", data.allowDefaultObscurity);
+					logger::info("\tCanBeObscured: {}", ActorSupportsObscurity(actor));
+					logger::info("\tName: '{}'", data.name);
+					logger::info("\tTitle: '{}'", data.title);
+					logger::info("\tObscuringName: '{}'", data.obscurity);
+					logger::info("\tShortName: '{}'", data.shortDisplayName);
+					logger::info("\tDisplayName: '{}'", data.displayName);
+#endif
 					return data;
 				}
 			}
@@ -391,7 +404,11 @@ namespace NND
 			const auto endTime = std::chrono::steady_clock::now();
 			const auto duration = std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime).count();
 #ifndef NDEBUG
-			logger::info("\tDisplayName: '{}'", data.name != empty ? data.displayName : actor->GetActorBase()->GetName());
+			logger::info("\tName: '{}'", data.name);
+			logger::info("\tTitle: '{}'", data.title);
+			logger::info("\tObscuringName: '{}'", data.obscurity);
+			logger::info("\tShortName: '{}'", data.shortDisplayName);
+			logger::info("\tDisplayName: '{}'", data.displayName);
 			logger::info("\tDuration: {} ms", duration);
 #else
 			if (data.name != empty)
@@ -467,20 +484,13 @@ namespace NND
 #endif
 		}
 
-		#ifndef NDEBUG
+#ifndef NDEBUG
 		NNDData& Manager::UpdateData(NNDData& data, RE::Actor* actor, bool definitionsChanged, bool silenceLog) const {
 #else
 		NNDData& Manager::UpdateData(NNDData& data, RE::Actor* actor, bool definitionsChanged) const {
 #endif
 			UpdateDataFlags(data, actor);
-#ifndef NDEBUG
-			if (!silenceLog) {
-				logger::info("\t\tIsUnique: {}", data.isUnique);
-				logger::info("\t\tAllowsDefaultTitle: {}", data.allowDefaultTitle);
-				logger::info("\t\tIsObscured: {}", data.isObscured);
-				logger::info("\t\tAllowsDefaultObscurity: {}", data.allowDefaultObscurity);
-			}
-#endif
+
 			if (definitionsChanged) {
 #ifndef NDEBUG
 				logger::info("\t\tUpdating name..");
@@ -491,7 +501,19 @@ namespace NND
 			}
 
 			data.UpdateDisplayName(actor);
-
+#ifndef NDEBUG
+			if (!silenceLog) {
+				logger::info("\t\tIsUnique: {}", data.isUnique);
+				logger::info("\t\tAllowsDefaultTitle: {}", data.allowDefaultTitle);
+				logger::info("\t\tIsObscured: {}", data.isObscured);
+				logger::info("\t\tAllowsDefaultObscurity: {}", data.allowDefaultObscurity);
+				logger::info("\t\tName: '{}'", data.name);
+				logger::info("\t\tTitle: '{}'", data.title);
+				logger::info("\t\tObscuringName: '{}'", data.obscurity);
+				logger::info("\t\tShortName: '{}'", data.shortDisplayName);
+				logger::info("\t\tDisplayName: '{}'", data.displayName);
+			}
+#endif
 			return data;
 		}
 

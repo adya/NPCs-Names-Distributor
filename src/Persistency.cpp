@@ -181,7 +181,7 @@ namespace NND
 						if (Data::Load(a_interface, data)) {
 							if (const auto actor = RE::TESForm::LookupByID(data.formId); actor && actor->formType == RE::FormType::ActorCharacter) {
 #ifndef NDEBUG
-								logger::info("\tLoaded [0x{:X}] ('{}')", data.formId, data.name != empty ? data.displayName : actor->As<RE::Actor>()->GetActorBase()->GetFullName());
+								logger::info("\tLoaded [0x{:X}] ('{}')", data.formId, actor->As<RE::Actor>()->GetActorBase()->GetFullName());
 #endif
 								manager->UpdateData(data, actor->As<RE::Actor>(), definitionsChanged);
 							}
