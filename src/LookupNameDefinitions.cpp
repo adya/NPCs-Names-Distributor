@@ -116,6 +116,8 @@ namespace NND
 				++validFiles;
 			} catch (const std::exception& error) {
 				logger::critical("\tFailed to decode Name Definition {} with error: {} ", name, error.what());
+			} catch (...) {
+				logger::critical("\tFailed to decode Name Definition {} with error: {} ", name, "Unknown exception occurred.");
 			}
 		}
 		return validFiles > 0;

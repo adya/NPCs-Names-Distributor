@@ -249,7 +249,6 @@ namespace NND
 	}
 
 	NameDefinition NameDefinitionDecoder::decode(const std::filesystem::path& a_path) const {
-		std::ifstream  f(a_path);
 		const json     data = modernize(a_path);
 		NameDefinition definition{};
 		convert::from_json(data, definition);
