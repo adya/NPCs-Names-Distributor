@@ -86,41 +86,50 @@ namespace NND
 
 	bool LoadNameDefinitions() {
 		logger::info("{:*^30}", "NAME DEFINITIONS");
-		const auto files = clib_util::distribution::get_configs_paths(R"(Data\SKSE\Plugins\NPCsNamesDistributor)", ".json"sv);
+		const std::filesystem::path dir = R"(Data\SKSE\Plugins\NPCsNamesDistributor)";
 
-		if (files.empty()) {
-			logger::info("No Name Definition files found. NPCsNamesDistributor will be disabled.");
-			logger::info(R"(Make sure your Name Definition files are located at Data\SKSE\Plugins\NPCsNamesDistributor)");
+		try {
+			const auto files = clib_util::distribution::get_configs_paths(dir, ".json"sv);
+
+			if (files.empty()) {
+				logger::info("No Name Definition files found.");
+				logger::info("Make sure your Name Definition files are located at '{}'", dir.string());
+				return false;
+			}
+			logger::info("{} Name Definition files found", files.size());
+			int                             validFiles = 0;
+			constexpr NameDefinitionDecoder decoder{};
+			for (const auto& file : files) {
+				const auto name = file.stem().string();
+				logger::info("Loading \"{}\"", name);
+				try {
+					auto definition = decoder.decode(file);
+					definition.crc32 = ComputeCRC(file);
+					definition.name = name;
+					if (has(definition.scope, NameDefinition::Scope::kName)) {
+						loadedDefinitions[NameDefinition::Scope::kName][name] = definition;
+					}
+					if (has(definition.scope, NameDefinition::Scope::kTitle)) {
+						loadedDefinitions[NameDefinition::Scope::kTitle][name] = definition;
+					}
+					if (has(definition.scope, NameDefinition::Scope::kObscurity)) {
+						loadedDefinitions[NameDefinition::Scope::kObscurity][name] = definition;
+					}
+					LogDefinition(definition);
+					++validFiles;
+				} catch (const std::exception& error) {
+					logger::critical("\tFailed to decode Name Definition {} with error: {} ", name, error.what());
+				} catch (...) {
+					logger::critical("\tFailed to decode Name Definition {} with error: {} ", name, "Unknown exception occurred.");
+				}
+			}
+			return validFiles > 0;
+		} catch (const std::filesystem::filesystem_error& error) {
+			create_directory(dir);
+			logger::info("Failed to load Name Definitions with error: {}", error.what());
+			logger::info("Make sure '{}' exists", dir.string());
 			return false;
 		}
-		logger::info("{} Name Definition files found", files.size());
-		int                   validFiles = 0;
-		NameDefinitionDecoder decoder{};
-		for (const auto& file : files) {
-			const auto name = file.stem().string();
-			logger::info("Loading \"{}\"", name);
-			try {
-				auto definition = decoder.decode(file);
-				definition.crc32 = ComputeCRC(file);
-				definition.name = name;
-				if (has(definition.scope, NameDefinition::Scope::kName)) {
-					loadedDefinitions[NameDefinition::Scope::kName][name] = definition;
-				}
-				if (has(definition.scope, NameDefinition::Scope::kTitle)) {
-					loadedDefinitions[NameDefinition::Scope::kTitle][name] = definition;
-				}
-				if (has(definition.scope, NameDefinition::Scope::kObscurity)) {
-					loadedDefinitions[NameDefinition::Scope::kObscurity][name] = definition;
-				}
-				LogDefinition(definition);
-				++validFiles;
-			} catch (const std::exception& error) {
-				logger::critical("\tFailed to decode Name Definition {} with error: {} ", name, error.what());
-			} catch (...) {
-				logger::critical("\tFailed to decode Name Definition {} with error: {} ", name, "Unknown exception occurred.");
-			}
-		}
-		return validFiles > 0;
 	}
 
 	Snapshot MakeSnapshot() {

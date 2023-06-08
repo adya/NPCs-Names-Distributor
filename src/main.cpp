@@ -10,6 +10,7 @@
 void MessageHandler(SKSE::MessagingInterface::Message* a_message) {
 	switch (a_message->type) {
 	case SKSE::MessagingInterface::kPostLoad:
+		// Disregard result of the LoadNameDefinitions. If nothing is loaded we still can use Obscurity.
 		NND::LoadNameDefinitions();
 		break;
 	case SKSE::MessagingInterface::kPostPostLoad:
