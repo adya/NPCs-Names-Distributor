@@ -20,6 +20,7 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_message) {
 		break;
 	case SKSE::MessagingInterface::kDataLoaded:
 		NND::Hotkeys::Manager::Register();
+		NND::Persistency::Manager::Register();
 		NND::CacheKeywords();
 		break;
 	case SKSE::MessagingInterface::kPreLoadGame:
@@ -95,8 +96,6 @@ extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* a_s
 	SKSE::Init(a_skse);
 
 	SKSE::GetMessagingInterface()->RegisterListener(MessageHandler);
-
-	NND::Persistency::Manager::Register();
 
 	return true;
 }
