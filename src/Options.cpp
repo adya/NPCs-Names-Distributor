@@ -68,7 +68,7 @@ namespace NND
 				logger::warn("Obscurity:sDefaultName cannot be empty. Previous value ('{}') will be used.", Obscurity::defaultName);
 			}
 
-			if (const auto format = ini.GetValue("DisplayName", "sFormat")) {
+			if (const auto format = ini.GetValue("DisplayName", "sFormat"); format != empty) {
 				DisplayName::format = format;
 			} else if (const auto formatIndex = ini.GetLongValue("DisplayName", "iFormat", -1); formatIndex >= 0 && formatIndex < DisplayName::defaultFormats.size()) {
 				DisplayName::format = DisplayName::defaultFormats[formatIndex];
