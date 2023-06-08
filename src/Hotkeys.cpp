@@ -31,10 +31,10 @@ namespace NND
 		void Manager::ReloadSettingsTrigger(const KeyCombination* keys) {
 			logger::info("Reloading settings..");
 			Options::Load();
-	
+
 			auto manager = Distribution::Manager::GetSingleton();
 			Distribution::Manager::GetSingleton()->UpdateNames([&manager](auto& names) {
-				for (auto& pair: names) {
+				for (auto& pair : names) {
 					if (const auto actor = RE::TESForm::LookupByID(pair.first); actor && actor->formType == RE::FormType::ActorCharacter) {
 #ifndef NDEBUG
 						manager->UpdateData(pair.second, actor->As<RE::Actor>(), false, true);

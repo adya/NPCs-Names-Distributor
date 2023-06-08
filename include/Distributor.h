@@ -66,7 +66,6 @@ namespace NND
 #else
 			NNDData& UpdateData(NNDData&, RE::Actor*, bool definitionsChanged) const;
 #endif
-			
 
 			void            UpdateNames(std::function<void(NamesMap&)>);
 			const NamesMap& GetAllNames();
