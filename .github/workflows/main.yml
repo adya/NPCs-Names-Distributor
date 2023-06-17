@@ -12,7 +12,7 @@ concurrency:
 
 jobs:
   release:
-    uses: adya/pack-skse-mod/.github/workflows/pack.yml@dev
+    uses: adya/pack-skse-mod/.github/workflows/pack.yml@main
     with:
       CMAKE_SE_BUILD_PRESET: 'vs2022-windows-vcpkg-se'
       CMAKE_AE_BUILD_PRESET: 'vs2022-windows-vcpkg-ae'
@@ -25,7 +25,7 @@ jobs:
       FOMOD_MOD_NEXUS_ID: "73081"
       FOMOD_DEFAULT_IMAGE: "FOMOD/images/cover.png"
   debug:
-    uses: adya/pack-skse-mod/.github/workflows/pack.yml@dev
+    uses: adya/pack-skse-mod/.github/workflows/pack.yml@main
     with:
       CMAKE_SE_BUILD_PRESET: 'vs2022-windows-vcpkg-se-debug'
       CMAKE_AE_BUILD_PRESET: 'vs2022-windows-vcpkg-ae-debug'
