@@ -64,8 +64,14 @@ namespace NND
 			struct GetDisplayFullName_GetFormName
 			{
 				static const char* thunk(RE::TESObjectREFR* a_this) {
-					const auto originalName = a_this->GetBaseObject()->GetName();
-					return GetName(Options::NameContext::kOther, a_this, originalName);
+					if (const auto base = a_this->GetBaseObject(); base) {
+						const auto originalName = base->GetName();
+						return GetName(Options::NameContext::kOther, a_this, originalName);
+					}
+					// Fallback for cases when GetBaseObject is nullptr.
+					// According to crash reports this might happen when a_this is being deleted by the game?
+					// It has Flag kDeleted and objectReference is nullptr, so I guess this is it.
+					return a_this->GetDisplayFullName();
 				}
 				static inline REL::Relocation<decltype(thunk)> func;
 			};
