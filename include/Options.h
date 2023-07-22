@@ -31,6 +31,8 @@ namespace NND
 		{
 			inline bool enabled = true;
 			inline bool greetings = false;
+			inline bool obituary = false;
+			inline bool stealing = false;
 			inline Name defaultName = "???";
 		}
 

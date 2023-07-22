@@ -430,9 +430,7 @@ namespace NND
 #endif
 		}
 
-		bool Manager::RevealName(const RE::Actor* actor, bool forceGreet) {
-			if (forceGreet && !Options::Obscurity::greetings)
-				return false;
+		bool Manager::RevealName(const RE::Actor* actor) {
 			WriteLocker lock(_lock);
 			if (const auto& it = names.find(actor->formID); it != names.end() && it->second.isObscured) {
 				it->second.isObscured = false;

@@ -359,8 +359,8 @@ namespace NND
 		struct Character_SetDialogueWithPlayer
 		{
 			static bool thunk(RE::Character* a_this, bool inDialogue, bool forceGreet, RE::TESTopicInfo* a_topic) {
-				if (a_this && inDialogue) {
-					if (Manager::GetSingleton()->RevealName(a_this, forceGreet))
+				if (a_this && inDialogue && (Options::Obscurity::greetings || !forceGreet)) {
+					if (Manager::GetSingleton()->RevealName(a_this))
 						RE::PlayerCharacter::GetSingleton()->UpdateCrosshairs();
 				}
 				return func(a_this, inDialogue, forceGreet, a_topic);
@@ -371,9 +371,39 @@ namespace NND
 			static inline constexpr std::size_t size{ 0x41 };
 		};
 
+		struct TESNPC_Activate_Dead_OpenInventory
+		{
+			static const char* thunk(RE::Actor* a_this, RE::ContainerMenu::ContainerMode mode) {
+				if (a_this && Options::Obscurity::obituary) {
+					if (Manager::GetSingleton()->RevealName(a_this))
+						RE::PlayerCharacter::GetSingleton()->UpdateCrosshairs();
+				}
+				return func(a_this, mode);
+			}
+			static inline REL::Relocation<decltype(thunk)> func;
+		};
+
+		struct TESNPC_Activate_Pickpocket_OpenInventory
+		{
+			static const char* thunk(RE::Actor* a_this, RE::ContainerMenu::ContainerMode mode) {
+				if (a_this && Options::Obscurity::stealing) {
+					if (Manager::GetSingleton()->RevealName(a_this))
+						RE::PlayerCharacter::GetSingleton()->UpdateCrosshairs();
+				}
+				return func(a_this, mode);
+			}
+			static inline REL::Relocation<decltype(thunk)> func;
+		};
+
 		inline void Install() {
 			stl::write_vfunc<RE::Character, Character_SetDialogueWithPlayer>();
 			logger::info("Installed SetDialogueWithPlayer hook");
+
+			const REL::Relocation<std::uintptr_t> activate{ RELOCATION_ID(24211, 24715) };
+
+			stl::write_thunk_call<TESNPC_Activate_Dead_OpenInventory>(activate.address() + OFFSET(0x3D8, 0x3E7));
+			stl::write_thunk_call<TESNPC_Activate_Pickpocket_OpenInventory>(activate.address() + OFFSET(0x69E, 0x6BB));
+			logger::info("Installed OpenInventory hooks");
 		}
 	}
 

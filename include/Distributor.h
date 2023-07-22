@@ -59,7 +59,7 @@ namespace NND
 			using NamesMap = std::unordered_map<RE::FormID, NNDData>;
 
 			/// Reveals name for given RE::FormID if it was previously obscured.
-			bool RevealName(const RE::Actor*, bool forceGreet);
+			bool RevealName(const RE::Actor*);
 
 			NameRef  GetName(NameStyle, RE::Actor*);
 			NNDData& SetData(const NNDData&);
