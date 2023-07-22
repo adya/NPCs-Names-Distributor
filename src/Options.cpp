@@ -62,12 +62,14 @@ namespace NND
 
 			Obscurity::enabled = ini.GetBoolValue("Obscurity", "bEnabled", Obscurity::enabled);
 			Obscurity::greetings = ini.GetBoolValue("Obscurity", "bGreetings", Obscurity::greetings);
+			Obscurity::obituary = ini.GetBoolValue("Obscurity", "bObituary", Obscurity::obituary);
+			Obscurity::stealing = ini.GetBoolValue("Obscurity", "bStealing", Obscurity::stealing);
 			if (const auto defaultName = ini.GetValue("Obscurity", "sDefaultName", Obscurity::defaultName.data()); defaultName != empty) {
 				Obscurity::defaultName = defaultName;
 			} else {
 				logger::warn("Obscurity:sDefaultName cannot be empty. Previous value ('{}') will be used.", Obscurity::defaultName);
 			}
-			
+
 			if (const auto format = ini.GetValue("DisplayName", "sFormat"); format && format != empty) {
 				DisplayName::format = format;
 			} else if (const auto formatIndex = ini.GetLongValue("DisplayName", "iFormat", -1); formatIndex >= 0 && formatIndex < DisplayName::defaultFormats.size()) {
@@ -111,8 +113,10 @@ namespace NND
 		logger::info("");
 
 		logger::info("Obscurity:");
-		logger::info("\t{}", Obscurity::enabled ? "Enabled" : "Disabled");
-		logger::info("\tCan be revealed {}", Obscurity::greetings ? "by both Player and NPC" : "only by Player");
+		logger::info("\tObscuring Names {}", Obscurity::enabled ? "enabled" : "disabled");
+		logger::info("\tCan be revealed in dialogue: {}", Obscurity::greetings ? "By both Player and NPC" : "Only by Player");
+		logger::info("\tCan be revealed when looting: {}", Obscurity::obituary ? "Yes" : "No");
+		logger::info("\tCan be revealed when pickpocketing: {}", Obscurity::stealing ? "Yes" : "No");
 		logger::info("\tDefault Name: {}", Obscurity::defaultName);
 		logger::info("");
 

@@ -4,5 +4,5 @@
 	branch = dev
 [submodule "extern/CLibUtil"]
 	path = extern/CLibUtil
-	url = https://github.com/adya/CLibUtil.git
+	url = https://github.com/powerof3/CLibUtil.git
 	branch = master
