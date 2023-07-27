@@ -9,9 +9,9 @@ namespace NND
 		{
 			inline constexpr auto message = R"(Regenerate All Names
 
-This action will delete cached names for all NPCs. New names will be generated (and cached) for them on-demand.
+This action will regenerate names for all NPCs. (You might experience some lagging during the process)
 
-Delete cache?
+Proceed?
 
 (You can reload last save to undo this action.))";
 
@@ -26,12 +26,17 @@ Delete cache?
 					const std::int32_t response = static_cast<std::int32_t>(a_msg) - 4;
 					if (response == 0) {
 						logger::info("Resetting all names..");
-						Distribution::Manager::GetSingleton()->UpdateNames([](auto& names) {
-							names.clear();
-						});
-						// In case we're looking at someone when reseting the cache..
-						RE::PlayerCharacter::GetSingleton()->UpdateCrosshairs();
-					}
+						for (const auto formId : Distribution::Manager::GetSingleton()->GetAllNames() | std::views::keys) {
+							if (const auto actor = RE::TESForm::LookupByID<RE::Actor>(formId); actor) {
+								Distribution::Manager::GetSingleton()->CreateData(actor, true);
+#ifndef NDEBUG
+							} else {
+								logger::info("Failed to reset name for [0x{:X}]", formId);
+#endif
+							}
+						}
+						RE::PlayerCharacter::GetSingleton()->UpdateCrosshairs();  // In case we're looking at someone when reseting the cache..
+				}
 				}
 			};
 
@@ -70,11 +75,10 @@ Delete cache?
 			}
 		}
 
-		inline void RegenerateTarget(const RE::Actor* actor) {
+		inline void RegenerateTarget(RE::Actor* actor) {
 			logger::info("Resetting name for target..");
-			Distribution::Manager::GetSingleton()->DeleteData(actor);
-			// Immediately refresh the name for NPC we are looking at.
-			RE::PlayerCharacter::GetSingleton()->UpdateCrosshairs();
+			Distribution::Manager::GetSingleton()->CreateData(actor, true);
+			RE::PlayerCharacter::GetSingleton()->UpdateCrosshairs();  // Immediately refresh the name for NPC we are looking at.
 		}
 	}
 }

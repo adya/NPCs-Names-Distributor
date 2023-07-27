@@ -50,12 +50,6 @@ namespace NND
 
 			static void Register();
 
-			/// Checks whether the game is ready to start name distribution.
-			bool IsGameLoaded() const {
-				// We actually check for Player's 3D since it loads far enough into loading process where NPCs are actually processed by SPID.
-				return RE::PlayerCharacter::GetSingleton()->Is3DLoaded();
-			}
-
 			using NamesMap = std::unordered_map<RE::FormID, NNDData>;
 
 			/// Reveals name for given RE::FormID if it was previously obscured.
@@ -63,7 +57,7 @@ namespace NND
 
 			NameRef  GetName(NameStyle, RE::Actor*);
 			NNDData& SetData(const NNDData&);
-			NNDData& CreateData(RE::Actor*);
+			NNDData& CreateData(RE::Actor*, bool shouldOverwrite = false);
 			void     DeleteData(const RE::Actor* actor);
 
 			NNDData& UpdateDataFlags(NNDData&, RE::Actor*) const;
@@ -74,7 +68,7 @@ namespace NND
 #endif
 
 			void            UpdateNames(std::function<void(NamesMap&)>);
-			const NamesMap& GetAllNames();
+			const NamesMap& GetAllNames() const;
 
 		protected:
 			RE::BSEventNotifyControl ProcessEvent(const RE::TESFormDeleteEvent*, RE::BSTEventSource<RE::TESFormDeleteEvent>*) override;

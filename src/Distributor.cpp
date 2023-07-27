@@ -330,9 +330,9 @@ namespace NND
 			// This is the case when user hit "Regenerate" name.
 			// Also this is called at the very beginning of the loading for some weird npcs.
 #ifndef NDEBUG
-			logger::info("Pre-cached name for [0x{:X}] ('{}') not found. Name will be created in-place.", actor->formID, actor->GetActorBase()->GetName());
+			logger::info("Pre-cached name for [0x{:X}] ('{}') not found. Maybe it's not the time for the name?", actor->formID, actor->GetActorBase()->GetName());
 #endif
-			return CreateData(actor).GetName(style, actor);
+			return empty;
 		}
 
 		NNDData& Manager::SetData(const NNDData& data) {
@@ -349,8 +349,10 @@ namespace NND
 			return data;
 		}
 
-		NNDData& Manager::CreateData(RE::Actor* actor) {
-			{
+		NNDData& Manager::CreateData(RE::Actor* actor, bool shouldOverwrite) {
+			// If overwrite is not allowed, then check that data does not exist first.
+			// Otherwise, proceed to generate new data.
+			if (!shouldOverwrite) {
 				WriteLocker lock(_lock);
 				if (names.contains(actor->formID)) {
 					auto& data = names.at(actor->formID);
@@ -399,8 +401,6 @@ namespace NND
 
 			data.UpdateDisplayName(actor);
 
-			// TODO: Comment this for releases.
-			// (not NDEBUG, since I'd want to measure performance on Release from time to time)
 			const auto endTime = std::chrono::steady_clock::now();
 			const auto duration = std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime).count();
 #ifndef NDEBUG
@@ -550,7 +550,7 @@ namespace NND
 			update(names);
 		}
 
-		const Manager::NamesMap& Manager::GetAllNames() {
+		const Manager::NamesMap& Manager::GetAllNames() const {
 			ReadLocker lock(_lock);
 			return names;
 		}
