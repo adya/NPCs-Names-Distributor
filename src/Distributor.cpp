@@ -48,6 +48,34 @@ namespace NND
 			}
 		}
 
+		void NNDData::UpdateDefaultObscurityName(const RE::Actor* actor) {
+			if (Name formattedObscurityName{ Options::Obscurity::defaultName }; formattedObscurityName != empty) {
+				const Name race = actor->GetRace()->GetFullName();
+				Name sex;
+				switch (actor->GetActorBase()->GetSex()) {
+				case RE::SEX::kMale:
+					sex = "Male";
+					break;
+				case RE::SEX::kFemale:
+					sex = "Female";
+					break;
+				default:
+					break;
+				}
+
+				const auto hadRace = clib_util::string::replace_first_instance(formattedObscurityName, "[race]", race);
+				const auto hadSex = clib_util::string::replace_first_instance(formattedObscurityName, "[sex]", sex);
+
+				if (hadRace || hadSex) {
+					clib_util::string::trim(formattedObscurityName);
+					defaultObscurity = formattedObscurityName;
+					return;
+				}
+			}
+			defaultObscurity = empty;
+		}
+
+
 		NameRef NNDData::GetTitle(const RE::Actor* actor) const {
 			if (title != empty)
 				return title;
@@ -63,6 +91,8 @@ namespace NND
 				return title;
 			if (allowDefaultObscurity && actor->GetActorBase()->GetFullName() != empty)
 				return actor->GetActorBase()->GetFullName();
+			if (defaultObscurity != empty)
+				return defaultObscurity;
 
 			return Options::Obscurity::defaultName;
 		}
@@ -361,6 +391,7 @@ namespace NND
 #endif
 					UpdateDataFlags(data, actor);
 					data.UpdateDisplayName(actor);
+					data.UpdateDefaultObscurityName(actor);
 #ifndef NDEBUG
 					logger::info("\tIsUnique: {}", data.isUnique);
 					logger::info("\tAllowsDefaultTitle: {}", data.allowDefaultTitle);
@@ -400,6 +431,7 @@ namespace NND
 			MakeObscureName(data, actor);
 
 			data.UpdateDisplayName(actor);
+			data.UpdateDefaultObscurityName(actor);
 
 			const auto endTime = std::chrono::steady_clock::now();
 			const auto duration = std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime).count();
@@ -499,6 +531,7 @@ namespace NND
 			}
 
 			data.UpdateDisplayName(actor);
+			data.UpdateDefaultObscurityName(actor);
 #ifndef NDEBUG
 			if (!silenceLog) {
 				logger::info("\t\tIsUnique: {}", data.isUnique);
