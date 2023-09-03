@@ -1,13 +1,13 @@
 set(sources ${sources}
-	src/Options.cpp
-	src/Distributor.cpp
-	src/PCH.cpp
-	src/main.cpp
-	src/Hooks.cpp
-	src/Hotkeys.cpp
 	src/LookupNameDefinitions.cpp
+	src/Persistency.cpp
+	src/main.cpp
+	src/PCH.cpp
+	src/Hotkeys.cpp
+	src/Options.cpp
 	src/crc32.cpp
+	src/Hooks.cpp
+	src/Distributor.cpp
 	src/NameDefinition.cpp
 	src/NameDefinitionDecoder.cpp
-	src/Persistency.cpp
 )

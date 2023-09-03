@@ -51,7 +51,7 @@ namespace NND
 		void NNDData::UpdateDefaultObscurityName(const RE::Actor* actor) {
 			if (Name formattedObscurityName{ Options::Obscurity::defaultName }; formattedObscurityName != empty) {
 				const Name race = actor->GetRace()->GetFullName();
-				Name sex;
+				Name       sex;
 				switch (actor->GetActorBase()->GetSex()) {
 				case RE::SEX::kMale:
 					sex = "Male";
@@ -74,7 +74,6 @@ namespace NND
 			}
 			defaultObscurity = empty;
 		}
-
 
 		NameRef NNDData::GetTitle(const RE::Actor* actor) const {
 			if (title != empty)

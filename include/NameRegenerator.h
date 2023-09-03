@@ -36,7 +36,7 @@ Proceed?
 							}
 						}
 						RE::PlayerCharacter::GetSingleton()->UpdateCrosshairs();  // In case we're looking at someone when reseting the cache..
-				}
+					}
 				}
 			};
 
