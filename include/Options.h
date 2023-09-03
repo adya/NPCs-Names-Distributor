@@ -33,7 +33,7 @@ namespace NND
 			inline bool greetings = false;
 			inline bool obituary = false;
 			inline bool stealing = false;
-			inline Name defaultName = "???";
+			inline Name defaultName = "[sex] [race]";
 		}
 
 		namespace NameContext

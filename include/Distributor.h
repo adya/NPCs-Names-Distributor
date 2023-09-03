@@ -13,7 +13,11 @@ namespace NND
 
 			Name name{};
 			Name title{};
+
 			Name obscurity{};
+
+			/// This is a default name to be used for obscurity when Options:Obscurity::defaultName contains placeholders for dynamic data such as race or sex.
+			Name defaultObscurity{};
 
 			Name shortDisplayName{};
 
@@ -30,6 +34,7 @@ namespace NND
 			bool isObscuringTitle = false;
 
 			void UpdateDisplayName(const RE::Actor*);
+			void UpdateDefaultObscurityName(const RE::Actor*);
 
 			NameRef GetName(NameStyle, const RE::Actor*) const;
 
