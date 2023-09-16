@@ -10,4 +10,5 @@ set(sources ${sources}
 	src/Distributor.cpp
 	src/NameDefinition.cpp
 	src/NameDefinitionDecoder.cpp
+	src/ModAPI.cpp
 )

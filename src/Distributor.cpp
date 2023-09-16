@@ -337,7 +337,7 @@ namespace NND
 			}
 		}
 
-		NameRef Manager::GetName(NameStyle style, RE::Actor* actor) {
+		NameRef Manager::GetName(NameStyle style, const RE::Actor* actor) {
 			{  // Limit scope of the lock to cached names.
 				WriteLocker lock(_lock);
 				if (names.contains(actor->formID)) {

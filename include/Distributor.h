@@ -60,7 +60,7 @@ namespace NND
 			/// Reveals name for given RE::FormID if it was previously obscured.
 			bool RevealName(const RE::Actor*);
 
-			NameRef  GetName(NameStyle, RE::Actor*);
+			NameRef  GetName(NameStyle, const RE::Actor*);
 			NNDData& SetData(const NNDData&);
 			NNDData& CreateData(RE::Actor*, bool shouldOverwrite = false);
 			void     DeleteData(const RE::Actor* actor);

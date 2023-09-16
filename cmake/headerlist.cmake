@@ -13,4 +13,6 @@ set(headers ${headers}
 	include/NameDefinitionDecoder.h
 	include/Distributor.h
 	include/NameDefinition.h
+	include/NND_API.h
+	include/ModAPI.h
 )

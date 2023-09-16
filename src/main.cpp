@@ -3,6 +3,7 @@
 #include "Hotkeys.h"
 #include "LookupNameDefinitions.h"
 #include "NNDKeywords.h"
+#include "ModAPI.h"
 #include "Options.h"
 #include "Persistency.h"
 
@@ -98,4 +99,19 @@ extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* a_s
 	SKSE::GetMessagingInterface()->RegisterListener(MessageHandler);
 
 	return true;
+}
+
+extern "C" DLLEXPORT void* SKSEAPI RequestPluginAPI(const NND_API::InterfaceVersion a_interfaceVersion) {
+	const auto api = Messaging::NNDInterface::GetSingleton();
+
+	logger::info("NND::RequestPluginAPI called, InterfaceVersion {}", static_cast<std::underlying_type<NND_API::InterfaceVersion>::type>(a_interfaceVersion));
+
+	switch (a_interfaceVersion) {
+	case NND_API::InterfaceVersion::kV1:
+		logger::info("NND::RequestPluginAPI returned the API singleton");
+		return api;
+	}
+
+	logger::info("NND::RequestPluginAPI requested the wrong interface version");
+	return nullptr;
 }
