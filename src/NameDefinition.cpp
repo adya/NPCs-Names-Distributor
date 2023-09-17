@@ -30,8 +30,14 @@ namespace NND
 				}
 			}
 		} else {
-			*prefixComp = prefixes.GetRandomName();
-			*suffixComp = suffixes.GetRandomName();
+			if (prefixes.exclusive) {
+				*prefixComp = prefixes.GetRandomName();
+			} else if (suffixes.exclusive) {
+				*suffixComp = suffixes.GetRandomName();
+			} else {
+				*prefixComp = prefixes.GetRandomName();
+				*suffixComp = suffixes.GetRandomName();
+			}
 		}
 
 		return *nameComp != empty;
