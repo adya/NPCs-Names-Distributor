@@ -2,8 +2,8 @@
 #include "Hooks.h"
 #include "Hotkeys.h"
 #include "LookupNameDefinitions.h"
-#include "NNDKeywords.h"
 #include "ModAPI.h"
+#include "NNDKeywords.h"
 #include "Options.h"
 #include "Persistency.h"
 
