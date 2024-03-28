@@ -80,6 +80,7 @@ namespace NND
 			ReadStyle(ini, "sCrosshairMinion", NameContext::kCrosshairMinion);
 			ReadStyle(ini, "sSubtitles", NameContext::kSubtitles);
 			ReadStyle(ini, "sDialogue", NameContext::kDialogue);
+			ReadStyle(ini, "sDialogueHistory", NameContext::kDialogueHistory);
 			ReadStyle(ini, "sInventory", NameContext::kInventory);
 			ReadStyle(ini, "sBarter", NameContext::kBarter);
 			ReadStyle(ini, "sEnemyHUD", NameContext::kEnemyHUD);
@@ -126,12 +127,13 @@ namespace NND
 
 		logger::info("Name Contexts:");
 		logger::info("\tCrosshair: {}", name(NameContext::kCrosshair));
-		logger::info("\tCrosshairMinion: {}", name(NameContext::kCrosshairMinion));
+		logger::info("\tCrosshair Minion: {}", name(NameContext::kCrosshairMinion));
 		logger::info("\tSubtitles: {}", name(NameContext::kSubtitles));
 		logger::info("\tDialogue: {}", name(NameContext::kDialogue));
+		logger::info("\tDialogue History: {}", name(NameContext::kDialogueHistory));
 		logger::info("\tInventory: {}", name(NameContext::kInventory));
 		logger::info("\tBarter: {}", name(NameContext::kBarter));
-		logger::info("\tEnemyHUD: {}", name(NameContext::kEnemyHUD));
+		logger::info("\tEnemy HUD: {}", name(NameContext::kEnemyHUD));
 		logger::info("\tOther: {}", name(NameContext::kOther));
 	}
 

@@ -19,6 +19,8 @@ namespace Messaging
 			return NND::Options::NameContext::kBarter;
 		case NameContext::kEnemyHUD:
 			return NND::Options::NameContext::kEnemyHUD;
+		case NameContext::kDialogueHistory:
+			return NND::Options::NameContext::kDialogueHistory;
 		default:
 		case NameContext::kOther:
 			return NND::Options::NameContext::kOther;

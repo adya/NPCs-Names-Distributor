@@ -43,6 +43,7 @@ namespace NND
 
 			inline auto kSubtitles = kShortName;
 			inline auto kDialogue = kFullName;
+			inline auto kDialogueHistory = kFullName;
 
 			inline auto kInventory = kFullName;
 
