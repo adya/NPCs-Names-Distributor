@@ -18,6 +18,7 @@ jobs:
       CMAKE_AE_BUILD_PRESET: 'vs2022-windows-vcpkg-ae'
       CMAKE_VR_CONFIG_PRESET: ''
       CMAKE_VR_BUILD_PRESET: ''
+      VCPKG_COMMIT_ID: '9854d1d92200d81dde189e53b64c9ba6a305dc9f'
       FOMOD_INCLUDE_PDB: true
       FOMOD_REQUIRED_INSTALLATION_DIR: "FOMOD/Required Files"
       FOMOD_MOD_NAME: "NPCs Names Distributor"
@@ -32,6 +33,7 @@ jobs:
       CMAKE_VR_CONFIG_PRESET: ''
       CMAKE_VR_BUILD_PRESET: ''
       CMAKE_BUILD_CONFIGURATION: 'Debug'
+      VCPKG_COMMIT_ID: '9854d1d92200d81dde189e53b64c9ba6a305dc9f'
       FOMOD_INCLUDE_PDB: true
       FOMOD_REQUIRED_INSTALLATION_DIR: "FOMOD/Required Files"
       FOMOD_MOD_NAME: "NPCs Names Distributor Debug"
