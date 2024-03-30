@@ -108,6 +108,7 @@ extern "C" DLLEXPORT void* SKSEAPI RequestPluginAPI(const NND_API::InterfaceVers
 
 	switch (a_interfaceVersion) {
 	case NND_API::InterfaceVersion::kV1:
+	case NND_API::InterfaceVersion::kV2:
 		logger::info("NND::RequestPluginAPI returned the API singleton");
 		return api;
 	}
