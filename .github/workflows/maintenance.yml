@@ -1,6 +1,9 @@
 name: Scripted maintenance
 
-on: push
+on:
+  push:
+    branches:
+    - '**'
 
 jobs:
   maintenance:
@@ -14,7 +17,7 @@ jobs:
         python-version: '3.10'
 
     - name: Run clang-format
-      run: find -type f \( -name *.h -o -name *.cpp \) | xargs clang-format-14 -style=file -i
+      run: find -type f \( -name *.h -o -name *.cpp \) | xargs clang-format-15 -style=file -i
 
     - name: Glob files
       run: python ${{ github.workspace }}/ProjectGen.py
