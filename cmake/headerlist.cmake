@@ -1,18 +1,18 @@
 set(headers ${headers}
-	include/Persistency.h
+	include/NNDKeywords.h
+	include/Hotkeys.h
+	include/LookupNameDefinitions.h
+	include/ModAPI.h
+	include/PCH.h
+	include/NameDefinitionDecoder.h
+	include/NND_API.h
 	include/json.hpp
+	include/Persistency.h
+	include/Distributor.h
+	include/Hooks.h
+	include/NameFixer.h
 	include/Options.h
 	include/NameDefinition.h
-	include/NNDKeywords.h
-	include/Hooks.h
-	include/Distributor.h
-	include/NameRegenerator.h
-	include/NameDefinitionDecoder.h
-	include/LookupNameDefinitions.h
-	include/PCH.h
-	include/Hotkeys.h
-	include/NameFixer.h
-	include/ModAPI.h
-	include/NND_API.h
 	include/crc32.h
+	include/NameRegenerator.h
 )

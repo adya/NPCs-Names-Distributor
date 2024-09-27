@@ -42,7 +42,6 @@ namespace NND_API
 	class IVNND1
 	{
 	public:
-
 		/// <summary>
 		/// Retrieves a generated name for given actor appropriate in specified context.
 		/// Note that NND might not have a name for the actor. In this case an empty string will be returned.

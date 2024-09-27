@@ -5,7 +5,7 @@
 
 namespace NND
 {
-	namespace Naming::Default 
+	namespace Naming::Default
 	{
 		/// Returns the original name that GetDisplayFullName would return.
 		///

@@ -28,7 +28,7 @@ namespace NND
 				if (isUnique) {
 					// If we have a custom title and actor is unique
 					// then we can attach that title to actor's original name.
-					
+
 					const Name originalName = Naming::Default::GetDisplayFullName(actor);
 					Name       formattedDisplayName{ Options::DisplayName::format };
 					if (formattedDisplayName != empty) {
