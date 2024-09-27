@@ -69,6 +69,7 @@ namespace NND
 		}
 
 		LogNameSegment("First"sv, definition.firstName);
+		LogNameSegment("Middle"sv, definition.middleName);
 		LogNameSegment("Last"sv, definition.lastName);
 	}
 

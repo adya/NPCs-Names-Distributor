@@ -56,6 +56,7 @@ namespace NND
 					const auto originalName = a_this->GetDisplayName(obj->GetBaseObject(), temperFactor);
 					return GetName(Options::NameContext::kOther, obj, originalName);
 				}
+
 				static inline REL::Relocation<decltype(thunk)> func;
 			};
 
@@ -65,14 +66,8 @@ namespace NND
 			struct GetDisplayFullName_GetFormName
 			{
 				static const char* thunk(RE::TESObjectREFR* a_this) {
-					if (const auto base = a_this->GetBaseObject(); base) {
-						const auto originalName = base->GetName();
-						return GetName(Options::NameContext::kOther, a_this, originalName);
-					}
-					// Fallback for cases when GetBaseObject is nullptr.
-					// According to crash reports this might happen when a_this is being deleted by the game?
-					// It has Flag kDeleted and objectReference is nullptr, so I guess this is it.
-					return a_this->GetDisplayFullName();
+					const auto originalName = Naming::Default::GetDisplayFullName(a_this);
+					return GetName(Options::NameContext::kOther, a_this, originalName);
 				}
 				static inline REL::Relocation<decltype(thunk)> func;
 			};
@@ -85,7 +80,7 @@ namespace NND
 				struct Activate_GetBaseObject
 				{
 					static const char* thunk(RE::Actor* a_this) {
-						const auto originalName = a_this->GetDisplayFullName();
+						const auto originalName = Naming::Default::GetDisplayFullName(a_this);
 						return GetName(Options::NameContext::kOther, a_this, originalName);
 					}
 					static inline REL::Relocation<decltype(thunk)> func;
@@ -321,7 +316,13 @@ namespace NND
 			struct BarterMenu_GetShortName
 			{
 				static const char* thunk(RE::TESObjectREFR* a_this) {
-					return GetName(Options::NameContext::kBarter, a_this, a_this->GetDisplayFullName());
+					// If there is a short name, pass it as original, otherwise fallback to default full name.
+					if (const auto actor = a_this->As<RE::Actor>(); actor) {
+						if (const auto npc = actor->GetActorBase(); npc && !npc->shortName.empty()) {
+							return GetName(Options::NameContext::kBarter, a_this, npc->shortName.c_str());
+						}
+					}
+					return GetName(Options::NameContext::kBarter, a_this, Default::GetDisplayFullName(a_this));
 				}
 				static inline REL::Relocation<decltype(thunk)> func;
 			};

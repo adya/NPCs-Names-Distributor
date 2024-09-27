@@ -34,7 +34,7 @@ namespace Messaging
 		return ""sv;
 	}
 
-	std::string_view NNDInterface::GetName(const RE::Actor* actor, NameContext context) noexcept {
+	std::string_view NNDInterface::GetName(RE::Actor* actor, NameContext context) noexcept {
 		if (actor) {
 			return NND::Distribution::Manager::GetSingleton()->GetName(GetNameStyle(context), actor);
 		}

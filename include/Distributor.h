@@ -5,6 +5,16 @@
 
 namespace NND
 {
+	namespace Naming::Default 
+	{
+		/// Returns the original name that GetDisplayFullName would return.
+		///
+		/// Use it when you need to get the original display name, since default obj->GetDisplayFullName() is hooked to return the NND name.
+		static const char* GetDisplayFullName(RE::TESObjectREFR* a_this) {
+			return a_this->extraList.GetDisplayName(a_this->data.objectReference);
+		}
+	}
+
 	namespace Distribution
 	{
 		struct NNDData
@@ -33,16 +43,17 @@ namespace NND
 			/// that is also used on Obscuring scope, thus obscurity should reuse that title instead of creating another one.
 			bool isObscuringTitle = false;
 
-			void UpdateDisplayName(const RE::Actor*);
+			void UpdateDisplayName(RE::Actor*);
 			void UpdateDefaultObscurityName(const RE::Actor*);
 
-			NameRef GetName(NameStyle, const RE::Actor*) const;
+			NameRef GetName(NameStyle, RE::Actor*);
 
 			friend class Manager;
 
 		private:
-			NameRef GetTitle(const RE::Actor*) const;
-			NameRef GetObscurity(const RE::Actor*) const;
+			NameRef GetTitle(RE::Actor*) const;
+			NameRef GetObscurity(RE::Actor*) const;
+			NameRef GetDisplayName(RE::Actor*);
 		};
 
 		class Manager : public RE::BSTEventSink<RE::TESFormDeleteEvent>
@@ -60,7 +71,7 @@ namespace NND
 			/// Reveals name for given RE::FormID if it was previously obscured.
 			bool RevealName(const RE::Actor*);
 
-			NameRef  GetName(NameStyle, const RE::Actor*);
+			NameRef  GetName(NameStyle, RE::Actor*);
 			NNDData& SetData(const NNDData&);
 			NNDData& CreateData(RE::Actor*, bool shouldOverwrite = false);
 			void     DeleteData(const RE::Actor* actor);

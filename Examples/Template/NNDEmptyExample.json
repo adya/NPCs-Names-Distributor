@@ -141,7 +141,7 @@
         "Circumfix": false
     },
     
-    "commentConjunctions": "This section defines how First and Last names get connected. Same gender rules apply as in other sections.",
+    "commentConjunctions": "This section defines how First, Middle and Last names get connected. Same gender rules apply as in other sections.",
     "Conjunctions": {
         "Male": [],
         "Female": [],

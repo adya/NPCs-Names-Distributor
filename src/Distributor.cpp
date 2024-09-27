@@ -10,7 +10,7 @@ namespace NND
 	namespace Distribution
 	{
 		// Here we'll handle all styles and whatnot.
-		void NNDData::UpdateDisplayName(const RE::Actor* actor) {
+		void NNDData::UpdateDisplayName(RE::Actor* actor) {
 			const Name effectiveTitle(GetTitle(actor));
 			if (name != empty && effectiveTitle != empty) {
 				Name formattedDisplayName{ Options::DisplayName::format };
@@ -28,7 +28,8 @@ namespace NND
 				if (isUnique) {
 					// If we have a custom title and actor is unique
 					// then we can attach that title to actor's original name.
-					const Name originalName = actor->GetActorBase()->GetFullName();
+					
+					const Name originalName = Naming::Default::GetDisplayFullName(actor);
 					Name       formattedDisplayName{ Options::DisplayName::format };
 					if (formattedDisplayName != empty) {
 						clib_util::string::replace_first_instance(formattedDisplayName, "[name]", originalName);
@@ -46,6 +47,11 @@ namespace NND
 			} else {
 				displayName = empty;  // fall back to original name.
 			}
+		}
+
+		NameRef NNDData::GetDisplayName(RE::Actor* actor) {
+			UpdateDisplayName(actor);
+			return displayName;
 		}
 
 		void NNDData::UpdateDefaultObscurityName(const RE::Actor* actor) {
@@ -75,28 +81,28 @@ namespace NND
 			defaultObscurity = empty;
 		}
 
-		NameRef NNDData::GetTitle(const RE::Actor* actor) const {
+		NameRef NNDData::GetTitle(RE::Actor* actor) const {
 			if (title != empty)
 				return title;
 			if (allowDefaultTitle)
-				return actor->GetActorBase()->GetFullName();
+				return Naming::Default::GetDisplayFullName(actor);
 			return empty;
 		}
 
-		NameRef NNDData::GetObscurity(const RE::Actor* actor) const {
+		NameRef NNDData::GetObscurity(RE::Actor* actor) const {
 			if (obscurity != empty)
 				return obscurity;
 			if (isObscuringTitle && title != empty)
 				return title;
-			if (allowDefaultObscurity && actor->GetActorBase()->GetFullName() != empty)
-				return actor->GetActorBase()->GetFullName();
+			if (allowDefaultObscurity && Naming::Default::GetDisplayFullName(actor) != empty)
+				return Naming::Default::GetDisplayFullName(actor);
 			if (defaultObscurity != empty)
 				return defaultObscurity;
 
 			return Options::Obscurity::defaultName;
 		}
 
-		NameRef NNDData::GetName(NameStyle style, const RE::Actor* actor) const {
+		NameRef NNDData::GetName(NameStyle style, RE::Actor* actor) {
 			if (Options::Obscurity::enabled && isObscured)
 				return GetObscurity(actor);
 
@@ -105,12 +111,12 @@ namespace NND
 
 			// Check if unique actor has a custom title. In Display Name style we can combine those.
 			if (isUnique) {
-				return title != empty && style == kDisplayName ? displayName : empty;
+				return title != empty && style == kDisplayName ? GetDisplayName(actor) : empty;
 			}
 
 			switch (style) {
 			case kDisplayName:
-				return displayName;
+				return GetDisplayName(actor);
 			default:
 			case kFullName:
 				return name;
@@ -337,7 +343,7 @@ namespace NND
 			}
 		}
 
-		NameRef Manager::GetName(NameStyle style, const RE::Actor* actor) {
+		NameRef Manager::GetName(NameStyle style, RE::Actor* actor) {
 			{  // Limit scope of the lock to cached names.
 				WriteLocker lock(_lock);
 				if (names.contains(actor->formID)) {

@@ -21,7 +21,7 @@ namespace Messaging
 		}
 
 		virtual std::string_view GetName(RE::ActorHandle, NameContext) noexcept override;
-		virtual std::string_view GetName(const RE::Actor*, NameContext) noexcept override;
+		virtual std::string_view GetName(RE::Actor*, NameContext) noexcept override;
 		virtual void             RevealName(RE::ActorHandle) noexcept override;
 		virtual void             RevealName(RE::Actor*) noexcept override;
 	};

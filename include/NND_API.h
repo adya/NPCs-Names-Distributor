@@ -59,7 +59,7 @@ namespace NND_API
 		/// <param name="actor">Actor for which the name should be retrieved.</param>
 		/// <param name="context">Context in which the name needs to be displayed. Depending on context name might either shortened or formatted differently.</param>
 		/// <returns>A name generated for the actor. If actor does not support generated names an empty string will be returned instead.</returns>
-		virtual std::string_view GetName(const RE::Actor* actor, NameContext context) noexcept = 0;
+		virtual std::string_view GetName(RE::Actor* actor, NameContext context) noexcept = 0;
 
 		/// <summary>
 		/// Reveals a real name of the given actor to the player. If player already know actor's name this method does nothing.
