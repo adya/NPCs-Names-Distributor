@@ -66,8 +66,18 @@ namespace NND
 			struct GetDisplayFullName_GetFormName
 			{
 				static const char* thunk(RE::TESObjectREFR* a_this) {
-					const auto originalName = Naming::Default::GetDisplayFullName(a_this);
-					return GetName(Options::NameContext::kOther, a_this, originalName);
+					if (a_this->Is(RE::FormType::ActorCharacter)) {
+						// For characters we want to display the name as their display full name. Probably this will never be executed since this branch in the game executed when it's already known to be other types of objects.
+						const auto originalName = Naming::Default::GetDisplayFullName(a_this);
+						return GetName(Options::NameContext::kOther, a_this, originalName);
+					}
+
+					// For other references just do what the game does.
+					if (const auto base = a_this->GetBaseObject(); base) {
+						return base->GetName();
+					} else {
+						return "";
+					}
 				}
 				static inline REL::Relocation<decltype(thunk)> func;
 			};
