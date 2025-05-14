@@ -27,7 +27,7 @@ Proceed?
 					if (response == 0) {
 						logger::info("Resetting all names..");
 						for (const auto formId : Distribution::Manager::GetSingleton()->GetAllNames() | std::views::keys) {
-							if (const auto actor = RE::TESForm::LookupByID<RE::Actor>(formId); actor) {
+							if (const auto actor = RE::TESForm::LookupByID<RE::Actor>(formId); actor && !actor->IsPlayerRef()) {
 								Distribution::Manager::GetSingleton()->CreateData(actor, true);
 #ifndef NDEBUG
 							} else {
@@ -76,6 +76,10 @@ Proceed?
 		}
 
 		inline void RegenerateTarget(RE::Actor* actor) {
+			if (actor->IsPlayerRef()) {
+				logger::info("Cannot reset name for Player");
+				return;
+			}
 			logger::info("Resetting name for target..");
 			Distribution::Manager::GetSingleton()->CreateData(actor, true);
 			RE::PlayerCharacter::GetSingleton()->UpdateCrosshairs();  // Immediately refresh the name for NPC we are looking at.

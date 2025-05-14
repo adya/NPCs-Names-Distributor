@@ -103,11 +103,17 @@ namespace NND
 		}
 
 		NameRef NNDData::GetName(NameStyle style, RE::Actor* actor) {
-			if (Options::Obscurity::enabled && isObscured)
-				return GetObscurity(actor);
-
-			if (!Options::General::enabled)
+			if (actor->IsPlayerRef()) {
 				return empty;
+			}
+
+			if (Options::Obscurity::enabled && isObscured) {
+				return GetObscurity(actor);
+			}
+
+			if (!Options::General::enabled) {
+				return empty;
+			}
 
 			// Check if unique actor has a custom title. In Display Name style we can combine those.
 			if (isUnique) {

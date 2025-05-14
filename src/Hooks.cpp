@@ -14,8 +14,9 @@ namespace NND
 			static RE::NiAVObject* thunk(RE::Character* a_this, bool a_backgroundLoading) {
 				// Avoid processing any names before the game is loaded.
 				// In this case we're avoiding creating redundant NNDData objects during loading process.
-				if (!Persistency::Manager::GetSingleton()->IsLoadingGame())
+				if (!Persistency::Manager::GetSingleton()->IsLoadingGame(); a_this && !a_this->IsPlayerRef()) {
 					Manager::GetSingleton()->CreateData(a_this);
+				}
 				return func(a_this, a_backgroundLoading);
 			}
 			static inline REL::Relocation<decltype(thunk)> func;
