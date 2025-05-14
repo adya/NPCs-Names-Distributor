@@ -32,17 +32,25 @@ namespace NND
 
 	namespace Naming
 	{
+		inline const char* sMissingName() {
+			auto settings = RE::GameSettingCollection::GetSingleton();
+			if (auto setting = settings->GetSetting("sMissingName")) {
+				return setting->data.s;
+			}
+			return nullptr;
+		}
+
 		static const char* GetName(NameStyle style, RE::TESObjectREFR* ref, const char* originalName) {
 			if (!ref || !ref->Is(RE::FormType::ActorCharacter)) {
 				return originalName;
 			}
 
 			if (const auto actor = ref->As<RE::Actor>(); actor != RE::PlayerCharacter::GetSingleton()) {
-				if (const auto name = Manager::GetSingleton()->GetName(style, actor); name != empty) {
+				if (const auto name = Manager::GetSingleton()->GetName(style, actor); name != empty && name != sMissingName()) {
 					return name.data();
 				}
 			}
-			return originalName;
+			return originalName != sMissingName() ? originalName : "";
 		}
 
 		namespace Default
