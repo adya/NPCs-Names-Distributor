@@ -221,8 +221,8 @@ namespace NND
 
 				std::vector<std::reference_wrapper<const NameDefinition>> definitions{};
 				// Get a list of matching definitions.
-				actor->GetActorBase()->ForEachKeyword([&](const RE::BGSKeyword& kwd) {
-					std::string name = kwd.formEditorID.c_str();
+				actor->GetActorBase()->ForEachKeyword([&](const RE::BGSKeyword* kwd) {
+					std::string name = kwd->formEditorID.c_str();
 					if (scopedLoadedDefinitions.contains(name)) {
 						const auto& definition = scopedLoadedDefinitions.at(name);
 						definitions.emplace_back(definition);

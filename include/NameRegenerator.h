@@ -47,8 +47,8 @@ Proceed?
 				if (factoryManager && uiStrHolder) {
 					if (const auto factory = factoryManager->GetCreator<RE::MessageBoxData>(uiStrHolder->messageBoxData)) {
 						if (const auto messageBox = factory->Create()) {
-							messageBox->unk4C = 4;
-							messageBox->unk38 = 10;
+							messageBox->optionIndexOffset = 4;
+							messageBox->type = 10;
 							messageBox->bodyText = a_message;
 
 							return messageBox;
