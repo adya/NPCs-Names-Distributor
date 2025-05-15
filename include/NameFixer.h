@@ -25,7 +25,7 @@ namespace NND
 						actor->extraList.Remove(RE::ExtraDataType::kTextDisplayData, data);
 						logger::info("{}'s name has been fixed.", actor->GetActorBase()->GetFullName());
 						// Immediately refresh the name for NPC we are looking at.
-						RE::PlayerCharacter::GetSingleton()->UpdateCrosshairs();
+						NND::UpdateCrosshairs();
 						return true;
 					}
 				}
@@ -40,7 +40,7 @@ namespace NND
 					actor->extraList.Remove(RE::ExtraDataType::kTextDisplayData, data);
 					logger::info("{}'s name has been fixed.", actor->GetActorBase()->GetFullName());
 					// Immediately refresh the name for NPC we are looking at.
-					RE::PlayerCharacter::GetSingleton()->UpdateCrosshairs();
+					NND::UpdateCrosshairs();
 					return true;
 				}
 			}

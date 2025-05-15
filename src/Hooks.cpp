@@ -376,7 +376,7 @@ namespace NND
 			static bool thunk(RE::Character* a_this, bool inDialogue, bool forceGreet, RE::TESTopicInfo* a_topic) {
 				if (a_this && inDialogue && (Options::Obscurity::greetings || !forceGreet)) {
 					if (Manager::GetSingleton()->RevealName(a_this))
-						RE::PlayerCharacter::GetSingleton()->UpdateCrosshairs();
+						NND::UpdateCrosshairs();
 				}
 				return func(a_this, inDialogue, forceGreet, a_topic);
 			}
@@ -391,7 +391,7 @@ namespace NND
 			static const char* thunk(RE::Actor* a_this, RE::ContainerMenu::ContainerMode mode) {
 				if (a_this && Options::Obscurity::obituary) {
 					if (Manager::GetSingleton()->RevealName(a_this))
-						RE::PlayerCharacter::GetSingleton()->UpdateCrosshairs();
+						NND::UpdateCrosshairs();
 				}
 				return func(a_this, mode);
 			}
@@ -403,7 +403,7 @@ namespace NND
 			static const char* thunk(RE::Actor* a_this, RE::ContainerMenu::ContainerMode mode) {
 				if (a_this && Options::Obscurity::stealing) {
 					if (Manager::GetSingleton()->RevealName(a_this))
-						RE::PlayerCharacter::GetSingleton()->UpdateCrosshairs();
+						NND::UpdateCrosshairs();
 				}
 				return func(a_this, mode);
 			}

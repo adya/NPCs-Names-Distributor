@@ -31,6 +31,15 @@ namespace stl
 	}
 }
 
+namespace NND 
+{
+	inline void UpdateCrosshairs() {
+		SKSE::GetTaskInterface()->AddUITask([]() {
+			RE::PlayerCharacter::GetSingleton()->UpdateCrosshairs();
+		});
+	}
+}
+
 #ifdef SKYRIM_AE
 #	define OFFSET(se, ae) ae
 #else

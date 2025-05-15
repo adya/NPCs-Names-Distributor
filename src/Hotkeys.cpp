@@ -46,13 +46,13 @@ namespace NND
 			});
 
 			// In case we're looking at someone when reloading options (like default names or formats).
-			RE::PlayerCharacter::GetSingleton()->UpdateCrosshairs();
+			NND::UpdateCrosshairs();
 		}
 
 		void Manager::ToggleObscurityTrigger(const KeyCombination* keys) {
 			Options::Obscurity::enabled = !Options::Obscurity::enabled;
 			// In case we're looking at someone when toggling obscurity.
-			RE::PlayerCharacter::GetSingleton()->UpdateCrosshairs();
+			NND::UpdateCrosshairs();
 			logger::info("Toggled obscurity {}", Options::Obscurity::enabled ? "ON"sv : "OFF"sv);
 			Options::Save();
 		}
@@ -60,7 +60,7 @@ namespace NND
 		void Manager::ToggleNamesTrigger(const KeyCombination*) {
 			Options::General::enabled = !Options::General::enabled;
 			// In case we're looking at someone when toggling names.
-			RE::PlayerCharacter::GetSingleton()->UpdateCrosshairs();
+			NND::UpdateCrosshairs();
 			logger::info("Toggled names {}", Options::General::enabled ? "ON"sv : "OFF"sv);
 			Options::Save();
 		}

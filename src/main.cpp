@@ -109,7 +109,7 @@ void InitializeLog() {
 	spdlog::set_pattern("[%H:%M:%S] %v"s);
 
 #ifndef NDEBUG
-	logger::info("{:*^30}", current_date_string());
+	logger::info(FMT_STRING("{:*^30}"), current_date_string());
 #endif
 	logger::info(FMT_STRING("{} v{}"), Version::PROJECT, Version::NAME);
 }

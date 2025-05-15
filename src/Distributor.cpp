@@ -359,9 +359,9 @@ namespace NND
 					// These are reanimates people.
 					if (data.isObscured && actor->IsCommandedActor() && actor->GetCommandingActor().get() == RE::PlayerCharacter::GetSingleton()) {
 						data.isObscured = false;
-						RE::PlayerCharacter::GetSingleton()->UpdateCrosshairs();
+						NND::UpdateCrosshairs();
 #ifndef NDEBUG
-						logger::info("Revealing [0x{:X}] ('{}') who is now a minion", actor->formID, data.name != empty ? data.displayName : actor->GetActorBase()->GetFullName());
+						logger::info("Revealing [0x{:X}] ('{}') who is now a minion", actor->formID, data.name != empty ? data.displayName : actor->GetActorBase()->GetName());
 #endif
 					}
 

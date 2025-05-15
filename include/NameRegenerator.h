@@ -35,7 +35,7 @@ Proceed?
 #endif
 							}
 						}
-						RE::PlayerCharacter::GetSingleton()->UpdateCrosshairs();  // In case we're looking at someone when reseting the cache..
+						NND::UpdateCrosshairs();  // In case we're looking at someone when reseting the cache..
 					}
 				}
 			};
@@ -82,7 +82,7 @@ Proceed?
 			}
 			logger::info("Resetting name for target..");
 			Distribution::Manager::GetSingleton()->CreateData(actor, true);
-			RE::PlayerCharacter::GetSingleton()->UpdateCrosshairs();  // Immediately refresh the name for NPC we are looking at.
+			NND::UpdateCrosshairs();  // Immediately refresh the name for NPC we are looking at.
 		}
 	}
 }
