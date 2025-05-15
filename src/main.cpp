@@ -69,6 +69,21 @@ extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Query(const SKSE::QueryInterface* a
 }
 #endif
 
+std::string current_date_string() {
+    auto now = std::chrono::system_clock::now();
+    std::time_t time_now = std::chrono::system_clock::to_time_t(now);
+    std::tm tm_now;
+#ifdef _WIN32
+    localtime_s(&tm_now, &time_now);
+#else
+    localtime_r(&time_now, &tm_now);
+#endif
+
+    std::ostringstream oss;
+    oss << std::put_time(&tm_now, "%Y-%m-%d");
+    return oss.str();
+}
+
 void InitializeLog() {
 	auto path = logger::log_directory();
 	if (!path) {
@@ -76,7 +91,14 @@ void InitializeLog() {
 	}
 
 	*path /= fmt::format(FMT_STRING("{}.log"), Version::PROJECT);
-	auto sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(path->string(), true);
+
+	#ifndef NDEBUG
+	bool truncate = false;
+	#else
+	bool truncate = true;
+	#endif
+
+	auto sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(path->string(), truncate);
 
 	auto log = std::make_shared<spdlog::logger>("global log"s, std::move(sink));
 
@@ -86,6 +108,9 @@ void InitializeLog() {
 	spdlog::set_default_logger(std::move(log));
 	spdlog::set_pattern("[%H:%M:%S] %v"s);
 
+#ifndef NDEBUG
+	logger::info("{:*^30}", current_date_string());
+#endif
 	logger::info(FMT_STRING("{} v{}"), Version::PROJECT, Version::NAME);
 }
 
