@@ -31,7 +31,7 @@ namespace stl
 	}
 }
 
-namespace NND 
+namespace NND
 {
 	inline void UpdateCrosshairs() {
 		SKSE::GetTaskInterface()->AddUITask([]() {

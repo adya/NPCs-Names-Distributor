@@ -32,7 +32,7 @@ namespace Messaging
 			return GetName(actor, context);
 		}
 
-		return ""sv;		
+		return ""sv;
 	}
 
 	std::string_view NNDInterface::GetName(RE::Actor* actor, NameContext context) noexcept {
