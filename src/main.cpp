@@ -104,9 +104,9 @@ void InitializeLog() {
 
 	log->set_level(spdlog::level::info);
 	log->flush_on(spdlog::level::info);
+	log->set_pattern("[%H:%M:%S] %v"s);
 
 	spdlog::set_default_logger(std::move(log));
-	spdlog::set_pattern("[%H:%M:%S] %v"s);
 
 #ifndef NDEBUG
 	logger::info(FMT_STRING("{:*^30}"), current_date_string());
@@ -119,7 +119,7 @@ extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* a_s
 
 	logger::info("Game version : {}", a_skse->RuntimeVersion().string());
 
-	SKSE::Init(a_skse);
+	SKSE::Init(a_skse, false);
 
 	SKSE::GetMessagingInterface()->RegisterListener(MessageHandler);
 
