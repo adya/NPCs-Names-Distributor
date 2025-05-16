@@ -45,6 +45,7 @@ namespace NND_API
 		/// <summary>
 		/// Retrieves a generated name for given actor appropriate in specified context.
 		/// Note that NND might not have a name for the actor. In this case an empty string will be returned.
+		/// For backward compatibility reasons, V1 version will return actor->GetName() for kEnemyHUD context.
 		/// </summary>
 		/// <param name="actor">Actor for which the name should be retrieved.</param>
 		/// <param name="context">Context in which the name needs to be displayed. Depending on context name might either shortened or formatted differently.</param>
@@ -54,6 +55,7 @@ namespace NND_API
 		/// <summary>
 		/// Retrieves a generated name for given actor appropriate in specified context.
 		/// Note that NND might not have a name for the actor. In this case an empty string will be returned.
+		/// For backward compatibility reasons, V1 version will return actor->GetName() for kEnemyHUD context.
 		/// </summary>
 		/// <param name="actor">Actor for which the name should be retrieved.</param>
 		/// <param name="context">Context in which the name needs to be displayed. Depending on context name might either shortened or formatted differently.</param>
@@ -75,6 +77,8 @@ namespace NND_API
 		virtual void RevealName(RE::Actor* actor) noexcept = 0;
 	};
 
+	using IVNND2 = IVNND1;
+
 	typedef void* (*_RequestPluginAPI)(const InterfaceVersion interfaceVersion);
 
 	/// <summary>
@@ -83,7 +87,7 @@ namespace NND_API
 	/// </summary>
 	/// <param name="a_interfaceVersion">The interface version to request</param>
 	/// <returns>The pointer to the API singleton, or nullptr if request failed</returns>
-	[[nodiscard]] inline void* RequestPluginAPI(const InterfaceVersion a_interfaceVersion = InterfaceVersion::kV1) {
+	[[nodiscard]] inline void* RequestPluginAPI(const InterfaceVersion a_interfaceVersion = InterfaceVersion::kV2) {
 		const auto pluginHandle = GetModuleHandle(reinterpret_cast<LPCWSTR>("NPCsNamesDistributor.dll"));
 		if (const _RequestPluginAPI requestAPIFunction = reinterpret_cast<_RequestPluginAPI>(GetProcAddress(pluginHandle, "RequestPluginAPI"))) {
 			return requestAPIFunction(a_interfaceVersion);

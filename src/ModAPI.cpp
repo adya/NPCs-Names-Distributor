@@ -31,13 +31,25 @@ namespace Messaging
 		if (const auto actor = handle.get().get()) {
 			return GetName(actor, context);
 		}
-		return ""sv;
+
+		return ""sv;		
 	}
 
 	std::string_view NNDInterface::GetName(RE::Actor* actor, NameContext context) noexcept {
 		if (actor) {
-			return NND::Distribution::Manager::GetSingleton()->GetName(GetNameStyle(context), actor);
+			const auto name = NND::Distribution::Manager::GetSingleton()->GetName(GetNameStyle(context), actor);
+
+			// Special case for TrueHUD bug. This fixes the problem where I forgot to check for empty name.
+			// While the original fix is pending https://github.com/ersh1/TrueHUD/pull/7, this workaround should be enough.
+			// Note, that this also affects Compass Navigation Overhaul, which properly checks for empty name,
+			// however, it uses the same actor->GetName() as fallback, so it should be fine.
+			if (name.empty() && context == NameContext::kEnemyHUD && version == NND_API::InterfaceVersion::kV1) {
+				return actor->GetName();
+			}
+
+			return name;
 		}
+
 		return ""sv;
 	}
 

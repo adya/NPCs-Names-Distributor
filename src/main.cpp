@@ -127,7 +127,7 @@ extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* a_s
 }
 
 extern "C" DLLEXPORT void* SKSEAPI RequestPluginAPI(const NND_API::InterfaceVersion a_interfaceVersion) {
-	const auto api = Messaging::NNDInterface::GetSingleton();
+	const auto api = Messaging::NNDInterface::GetSingleton(a_interfaceVersion);
 
 	logger::info("NND::RequestPluginAPI called, InterfaceVersion {}", static_cast<std::underlying_type<NND_API::InterfaceVersion>::type>(a_interfaceVersion));
 

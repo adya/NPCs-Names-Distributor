@@ -11,12 +11,14 @@ namespace Messaging
 	class NNDInterface : public InterfaceVersion1
 	{
 	private:
-		NNDInterface() noexcept = default;
+		NND_API::InterfaceVersion version{ NND_API::InterfaceVersion::kV2 };
+		NNDInterface(NND_API::InterfaceVersion version) :
+			version(version) {}
 		virtual ~NNDInterface() noexcept = default;
 
 	public:
-		static NNDInterface* GetSingleton() noexcept {
-			static NNDInterface singleton;
+		static NNDInterface* GetSingleton(NND_API::InterfaceVersion version) noexcept {
+			static NNDInterface singleton(version);
 			return std::addressof(singleton);
 		}
 
