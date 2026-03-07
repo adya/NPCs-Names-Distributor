@@ -181,75 +181,11 @@ namespace NND
 		}
 	}
 
-	/// May throw json::parse_error
-	json modernize(const std::filesystem::path& a_path) {
+	NameDefinition NameDefinitionDecoder::decode(const std::filesystem::path& a_path) const {
 		std::ifstream ifile(a_path);
-		json          data = nlohmann::json::parse(ifile);
+		const json          data = nlohmann::json::parse(ifile);
 		ifile.close();
 
-		const auto flat = data.flatten();
-		json       modernized{};
-		bool       wasModernized = false;
-
-		// Replace legacy keys.
-		for (auto& it : flat.items()) {
-			std::string key = it.key();
-			// truncate obsolete NND_ prefix
-			wasModernized |= clib_util::string::replace_all(key, "NND_", "");
-			// Replace Given/Family with more universal terms for name parts.
-			wasModernized |= clib_util::string::replace_first_instance(key, "Given", "First");
-			wasModernized |= clib_util::string::replace_first_instance(key, "Family", "Last");
-			// And Combine was renamed to Inherit.
-			wasModernized |= clib_util::string::replace_first_instance(key, "Combine", "Inherit");
-			// Finally, replace Behavior/ path, since behaviors had been flattened
-			wasModernized |= clib_util::string::replace_first_instance(key, "Behavior/", "");
-			modernized[key] = it.value();
-		}
-
-		// Remove keyword priorities and write them to the Name Definition instead
-		const auto distrs = clib_util::distribution::get_configs_paths("Data", "_DISTR"sv, ".ini"sv);
-		for (const auto& distr : distrs) {
-			std::ifstream ifile(distr);
-			if (ifile.is_open()) {
-				const std::string content((std::istreambuf_iterator<char>(ifile)),
-				                          (std::istreambuf_iterator<char>()));
-				ifile.close();
-				std::string       name = a_path.stem().string();
-				const std::string pattern = name + "_(Race|Class|Faction|Forced)";
-				const std::regex  re(pattern);
-				std::smatch       match;
-				std::regex_search(content, match, re);
-				if (match.size() > 1) {
-					const std::string new_content = std::regex_replace(content, re, name);  // Replace all occurrences
-
-					auto priority = match[1].str();
-					if (priority == "Forced")  // Rename Forced priority
-						priority = convert::toRawPriority(Priority::kIndividual);
-					modernized["/Priority"] = priority;
-					wasModernized = true;
-					std::ofstream ofile(distr);  // Open the file for output
-					if (ofile.is_open()) {
-						ofile << new_content;  // Write the new string to the file
-						ofile.close();         // Close the output file
-						logger::info("Removed keyword priorities in \"{}\"", distr.filename().string());
-					}
-				}
-			}
-		}
-
-		if (wasModernized) {
-			logger::info("Updating to use latest format");
-			modernized = modernized.unflatten();
-			std::ofstream ofile(a_path);
-			ofile << std::setw(4) << modernized << std::endl;
-			return modernized;
-		}
-
-		return data;
-	}
-
-	NameDefinition NameDefinitionDecoder::decode(const std::filesystem::path& a_path) const {
-		const json     data = modernize(a_path);
 		NameDefinition definition{};
 		convert::from_json(data, definition);
 		return definition;
