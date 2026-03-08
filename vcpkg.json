@@ -4,11 +4,13 @@
   "description": "Framework that allows customizable names distribution",
   "homepage": "https://github.com/adya/NPCs-Names-Distributor",
   "license": "MIT",
-  "builtin-baseline": "d7ce8723ba28282c0ea30fd0b046a64dc61d5238",
+  "builtin-baseline": "1e199d32ad53aab1defda61ce41c380302e3f95c",
   "dependencies": [
     "boost-stl-interfaces",
     "rsm-binary-io",
     "spdlog",
-    "xbyak"
+    "xbyak",
+    "skse-mcp",
+    "nlohmann-json"
   ]
 }

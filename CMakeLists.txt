@@ -23,7 +23,7 @@ macro(find_commonlib_path)
 		# Check extern
 		find_path(CommonLibPath
 		include/REL/Relocation.h
-		PATHS extern/${CommonLibName})
+		PATHS ${PROJECT_SOURCE_DIR}/extern/${CommonLibName})
 		if (${CommonLibPath} STREQUAL "CommonLibPath-NOTFOUND")
 			#Check path
 			set_from_environment(${CommonLibName}Path)
@@ -122,44 +122,59 @@ if (DEFINED CommonLibPath AND NOT ${CommonLibPath} STREQUAL "" AND IS_DIRECTORY 
 else ()
 	message(
 		FATAL_ERROR
-		"Variable ${CommonLibName}Path is not set or in extern/."
+		"Variable ${CommonLibName}Path is not set."
 	)
 endif()
 
 set(CLIB_UTIL_INCLUDE_DIRS "extern/CLibUtil/include")
+find_path(SKSE_MCP_INCLUDE_DIRS "SKSEMCP/SKSEMenuFramework.hpp")
 
-# ---- Add source files ----
+find_package(nlohmann_json 3.12.0 REQUIRED)
 
-include(cmake/headerlist.cmake)
-include(cmake/sourcelist.cmake)
-include_directories(${PROJECT_SOURCE_DIR}/${CLIB_UTIL_INCLUDE_DIRS})
+# ---- Auto-discover all source and header files ----
 
-source_group(
-	TREE
-		${CMAKE_CURRENT_SOURCE_DIR}
-	FILES
-		${headers}
-		${sources}
+file(GLOB_RECURSE ALL_SRC_FILES CONFIGURE_DEPENDS
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/*.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/*.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/*.hpp
 )
 
-source_group(
-	TREE
-		${CMAKE_CURRENT_BINARY_DIR}
-	FILES
-		${CMAKE_CURRENT_BINARY_DIR}/include/Version.h
+# ---- Visual Studio folder grouping ----
+
+# All files go under "Source Files", preserving src/ substructure
+foreach(source_file ${ALL_SRC_FILES})
+    file(RELATIVE_PATH rel_path "${CMAKE_CURRENT_SOURCE_DIR}/src" "${source_file}")
+    get_filename_component(dir "${rel_path}" PATH)
+    string(REPLACE "/" "\\" subfolder "${dir}")
+    source_group("Source Files\\${subfolder}" FILES "${source_file}")
+endforeach()
+
+# Remove PCH files from ALL_SRC_FILES
+list(FILTER ALL_SRC_FILES EXCLUDE REGEX "src[/\\\\]PCH\\.(cpp|h|hpp)$")
+
+set(PCH_FILES
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/PCH.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/PCH.cpp
 )
+
+source_group("Header Files" FILES ${CMAKE_CURRENT_BINARY_DIR}/include/Version.h)
+
+source_group("Precompile Header File" FILES ${PCH_FILES})
+
+source_group("Resource Files" FILES ${CMAKE_CURRENT_BINARY_DIR}/version.rc)
 
 # ---- Create DLL ----
 
 add_library(
-	${PROJECT_NAME}
-	SHARED
-	${headers}
-	${sources}
-	${CMAKE_CURRENT_BINARY_DIR}/include/Version.h
-	${CMAKE_CURRENT_BINARY_DIR}/version.rc
-	.clang-format
-	.editorconfig
+    ${PROJECT_NAME}
+    SHARED
+    ${ALL_SRC_FILES}
+	${PCH_FILES}
+    ${CMAKE_CURRENT_BINARY_DIR}/include/Version.h
+    ${CMAKE_CURRENT_BINARY_DIR}/version.rc
+    .clang-format
+    .editorconfig
 )
 
 target_compile_features(
@@ -175,10 +190,12 @@ target_compile_definitions(
 )
 
 target_include_directories(
-	${PROJECT_NAME}
-	PRIVATE
-		${CMAKE_CURRENT_BINARY_DIR}/include
-		${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${PROJECT_NAME}
+    PRIVATE
+        ${CMAKE_CURRENT_BINARY_DIR}/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/src
+        ${SKSE_MCP_INCLUDE_DIRS}
+        ${CLIB_UTIL_INCLUDE_DIRS}
 )
 
 target_link_libraries(
@@ -188,9 +205,9 @@ target_link_libraries(
 )
 
 target_precompile_headers(
-	${PROJECT_NAME}
-	PRIVATE
-		include/PCH.h
+    ${PROJECT_NAME}
+    PRIVATE
+        src/PCH.h
 )
 
 if (MSVC)
@@ -225,12 +242,8 @@ if (COPY_BUILD)
 		add_custom_command(
 			TARGET ${PROJECT_NAME}
 			POST_BUILD
-			COMMAND ${CMAKE_COMMAND} -E copy 
-				$<TARGET_FILE:${PROJECT_NAME}> 
-				${SkyrimPath}/Data/SKSE/Plugins/
-			COMMAND ${CMAKE_COMMAND} -E copy 
-				$<TARGET_PDB_FILE:${PROJECT_NAME}> 
-				${SkyrimPath}/Data/SKSE/Plugins/
+			COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${PROJECT_NAME}> ${SkyrimPath}/Data/SKSE/Plugins/
+			COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_PDB_FILE:${PROJECT_NAME}> ${SkyrimPath}/Data/SKSE/Plugins/
 		)
 	else ()
 		message(

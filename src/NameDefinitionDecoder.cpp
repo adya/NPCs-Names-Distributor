@@ -1,6 +1,6 @@
 #include "NameDefinitionDecoder.h"
 #include "CLIBUtil/distribution.hpp"
-#include "json.hpp"
+#include "nlohmann/json.hpp"
 #include <fstream>
 
 namespace NND
