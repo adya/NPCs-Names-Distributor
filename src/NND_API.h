@@ -1,4 +1,3 @@
-
 #pragma once
 
 /*
@@ -16,7 +15,12 @@ namespace NND_API
 		/// <summary>
 		/// Introduces a new NameContext kDialogueHistory. Attempting to access it in older versions would return name for kOther context instead.
 		/// </summary>
-		kV2
+		kV2,
+
+		/// <summary>
+		/// Introduces RevealReason parameter to RevealName method. NND will ensure that corresponding setting is enabled to allow revealing the name for the provided reason.
+		/// </summary>
+		kV3
 	};
 
 	enum class NameContext : uint8_t
@@ -36,6 +40,19 @@ namespace NND_API
 		kOther,
 
 		kDialogueHistory
+	};
+
+	/// Reason for revealing the name of an NPC. NND uses it to determine whether the name reveal should be allowed based on mod settings.
+	enum class RevealReason : uint8_t
+	{
+		/// Revealing name while looting a dead NPC.
+		kLooting,
+		/// Revealing name when entering dialogue with an NPC.
+		kDialogue,
+		/// Revealing name when pickpocketing an NPC.
+		kPickpocket,
+		/// Revealing name when an NPC initiates conversation with the player.
+		kGreeting
 	};
 
 	// NND's modder interface
@@ -79,6 +96,29 @@ namespace NND_API
 
 	using IVNND2 = IVNND1;
 
+	class IVNND3 : public IVNND2
+	{
+	public:
+
+		/// <summary>
+		/// Reveals a real name of the given actor to the player with a specified reason.
+		/// If player already knows actor's name this method does nothing.
+		/// The reveal might be blocked based on mod settings and the provided reason.
+		/// </summary>
+		/// <param name="actor">Actor whose name should be revealed.</param>
+		/// <param name="reason">Reason for revealing the name.</param>
+		virtual bool RevealName(RE::ActorHandle actor, RevealReason reason) noexcept = 0;
+
+		/// <summary>
+		/// Reveals a real name of the given actor to the player with a specified reason.
+		/// If player already knows actor's name this method does nothing.
+		/// The reveal might be blocked based on mod settings and the provided reason.
+		/// </summary>
+		/// <param name="actor">Actor whose name should be revealed.</param>
+		/// <param name="reason">Reason for revealing the name.</param>
+		virtual bool RevealName(RE::Actor* actor, RevealReason reason) noexcept = 0;
+	};
+
 	typedef void* (*_RequestPluginAPI)(const InterfaceVersion interfaceVersion);
 
 	/// <summary>
@@ -87,7 +127,7 @@ namespace NND_API
 	/// </summary>
 	/// <param name="a_interfaceVersion">The interface version to request</param>
 	/// <returns>The pointer to the API singleton, or nullptr if request failed</returns>
-	[[nodiscard]] inline void* RequestPluginAPI(const InterfaceVersion a_interfaceVersion = InterfaceVersion::kV2) {
+	[[nodiscard]] inline void* RequestPluginAPI(const InterfaceVersion a_interfaceVersion = InterfaceVersion::kV3) {
 		const auto pluginHandle = GetModuleHandle(reinterpret_cast<LPCWSTR>("NPCsNamesDistributor.dll"));
 		if (const _RequestPluginAPI requestAPIFunction = reinterpret_cast<_RequestPluginAPI>(GetProcAddress(pluginHandle, "RequestPluginAPI"))) {
 			return requestAPIFunction(a_interfaceVersion);

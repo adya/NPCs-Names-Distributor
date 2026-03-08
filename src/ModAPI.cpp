@@ -53,15 +53,47 @@ namespace Messaging
 		return ""sv;
 	}
 
+	
 	void NNDInterface::RevealName(RE::ActorHandle handle) noexcept {
-		if (const auto actor = handle.get().get()) {
-			RevealName(actor);
-		}
+		RevealName(handle, NND_API::RevealReason::kDialogue);
 	}
 
 	void NNDInterface::RevealName(RE::Actor* actor) noexcept {
-		if (actor) {
-			NND::Distribution::Manager::GetSingleton()->RevealName(actor);
+		RevealName(actor, NND_API::RevealReason::kDialogue);
+	}
+
+	bool NNDInterface::RevealName(RE::ActorHandle handle, NND_API::RevealReason reason) noexcept {
+		if (const auto actor = handle.get().get()) {
+			return RevealName(actor, reason);
 		}
+
+		return false;
+	}
+
+	bool NNDInterface::RevealName(RE::Actor* actor, NND_API::RevealReason reason) noexcept {
+		if (actor) {
+			bool allowReveal = true;
+			switch (reason) {
+			case NND_API::RevealReason::kLooting:
+				allowReveal = NND::Options::Obscurity::obituary;
+				break;
+			case NND_API::RevealReason::kGreeting:
+				allowReveal = NND::Options::Obscurity::greetings;
+				break;
+			case NND_API::RevealReason::kDialogue:
+				allowReveal = true;
+				break;
+			case NND_API::RevealReason::kPickpocket:
+				allowReveal = NND::Options::Obscurity::stealing;
+				break;
+			}
+			if (allowReveal) {
+				NND::Distribution::Manager::GetSingleton()->RevealName(actor);
+			}
+
+			return allowReveal;
+		}
+
+		return false;
 	}
 }
