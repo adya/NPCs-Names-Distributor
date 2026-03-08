@@ -2,6 +2,7 @@
 #include "Hooks.h"
 #include "Hotkeys.h"
 #include "LookupNameDefinitions.h"
+#include "MCPMenu.h"
 #include "ModAPI.h"
 #include "NNDKeywords.h"
 #include "Options.h"
@@ -18,6 +19,7 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_message) {
 		NND::Options::Load();
 		NND::Install();
 		NND::Distribution::Manager::Register();
+		NND::Menu::Register();
 		break;
 	case SKSE::MessagingInterface::kDataLoaded:
 		NND::Hotkeys::Manager::Register();
