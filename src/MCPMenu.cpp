@@ -18,7 +18,7 @@ namespace NND
 			constexpr ImVec4 PLACEHOLDER_COLOR = ImVec4(0.5f, 0.5f, 0.5f, 1.0f);
 
 			SKSEMenuFramework::Model::InputEvent* g_inputEventHandler = nullptr;
-			bool g_showRegenerateConfirmation = false;
+			bool                                  g_showRegenerateConfirmation = false;
 
 			void ShowTooltip(const char* text) {
 				if (IsItemHovered()) {
@@ -32,52 +32,53 @@ namespace NND
 
 			std::string ReplaceFormatTokens(const std::string& format, const std::string& name, const std::string& title) {
 				std::string result = format;
-				size_t pos = 0;
-				
+				size_t      pos = 0;
+
 				while ((pos = result.find("[name]", pos)) != std::string::npos) {
 					result.replace(pos, 6, name);
 					pos += name.length();
 				}
-				
+
 				pos = 0;
 				while ((pos = result.find("[title]", pos)) != std::string::npos) {
 					result.replace(pos, 7, title);
 					pos += title.length();
 				}
-				
+
 				pos = 0;
 				while ((pos = result.find("[break]", pos)) != std::string::npos) {
 					result.replace(pos, 7, "\n");
 					pos += 1;
 				}
-				
+
 				return result;
 			}
 
 			std::string ReplaceObscurityTokens(const std::string& format, const std::string& sex, const std::string& race) {
 				std::string result = format;
-				size_t pos = 0;
-				
+				size_t      pos = 0;
+
 				while ((pos = result.find("[sex]", pos)) != std::string::npos) {
 					result.replace(pos, 5, sex);
 					pos += sex.length();
 				}
-				
+
 				pos = 0;
 				while ((pos = result.find("[race]", pos)) != std::string::npos) {
 					result.replace(pos, 6, race);
 					pos += race.length();
 				}
-				
+
 				return result;
 			}
 
-			struct HotkeyCapture {
-				bool isCapturing = false;
-				std::set<uint32_t> capturedKeys;
-				std::string* targetPattern = nullptr;
+			struct HotkeyCapture
+			{
+				bool                     isCapturing = false;
+				std::set<uint32_t>       capturedKeys;
+				std::string*             targetPattern = nullptr;
 				Hotkeys::KeyCombination* targetHotkey = nullptr;
-				char* displayBuffer = nullptr;
+				char*                    displayBuffer = nullptr;
 
 				void StartCapture(std::string& pattern, Hotkeys::KeyCombination& hotkey, char* buffer) {
 					isCapturing = true;
@@ -91,7 +92,7 @@ namespace NND
 					if (success && targetPattern && targetHotkey && !capturedKeys.empty()) {
 						Hotkeys::KeyCombination tempCombo([](const Hotkeys::KeyCombination*) {});
 						tempCombo = Hotkeys::KeyCombination(capturedKeys, [](const Hotkeys::KeyCombination*) {});
-						
+
 						*targetPattern = std::string(tempCombo.GetPattern());
 						if (displayBuffer) {
 							strcpy_s(displayBuffer, 64, targetPattern->c_str());
@@ -100,7 +101,7 @@ namespace NND
 						Options::Save();
 						logger::info("Captured hotkey: {}", *targetPattern);
 					}
-					
+
 					isCapturing = false;
 					capturedKeys.clear();
 					targetPattern = nullptr;
@@ -149,25 +150,25 @@ namespace NND
 
 			std::string SortHotkeyModifiers(const std::string& hotkey) {
 				std::vector<std::string> parts;
-				size_t start = 0;
-				size_t end = hotkey.find(" + ");
-				
+				size_t                   start = 0;
+				size_t                   end = hotkey.find(" + ");
+
 				while (end != std::string::npos) {
 					parts.push_back(hotkey.substr(start, end - start));
 					start = end + 3;
 					end = hotkey.find(" + ", start);
 				}
 				parts.push_back(hotkey.substr(start));
-				
+
 				auto isModifier = [](const std::string& key) {
 					return key.find("ctrl") != std::string::npos ||
 					       key.find("shift") != std::string::npos ||
 					       key.find("alt") != std::string::npos;
 				};
-				
+
 				std::vector<std::string> modifiers;
 				std::vector<std::string> keys;
-				
+
 				for (const auto& part : parts) {
 					std::string lower = part;
 					std::transform(lower.begin(), lower.end(), lower.begin(), ::tolower);
@@ -177,17 +178,19 @@ namespace NND
 						keys.push_back(part);
 					}
 				}
-				
+
 				std::string result;
 				for (const auto& mod : modifiers) {
-					if (!result.empty()) result += " + ";
+					if (!result.empty())
+						result += " + ";
 					result += mod;
 				}
 				for (const auto& key : keys) {
-					if (!result.empty()) result += " + ";
+					if (!result.empty())
+						result += " + ";
 					result += key;
 				}
-				
+
 				return result;
 			}
 
@@ -214,7 +217,7 @@ namespace NND
 					BeginDisabled();
 				}
 
-				static int selectedPreset = -1;
+				static int  selectedPreset = -1;
 				static char formatBuffer[512] = "";
 				static bool bufferInitialized = false;
 				static bool showCustomInput = false;
@@ -227,14 +230,14 @@ namespace NND
 							break;
 						}
 					}
-					
+
 					if (selectedPreset == -1) {
 						selectedPreset = static_cast<int>(Options::DisplayName::defaultFormats.size());
 						showCustomInput = true;
 					} else {
 						showCustomInput = false;
 					}
-					
+
 					strcpy_s(formatBuffer, Options::DisplayName::format.c_str());
 					bufferInitialized = true;
 				}
@@ -264,7 +267,7 @@ namespace NND
 					}
 				}
 				ShowTooltip("Select from predefined name format templates");
-				
+
 				SameLine();
 				if (Button("Reset##PresetFormats", ImVec2(60, 0))) {
 					Options::DisplayName::format = "[name] ([title])";
@@ -276,10 +279,10 @@ namespace NND
 				}
 				ShowTooltip("Reset to default format");
 				Spacing();
-				
+
 				if (showCustomInput) {
 					Text("Custom Format");
-					
+
 					PushStyleColor(ImGuiCol_TextDisabled, PLACEHOLDER_COLOR);
 					if (InputTextWithHint("##CustomFormat", "[name] ([title])", formatBuffer, sizeof(formatBuffer))) {
 						if (strlen(formatBuffer) > 0) {
@@ -333,7 +336,7 @@ namespace NND
 					}
 					ShowTooltip(tooltip);
 					PopItemWidth();
-					
+
 					SameLine();
 					if (Button(("Reset##" + std::string(label)).c_str(), ImVec2(60, 0))) {
 						setting = defaultValue;
@@ -363,7 +366,7 @@ namespace NND
 
 				if (CollapsingHeader("Name Styles")) {
 					Indent();
-					
+
 					if (BeginTable("NameStyles", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_SizingStretchProp)) {
 						TableSetupColumn("Style", ImGuiTableColumnFlags_WidthFixed, 150.0f);
 						TableSetupColumn("Description", ImGuiTableColumnFlags_WidthStretch);
@@ -395,7 +398,7 @@ namespace NND
 
 						EndTable();
 					}
-					
+
 					Unindent();
 				}
 
@@ -421,14 +424,14 @@ namespace NND
 
 			static char defaultNameBuffer[256] = "";
 			static bool bufferInitialized = false;
-			
+
 			if (IsWindowAppearing() || !bufferInitialized) {
 				strcpy_s(defaultNameBuffer, Options::Obscurity::defaultName.data());
 				bufferInitialized = true;
 			}
 
 			Text("Default Name Format");
-			
+
 			PushStyleColor(ImGuiCol_TextDisabled, PLACEHOLDER_COLOR);
 			if (InputTextWithHint("##DefaultName", "[sex] [race]", defaultNameBuffer, sizeof(defaultNameBuffer))) {
 				if (strlen(defaultNameBuffer) > 0) {
@@ -442,7 +445,7 @@ namespace NND
 			}
 			PopStyleColor();
 			ShowTooltip("Format for obscured names. Supports: [sex], [race]. Leave empty for default format.");
-			
+
 			SameLine();
 			if (Button("Reset##DefaultName", ImVec2(60, 0))) {
 				strcpy_s(defaultNameBuffer, "[sex] [race]");
@@ -517,8 +520,8 @@ namespace NND
 
 			auto CapitalizeHotkey = [](const std::string& hotkey) -> std::string {
 				std::string result = SortHotkeyModifiers(hotkey);
-				size_t pos = 0;
-				
+				size_t      pos = 0;
+
 				while (pos < result.length()) {
 					if (pos == 0 || result[pos - 1] == ' ' || result[pos - 1] == '+') {
 						if (result[pos] >= 'a' && result[pos] <= 'z') {
@@ -527,53 +530,53 @@ namespace NND
 					}
 					pos++;
 				}
-				
+
 				pos = 0;
 				while ((pos = result.find("rshift", pos)) != std::string::npos) {
 					result.replace(pos, 6, "RShift");
 					pos += 6;
 				}
-				
+
 				pos = 0;
 				while ((pos = result.find("rctrl", pos)) != std::string::npos) {
 					result.replace(pos, 5, "RCtrl");
 					pos += 5;
 				}
-				
+
 				pos = 0;
 				while ((pos = result.find("ralt", pos)) != std::string::npos) {
 					result.replace(pos, 4, "RAlt");
 					pos += 4;
 				}
-				
+
 				pos = 0;
 				while ((pos = result.find("lshift", pos)) != std::string::npos) {
 					result.replace(pos, 6, "LShift");
 					pos += 6;
 				}
-				
+
 				pos = 0;
 				while ((pos = result.find("lctrl", pos)) != std::string::npos) {
 					result.replace(pos, 5, "LCtrl");
 					pos += 5;
 				}
-				
+
 				pos = 0;
 				while ((pos = result.find("lalt", pos)) != std::string::npos) {
 					result.replace(pos, 4, "LAlt");
 					pos += 4;
 				}
-				
+
 				return result;
 			};
 
 			auto RenderHotkeyInput = [&](const char* label, char* buffer, std::string& pattern, Hotkeys::KeyCombination& hotkey, const char* defaultPattern, const char* tooltip) {
 				Text("%s", label);
 				SameLine(250);
-				
+
 				PushItemWidth(180);
 				bool isCapturing = g_hotkeyCapture.isCapturing && g_hotkeyCapture.targetPattern == &pattern;
-				
+
 				if (isCapturing) {
 					PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.3f, 0.5f, 0.3f, 1.0f));
 					char captureText[32] = "Press keys...";
@@ -581,9 +584,9 @@ namespace NND
 					PopStyleColor();
 				} else {
 					std::string displayValue = CapitalizeHotkey(buffer);
-					char displayBuffer[64];
+					char        displayBuffer[64];
 					strcpy_s(displayBuffer, displayValue.c_str());
-					
+
 					PushStyleColor(ImGuiCol_TextDisabled, PLACEHOLDER_COLOR);
 					if (InputTextWithHint(("##" + std::string(label)).c_str(), CapitalizeHotkey(defaultPattern).c_str(), displayBuffer, sizeof(displayBuffer))) {
 						if (strlen(displayBuffer) > 0) {
@@ -618,7 +621,7 @@ namespace NND
 					}
 				}
 				ShowTooltip(isCapturing ? "Click to cancel capture" : "Click and press keys to capture hotkey");
-				
+
 				SameLine();
 				if (Button(("Reset##" + std::string(label)).c_str(), ImVec2(60, 0))) {
 					pattern = defaultPattern;
@@ -630,20 +633,13 @@ namespace NND
 				ShowTooltip("Reset to default hotkey");
 			};
 
-			RenderHotkeyInput("Toggle Names", toggleNamesBuffer, Options::Hotkeys::toggleNames, manager->toggleNames, "RCtrl+N",
-				"Toggle names distribution on/off");
-			RenderHotkeyInput("Toggle Obscurity", toggleObscurityBuffer, Options::Hotkeys::toggleObscurity, manager->toggleObscurity, "RCtrl+O",
-				"Toggle obscurity feature on/off");
-			RenderHotkeyInput("Generate All Names", generateAllBuffer, Options::Hotkeys::generateAll, manager->generateAll, "RCtrl+RShift+G",
-				"Regenerate names for all NPCs");
-			RenderHotkeyInput("Generate Target Name", generateTargetBuffer, Options::Hotkeys::generateTarget, manager->generateTarget, "RCtrl+G",
-				"Regenerate name for targeted NPC");
-			RenderHotkeyInput("Reload Settings", reloadSettingsBuffer, Options::Hotkeys::reloadSettings, manager->reloadSettings, "RCtrl+L",
-				"Reload settings from INI file");
-			RenderHotkeyInput("Fix Stuck Name", fixStuckNameBuffer, Options::Hotkeys::fixStuckName, manager->fixStuckName, "RCtrl+Backspace",
-				"Fix stuck name for targeted NPC (safe)");
-			RenderHotkeyInput("Unsafe Fix Stuck Name", unsafeFixStuckNameBuffer, Options::Hotkeys::unsafeFixStuckName, manager->unsafeFixStuckName, "RCtrl+RShift+Backspace",
-				"Force fix stuck name for targeted NPC (unsafe)");
+			RenderHotkeyInput("Toggle Names", toggleNamesBuffer, Options::Hotkeys::toggleNames, manager->toggleNames, "RCtrl+N", "Toggle names distribution on/off");
+			RenderHotkeyInput("Toggle Obscurity", toggleObscurityBuffer, Options::Hotkeys::toggleObscurity, manager->toggleObscurity, "RCtrl+O", "Toggle obscurity feature on/off");
+			RenderHotkeyInput("Generate All Names", generateAllBuffer, Options::Hotkeys::generateAll, manager->generateAll, "RCtrl+RShift+G", "Regenerate names for all NPCs");
+			RenderHotkeyInput("Generate Target Name", generateTargetBuffer, Options::Hotkeys::generateTarget, manager->generateTarget, "RCtrl+G", "Regenerate name for targeted NPC");
+			RenderHotkeyInput("Reload Settings", reloadSettingsBuffer, Options::Hotkeys::reloadSettings, manager->reloadSettings, "RCtrl+L", "Reload settings from INI file");
+			RenderHotkeyInput("Fix Stuck Name", fixStuckNameBuffer, Options::Hotkeys::fixStuckName, manager->fixStuckName, "RCtrl+Backspace", "Fix stuck name for targeted NPC (safe)");
+			RenderHotkeyInput("Unsafe Fix Stuck Name", unsafeFixStuckNameBuffer, Options::Hotkeys::unsafeFixStuckName, manager->unsafeFixStuckName, "RCtrl+RShift+Backspace", "Force fix stuck name for targeted NPC (unsafe)");
 		}
 
 		void RenderActionsSection() {
@@ -762,14 +758,14 @@ namespace NND
 			}
 
 			SKSEMenuFramework::SetSection("NPCs Names Distributor");
-			
+
 			g_inputEventHandler = SKSEMenuFramework::AddInputEvent(InputEventCallback);
-			
+
 			SKSEMenuFramework::AddSectionItem("General", RenderGeneralSection);
 			SKSEMenuFramework::AddSectionItem("Obscurity", RenderObscuritySection);
 			SKSEMenuFramework::AddSectionItem("Hotkeys", RenderHotkeysSection);
 			SKSEMenuFramework::AddSectionItem("Actions", RenderActionsSection);
-			
+
 			logger::info("Added section to SKSEMenuFramework");
 		}
 	}

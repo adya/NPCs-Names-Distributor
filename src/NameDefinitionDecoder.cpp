@@ -183,7 +183,7 @@ namespace NND
 
 	NameDefinition NameDefinitionDecoder::decode(const std::filesystem::path& a_path) const {
 		std::ifstream ifile(a_path);
-		const json          data = nlohmann::json::parse(ifile);
+		const json    data = nlohmann::json::parse(ifile);
 		ifile.close();
 
 		NameDefinition definition{};

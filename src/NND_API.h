@@ -99,7 +99,6 @@ namespace NND_API
 	class IVNND3 : public IVNND2
 	{
 	public:
-
 		/// <summary>
 		/// Reveals a real name of the given actor to the player with a specified reason.
 		/// If player already knows actor's name this method does nothing.

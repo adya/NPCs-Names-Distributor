@@ -53,7 +53,6 @@ namespace Messaging
 		return ""sv;
 	}
 
-	
 	void NNDInterface::RevealName(RE::ActorHandle handle) noexcept {
 		RevealName(handle, NND_API::RevealReason::kDialogue);
 	}
