@@ -141,6 +141,13 @@ file(GLOB_RECURSE ALL_SRC_FILES CONFIGURE_DEPENDS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/*.hpp
 )
 
+# ---- Auto-discover all public header files ----
+
+file(GLOB_RECURSE PUBLIC_HEADER_FILES CONFIGURE_DEPENDS
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/*.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/*.hpp
+)
+
 # ---- Visual Studio folder grouping ----
 
 # All files go under "Source Files", preserving src/ substructure
@@ -149,6 +156,18 @@ foreach(source_file ${ALL_SRC_FILES})
     get_filename_component(dir "${rel_path}" PATH)
     string(REPLACE "/" "\\" subfolder "${dir}")
     source_group("Source Files\\${subfolder}" FILES "${source_file}")
+endforeach()
+
+# Public headers go under "Header Files", preserving include/ substructure
+foreach(header_file ${PUBLIC_HEADER_FILES})
+    file(RELATIVE_PATH rel_path "${CMAKE_CURRENT_SOURCE_DIR}/include" "${header_file}")
+    get_filename_component(dir "${rel_path}" PATH)
+    string(REPLACE "/" "\\" subfolder "${dir}")
+    if(subfolder)
+        source_group("Header Files\\${subfolder}" FILES "${header_file}")
+    else()
+        source_group("Header Files" FILES "${header_file}")
+    endif()
 endforeach()
 
 # Remove PCH files from ALL_SRC_FILES
@@ -172,6 +191,7 @@ add_library(
     SHARED
     ${ALL_SRC_FILES}
 	${PCH_FILES}
+    ${PUBLIC_HEADER_FILES}
     ${CMAKE_CURRENT_BINARY_DIR}/include/Version.h
     ${CMAKE_CURRENT_BINARY_DIR}/version.rc
     .clang-format
@@ -192,6 +212,8 @@ target_compile_definitions(
 
 target_include_directories(
     ${PROJECT_NAME}
+    PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
     PRIVATE
         ${CMAKE_CURRENT_BINARY_DIR}/include
         ${CMAKE_CURRENT_SOURCE_DIR}/src
