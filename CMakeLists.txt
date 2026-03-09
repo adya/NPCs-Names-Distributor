@@ -10,6 +10,27 @@ set(VR_VERSION 1415)
 option(COPY_BUILD "Copy the build output to the Skyrim directory." TRUE)
 option(BUILD_SKYRIMAE "Build for Skyrim AE" OFF)
 
+
+# ---- Project ----
+
+project(
+	${NAME}
+	VERSION ${VERSION}
+	LANGUAGES CXX
+)
+
+configure_file(
+	${CMAKE_CURRENT_SOURCE_DIR}/cmake/Version.h.in
+	${CMAKE_CURRENT_BINARY_DIR}/include/Version.h
+	@ONLY
+)
+
+configure_file(
+	${CMAKE_CURRENT_SOURCE_DIR}/cmake/version.rc.in
+	${CMAKE_CURRENT_BINARY_DIR}/version.rc
+	@ONLY
+)
+
 # ---- Cache build vars ----
 
 macro(set_from_environment VARIABLE)
@@ -66,26 +87,6 @@ endif ()
 
 set(Boost_USE_STATIC_RUNTIME OFF CACHE BOOL "")
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>" CACHE STRING "")
-
-# ---- Project ----
-
-project(
-	${NAME}
-	VERSION ${VERSION}
-	LANGUAGES CXX
-)
-
-configure_file(
-	${CMAKE_CURRENT_SOURCE_DIR}/cmake/Version.h.in
-	${CMAKE_CURRENT_BINARY_DIR}/include/Version.h
-	@ONLY
-)
-
-configure_file(
-	${CMAKE_CURRENT_SOURCE_DIR}/cmake/version.rc.in
-	${CMAKE_CURRENT_BINARY_DIR}/version.rc
-	@ONLY
-)
 
 # ---- Include guards ----
 
