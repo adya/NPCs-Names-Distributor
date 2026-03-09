@@ -1,4 +1,5 @@
 set(headers ${headers}
+	include/NND_API.h
 	src/MCPMenu.h
 	src/Distributor.h
 	src/LookupNameDefinitions.h
@@ -14,5 +15,4 @@ set(headers ${headers}
 	src/Options.h
 	src/NameDefinition.h
 	src/Persistency.h
-	src/NND_API.h
 )
