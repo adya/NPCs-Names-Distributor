@@ -2,6 +2,7 @@
 #include "Distributor.h"
 #include "Options.h"
 #include "Persistency.h"
+#include "RE/T/TESObjectREFR.h"
 
 namespace NND
 {
@@ -120,7 +121,7 @@ namespace NND
 			}
 
 			inline void Install() {
-				const REL::Relocation<std::uintptr_t> displayFullName{ RE::Offset::TESObjectREFR::GetDisplayFullName };
+				const REL::Relocation<std::uintptr_t> displayFullName{ RELOCATION_ID(19354, 19781) };
 
 				// Swaps the argument in TESForm::GetFormName_1401A38F0(object->data.objectReference) to pass TESObjectREFR* obj instead of obj->GetBaseObject()
 				// mov rcx, [r15+40h] (49 8B 4F 40)

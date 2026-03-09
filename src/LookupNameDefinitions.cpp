@@ -90,7 +90,7 @@ namespace NND
 		const std::filesystem::path dir = R"(Data\SKSE\Plugins\NPCsNamesDistributor)";
 
 		try {
-			const auto files = clib_util::distribution::get_configs_paths(dir, ".json"sv);
+			const auto files = clib_util::distribution::get_configs_paths(dir, ""sv, ".json"sv);
 
 			if (files.empty()) {
 				logger::info("No Name Definition files found.");

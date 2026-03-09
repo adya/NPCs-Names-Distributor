@@ -69,7 +69,7 @@ Proceed?
 						messageBox->buttonText.push_back(sNoText->GetString());
 
 						messageBox->callback = RE::BSTSmartPointer<RE::IMessageBoxCallback>{ new details::GenerateNamesConfirmCallback() };
-						messageBox->QueueMessage();
+						RE::MessageBoxMenu::QueueMessage(messageBox);
 					}
 				}
 			}
