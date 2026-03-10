@@ -11,7 +11,10 @@ namespace NND
 		///
 		/// Use it when you need to get the original display name, since default obj->GetDisplayFullName() is hooked to return the NND name.
 		static const char* GetDisplayFullName(RE::TESObjectREFR* a_this) {
-			return a_this->extraList.GetDisplayName(a_this->data.objectReference);
+			if (a_this->data.objectReference) {
+				return a_this->extraList.GetDisplayName(a_this->data.objectReference);
+			}
+			return "";
 		}
 	}
 
