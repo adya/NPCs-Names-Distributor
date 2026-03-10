@@ -22,41 +22,36 @@ namespace NND
 
 	namespace Options
 	{
-		namespace General
+		struct GeneralSettings
 		{
-			inline bool enabled = true;
-		}
+			bool enabled = true;
+		};
 
-		namespace Obscurity
+		struct ObscuritySettings
 		{
-			inline bool enabled = true;
-			inline bool greetings = false;
-			inline bool obituary = false;
-			inline bool stealing = false;
-			inline Name defaultName = "[sex] [race]";
-		}
+			bool enabled = true;
+			bool greetings = false;
+			bool obituary = false;
+			bool stealing = false;
+			Name defaultName = "[sex] [race]";
+		};
 
-		namespace NameContext
+		struct NameContextSettings
 		{
-			inline auto kCrosshair = kDisplayName;
-			inline auto kCrosshairMinion = kTitle;
+			NameStyle kCrosshair = kDisplayName;
+			NameStyle kCrosshairMinion = kTitle;
+			NameStyle kSubtitles = kShortName;
+			NameStyle kDialogue = kFullName;
+			NameStyle kDialogueHistory = kFullName;
+			NameStyle kInventory = kFullName;
+			NameStyle kBarter = kShortName;
+			NameStyle kEnemyHUD = kFullName;
+			NameStyle kOther = kFullName;
+		};
 
-			inline auto kSubtitles = kShortName;
-			inline auto kDialogue = kFullName;
-			inline auto kDialogueHistory = kFullName;
-
-			inline auto kInventory = kFullName;
-
-			inline auto kBarter = kShortName;
-
-			inline auto kEnemyHUD = kFullName;
-
-			inline auto kOther = kFullName;
-		}
-
-		namespace DisplayName
+		struct DisplayNameSettings
 		{
-			constexpr std::array defaultFormats = {
+			static constexpr std::array defaultFormats = {
 				"[name]"sv,                // 0
 				"[name][break][title]"sv,  // 1
 				"[name] ([title])"sv,      // 2
@@ -72,19 +67,75 @@ namespace NND
 			///	- [name]: Substitutes full name
 			///	- [title]: Substitutes title
 			///	- [break]: Substitutes new line.
-			inline std::string format = "[name] ([title])";
+			std::string format = "[name] ([title])";
+		};
+
+		struct HotkeysSettings
+		{
+			std::string generateAll = "RCtrl+RShift+G";
+			std::string generateTarget = "RCtrl+G";
+			std::string toggleObscurity = "RCtrl+O";
+			std::string toggleNames = "RCtrl+N";
+			std::string reloadSettings = "RCtrl+L";
+			std::string fixStuckName = "RCtrl+Backspace";
+			std::string unsafeFixStuckName = "RCtrl+RShift+Backspace";
+		};
+
+		struct OptionsData
+		{
+			GeneralSettings General;
+			ObscuritySettings Obscurity;
+			NameContextSettings NameContext;
+			DisplayNameSettings DisplayName;
+			HotkeysSettings Hotkeys;
+		};
+
+		inline OptionsData defaults;
+		inline OptionsData custom;
+
+		// Backward compatibility aliases
+		namespace General
+		{
+			inline bool& enabled = custom.General.enabled;
+		}
+
+		namespace Obscurity
+		{
+			inline bool& enabled = custom.Obscurity.enabled;
+			inline bool& greetings = custom.Obscurity.greetings;
+			inline bool& obituary = custom.Obscurity.obituary;
+			inline bool& stealing = custom.Obscurity.stealing;
+			inline Name& defaultName = custom.Obscurity.defaultName;
+		}
+
+		namespace NameContext
+		{
+			inline NameStyle& kCrosshair = custom.NameContext.kCrosshair;
+			inline NameStyle& kCrosshairMinion = custom.NameContext.kCrosshairMinion;
+			inline NameStyle& kSubtitles = custom.NameContext.kSubtitles;
+			inline NameStyle& kDialogue = custom.NameContext.kDialogue;
+			inline NameStyle& kDialogueHistory = custom.NameContext.kDialogueHistory;
+			inline NameStyle& kInventory = custom.NameContext.kInventory;
+			inline NameStyle& kBarter = custom.NameContext.kBarter;
+			inline NameStyle& kEnemyHUD = custom.NameContext.kEnemyHUD;
+			inline NameStyle& kOther = custom.NameContext.kOther;
+		}
+
+		namespace DisplayName
+		{
+			constexpr auto& defaultFormats = DisplayNameSettings::defaultFormats;
+			inline std::string& format = custom.DisplayName.format;
 		}
 
 		namespace Hotkeys
 		{
-			inline std::string generateAll = "RCtrl+RShift+G";
-			inline std::string generateTarget = "RCtrl+G";
-			inline std::string toggleObscurity = "RCtrl+O";
-			inline std::string toggleNames = "RCtrl+N";
-			inline std::string reloadSettings = "RCtrl+L";
-
-			inline std::string fixStuckName = "RCtrl+Backspace";
-			inline std::string unsafeFixStuckName = "RCtrl+RShift+Backspace";
+			inline std::string& generateAll = custom.Hotkeys.generateAll;
+			inline std::string& generateTarget = custom.Hotkeys.generateTarget;
+			inline std::string& toggleObscurity = custom.Hotkeys.toggleObscurity;
+			inline std::string& toggleNames = custom.Hotkeys.toggleNames;
+			inline std::string& reloadSettings = custom.Hotkeys.reloadSettings;
+			inline std::string& fixStuckName = custom.Hotkeys.fixStuckName;
+			inline std::string& unsafeFixStuckName = custom.Hotkeys.unsafeFixStuckName;
 		}
 
 		void Save();
