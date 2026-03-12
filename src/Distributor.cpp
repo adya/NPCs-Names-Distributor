@@ -455,7 +455,7 @@ namespace NND
 			logger::info("\tDuration: {} ms", duration);
 #else
 			if (data.name != empty)
-				logger::info("Generated name '{}' for [0x{:X}] ('{}') in {} ms", data.displayName, actor->formID, actor->GetActorBase()->GetName(), duration);
+				logger::info("Generated name '{}, {} data' for [0x{:X}] ('{}') in {} ms", data.name, data.title, actor->formID, actor->GetActorBase()->GetName(), duration);
 #endif
 			return SetData(data);
 		}

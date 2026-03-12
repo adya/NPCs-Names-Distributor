@@ -128,6 +128,7 @@ else ()
 endif()
 
 set(CLIB_UTIL_INCLUDE_DIRS "extern/CLibUtil/include")
+set(SKSE_HOOKING_INCLUDE_DIR "extern/SKSEHooking")
 find_path(SKSE_MCP_INCLUDE_DIRS "SKSEMCP/SKSEMenuFramework.hpp")
 
 find_package(nlohmann_json 3.12.0 REQUIRED)
@@ -219,6 +220,7 @@ target_include_directories(
         ${CMAKE_CURRENT_SOURCE_DIR}/src
         ${SKSE_MCP_INCLUDE_DIRS}
         ${CLIB_UTIL_INCLUDE_DIRS}
+		${SKSE_HOOKING_INCLUDE_DIR}
 )
 
 target_link_libraries(

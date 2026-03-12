@@ -89,7 +89,7 @@ std::string current_date_string() {
 void InitializeLog() {
 	auto path = logger::log_directory();
 	if (!path) {
-		stl::report_and_fail("Failed to find standard logging directory"sv);
+		SKSE::stl::report_and_fail("Failed to find standard logging directory"sv);
 	}
 
 	*path /= fmt::format(FMT_STRING("{}.log"), Version::PROJECT);

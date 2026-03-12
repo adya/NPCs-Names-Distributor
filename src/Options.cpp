@@ -29,7 +29,7 @@ namespace NND
 	}
 
 	template<typename T>
-	void SetOrDeleteValue(CSimpleIniA& ini, const char* section, const char* key, const T& value, const T& defaultValue);
+	void SetOrDeleteValue(CSimpleIniA& ini, const char* section, const char* key, const T& value, const T& defaultValue) {}
 
 	template<> 
 	void SetOrDeleteValue<bool>(CSimpleIniA& ini, const char* section, const char* key, const bool& value, const bool& defaultValue) {

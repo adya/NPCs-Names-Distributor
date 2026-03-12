@@ -6,3 +6,6 @@
 	path = extern/CLibUtil
 	url = https://github.com/adya/CLibUtil.git
 	branch = master
+[submodule "extern/SKSEHooking"]
+	path = extern/SKSEHooking
+	url = https://github.com/adya/SKSEHooking.git
