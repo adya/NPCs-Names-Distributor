@@ -1,9 +1,9 @@
 #include "Hooks.h"
 #include "Distributor.h"
+#include "Hooking.h"
 #include "Options.h"
 #include "Persistency.h"
 #include "RE/T/TESObjectREFR.h"
-#include "Hooking.h"
 
 namespace NND
 {
@@ -16,7 +16,6 @@ namespace NND
 			using Target = RE::Character;
 
 			static inline constexpr std::size_t index{ 0x6A };
-
 
 			static RE::NiAVObject* thunk(RE::Character* a_this, bool a_backgroundLoading) {
 				// Avoid processing any names before the game is loaded.
@@ -206,7 +205,7 @@ namespace NND
 			/// Vanilla: Full.
 			///	    NND: Full.
 			///	Name displayed in the HUD near Enemy health.
-			template<typename Call>
+			template <typename Call>
 			struct EnemyHealthUpdate_GetDisplayFullName_Base
 			{
 				static const char* thunk(RE::TESObjectREFR* a_this) {
@@ -249,7 +248,7 @@ namespace NND
 			/// Vanilla: Full.
 			///	    NND: Full.
 			/// Name displayed on player's minions.
-			template<typename Call>
+			template <typename Call>
 			struct ActivateText_GetDisplayFullName_Minion_Base
 			{
 				static const char* thunk(RE::TESObjectREFR* a_this) {
@@ -271,7 +270,7 @@ namespace NND
 					logger::info("🪝Installed Crosshair Minion1 hook");
 				}
 			};
-			
+
 			struct ActivateText_GetDisplayFullName_Minion_Call2
 			{
 				static inline constexpr REL::ID     relocation = RELOCATION_ID(24212, 24716);
@@ -317,7 +316,7 @@ namespace NND
 			/// Activation name for Search action.
 			struct ActivateText_GetDisplayFullName_Search : ActivateText_GetDisplayFullName_Base<ActivateText_GetDisplayFullName_Search>
 			{
-				static inline constexpr REL::ID relocation = RELOCATION_ID(24212, 24716);
+				static inline constexpr REL::ID     relocation = RELOCATION_ID(24212, 24716);
 				static inline constexpr std::size_t offset = OFFSET(0x23D, 0x23D);
 
 				static inline REL::Relocation<decltype(thunk)> func;
@@ -515,7 +514,7 @@ namespace NND
 		logger::info("{:*^30}", "HOOKS");
 
 		constexpr size_t totalBytes = 14 * 18;
-		
+
 		stl::on_trampoline(totalBytes, []() {
 			stl::install_hook<Cache::Character_Load3D>();
 

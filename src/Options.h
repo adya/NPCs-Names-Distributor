@@ -83,11 +83,11 @@ namespace NND
 
 		struct OptionsData
 		{
-			GeneralSettings General;
-			ObscuritySettings Obscurity;
+			GeneralSettings     General;
+			ObscuritySettings   Obscurity;
 			NameContextSettings NameContext;
 			DisplayNameSettings DisplayName;
-			HotkeysSettings Hotkeys;
+			HotkeysSettings     Hotkeys;
 		};
 
 		inline OptionsData defaults;
@@ -123,7 +123,7 @@ namespace NND
 
 		namespace DisplayName
 		{
-			constexpr auto& defaultFormats = DisplayNameSettings::defaultFormats;
+			constexpr auto&     defaultFormats = DisplayNameSettings::defaultFormats;
 			inline std::string& format = custom.DisplayName.format;
 		}
 

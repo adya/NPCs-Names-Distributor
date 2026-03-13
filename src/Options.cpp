@@ -6,11 +6,16 @@ namespace NND
 {
 	constexpr const char* NameStyleToString(NameStyle style) {
 		switch (style) {
-		case kDisplayName: return "display";
-		case kFullName: return "full";
-		case kShortName: return "short";
-		case kTitle: return "title";
-		default: return "full";
+		case kDisplayName:
+			return "display";
+		case kFullName:
+			return "full";
+		case kShortName:
+			return "short";
+		case kTitle:
+			return "title";
+		default:
+			return "full";
 		}
 	}
 
@@ -28,10 +33,10 @@ namespace NND
 		}
 	}
 
-	template<typename T>
+	template <typename T>
 	void SetOrDeleteValue(CSimpleIniA& ini, const char* section, const char* key, const T& value, const T& defaultValue) {}
 
-	template<> 
+	template <>
 	void SetOrDeleteValue<bool>(CSimpleIniA& ini, const char* section, const char* key, const bool& value, const bool& defaultValue) {
 		if (value != defaultValue) {
 			ini.SetBoolValue(section, key, value);
@@ -40,7 +45,7 @@ namespace NND
 		}
 	}
 
-	template<> 
+	template <>
 	void SetOrDeleteValue<const char*>(CSimpleIniA& ini, const char* section, const char* key, const char* const& value, const char* const& defaultValue) {
 		if (strcmp(value, defaultValue) != 0) {
 			ini.SetValue(section, key, value);
@@ -49,7 +54,8 @@ namespace NND
 		}
 	}
 
-	template<> void SetOrDeleteValue<std::string>(CSimpleIniA& ini, const char* section, const char* key, const std::string& value, const std::string& defaultValue) {
+	template <>
+	void SetOrDeleteValue<std::string>(CSimpleIniA& ini, const char* section, const char* key, const std::string& value, const std::string& defaultValue) {
 		if (value != defaultValue) {
 			ini.SetValue(section, key, value.c_str());
 		} else {
@@ -57,14 +63,14 @@ namespace NND
 		}
 	}
 
-	template<> void SetOrDeleteValue<NameStyle>(CSimpleIniA& ini, const char* section, const char* key, const NameStyle& value, const NameStyle& defaultValue) {
+	template <>
+	void SetOrDeleteValue<NameStyle>(CSimpleIniA& ini, const char* section, const char* key, const NameStyle& value, const NameStyle& defaultValue) {
 		if (value != defaultValue) {
 			ini.SetValue(section, key, NameStyleToString(value));
 		} else {
 			ini.Delete(section, key, true);
 		}
 	}
-	
 
 	bool ReadStyle(const CSimpleIniA& ini, const char* name, NameStyle& style) {
 		if (const auto rawName = ini.GetValue("NameContext", name)) {
@@ -190,17 +196,17 @@ namespace NND
 		CSimpleIniA                 ini{};
 		ini.SetUnicode();
 		ini.LoadFile(options.string().c_str());
-		
+
 		SetOrDeleteValue(ini, "General", "bEnabled", custom.General.enabled, defaults.General.enabled);
-		
+
 		SetOrDeleteValue(ini, "Obscurity", "bEnabled", custom.Obscurity.enabled, defaults.Obscurity.enabled);
 		SetOrDeleteValue(ini, "Obscurity", "bGreetings", custom.Obscurity.greetings, defaults.Obscurity.greetings);
 		SetOrDeleteValue(ini, "Obscurity", "bObituary", custom.Obscurity.obituary, defaults.Obscurity.obituary);
 		SetOrDeleteValue(ini, "Obscurity", "bStealing", custom.Obscurity.stealing, defaults.Obscurity.stealing);
 		SetOrDeleteValue(ini, "Obscurity", "sDefaultName", custom.Obscurity.defaultName, defaults.Obscurity.defaultName);
-		
+
 		SetOrDeleteValue(ini, "DisplayName", "sFormat", custom.DisplayName.format, defaults.DisplayName.format);
-		
+
 		SetOrDeleteValue(ini, "NameContext", "sCrosshair", custom.NameContext.kCrosshair, defaults.NameContext.kCrosshair);
 		SetOrDeleteValue(ini, "NameContext", "sCrosshairMinion", custom.NameContext.kCrosshairMinion, defaults.NameContext.kCrosshairMinion);
 		SetOrDeleteValue(ini, "NameContext", "sSubtitles", custom.NameContext.kSubtitles, defaults.NameContext.kSubtitles);
@@ -210,7 +216,7 @@ namespace NND
 		SetOrDeleteValue(ini, "NameContext", "sBarter", custom.NameContext.kBarter, defaults.NameContext.kBarter);
 		SetOrDeleteValue(ini, "NameContext", "sEnemyHUD", custom.NameContext.kEnemyHUD, defaults.NameContext.kEnemyHUD);
 		SetOrDeleteValue(ini, "NameContext", "sOther", custom.NameContext.kOther, defaults.NameContext.kOther);
-		
+
 		SetOrDeleteValue(ini, "Hotkeys", "sGenerateNames", custom.Hotkeys.generateAll, defaults.Hotkeys.generateAll);
 		SetOrDeleteValue(ini, "Hotkeys", "sGenerateNameTarget", custom.Hotkeys.generateTarget, defaults.Hotkeys.generateTarget);
 		SetOrDeleteValue(ini, "Hotkeys", "sToggleObscurity", custom.Hotkeys.toggleObscurity, defaults.Hotkeys.toggleObscurity);
