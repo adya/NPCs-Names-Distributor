@@ -11,7 +11,8 @@
       "hidden": true,
       "cacheVariables": {
         "CMAKE_CONFIGURATION_TYPES": "Debug;Release;Develop",
-        "CMAKE_CXX_FLAGS": "/EHsc /MP /W4 /external:anglebrackets /external:W0 $penv{CXXFLAGS}"
+        "CMAKE_CXX_FLAGS": "/EHsc /MP /W4 /external:anglebrackets /external:W0 $penv{CXXFLAGS}",
+        "CMAKE_MAP_IMPORTED_CONFIG_DEVELOP": "Release"
       },
       "errors": {
         "deprecated": true
@@ -33,7 +34,7 @@
       "name": "windows",
       "hidden": true,
       "cacheVariables": {
-        "CMAKE_MSVC_RUNTIME_LIBRARY": "MultiThreaded$<$<CONFIG:Debug>:Debug>",
+        "CMAKE_MSVC_RUNTIME_LIBRARY": "MultiThreaded$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Develop>:>",
         "VCPKG_TARGET_TRIPLET": "x64-windows-static"
       }
     },
