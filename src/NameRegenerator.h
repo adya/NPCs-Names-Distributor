@@ -29,7 +29,7 @@ Proceed?
 						for (const auto formId : Distribution::Manager::GetSingleton()->GetAllNames() | std::views::keys) {
 							if (const auto actor = RE::TESForm::LookupByID<RE::Actor>(formId); actor && !actor->IsPlayerRef()) {
 								Distribution::Manager::GetSingleton()->CreateData(actor, true);
-#ifndef NDEBUG
+#ifdef DEV
 							} else {
 								logger::info("Failed to reset name for [0x{:X}]", formId);
 #endif

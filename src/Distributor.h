@@ -80,7 +80,7 @@ namespace NND
 			void     DeleteData(const RE::Actor* actor);
 
 			NNDData& UpdateDataFlags(NNDData&, RE::Actor*) const;
-#ifndef NDEBUG
+#ifdef DEV
 			NNDData& UpdateData(NNDData&, RE::Actor*, bool definitionsChanged, bool silenceLog = false) const;
 #else
 			NNDData& UpdateData(NNDData&, RE::Actor*, bool definitionsChanged) const;

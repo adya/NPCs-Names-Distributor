@@ -673,7 +673,7 @@ namespace NND
 					for (auto& pair : names) {
 						if (const auto actor = RE::TESForm::LookupByID(pair.first);
 						    actor && actor->formType == RE::FormType::ActorCharacter) {
-#ifndef NDEBUG
+#ifdef DEV
 							manager->UpdateData(pair.second, actor->As<RE::Actor>(), false, true);
 #else
 							manager->UpdateData(pair.second, actor->As<RE::Actor>(), false);

@@ -94,7 +94,7 @@ void InitializeLog() {
 
 	*path /= fmt::format(FMT_STRING("{}.log"), Version::PROJECT);
 
-#ifndef NDEBUG
+#ifdef DEV
 	bool truncate = false;
 #else
 	bool truncate = true;
@@ -110,7 +110,7 @@ void InitializeLog() {
 
 	spdlog::set_default_logger(std::move(log));
 
-#ifndef NDEBUG
+#ifdef DEV
 	logger::info(FMT_STRING("{:*^30}"), current_date_string());
 #endif
 	logger::info(FMT_STRING("{} v{}"), Version::PROJECT, Version::NAME);

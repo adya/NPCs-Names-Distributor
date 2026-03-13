@@ -10,7 +10,7 @@
       "name": "cmake-dev",
       "hidden": true,
       "cacheVariables": {
-        "CMAKE_CONFIGURATION_TYPES": "Debug;Release",
+        "CMAKE_CONFIGURATION_TYPES": "Debug;Release;Develop",
         "CMAKE_CXX_FLAGS": "/EHsc /MP /W4 /external:anglebrackets /external:W0 $penv{CXXFLAGS}"
       },
       "errors": {
@@ -89,14 +89,14 @@
       "configuration": "Release"
     },
     {
-      "name": "vs2022-windows-vcpkg-ae-debug",
+      "name": "vs2022-windows-vcpkg-ae-develop",
       "configurePreset": "vs2022-windows-vcpkg-ae",
-      "configuration": "Debug"
+      "configuration": "Develop"
     },
     {
-      "name": "vs2022-windows-vcpkg-se-debug",
+      "name": "vs2022-windows-vcpkg-se-develop",
       "configurePreset": "vs2022-windows-vcpkg-se",
-      "configuration": "Debug"
+      "configuration": "Develop"
     }
   ]
 }
