@@ -133,13 +133,7 @@ extern "C" DLLEXPORT void* SKSEAPI RequestPluginAPI(const NND_API::InterfaceVers
 
 	logger::info("NND::RequestPluginAPI called, InterfaceVersion {}", static_cast<std::underlying_type<NND_API::InterfaceVersion>::type>(a_interfaceVersion));
 
-	switch (a_interfaceVersion) {
-	case NND_API::InterfaceVersion::kV1:
-	case NND_API::InterfaceVersion::kV2:
-		logger::info("NND::RequestPluginAPI returned the API singleton");
-		return api;
-	}
+	logger::info("NND::RequestPluginAPI returned the API singleton");
+	return api;
 
-	logger::info("NND::RequestPluginAPI requested the wrong interface version");
-	return nullptr;
 }
