@@ -135,5 +135,4 @@ extern "C" DLLEXPORT void* SKSEAPI RequestPluginAPI(const NND_API::InterfaceVers
 
 	logger::info("NND::RequestPluginAPI returned the API singleton");
 	return api;
-
 }
