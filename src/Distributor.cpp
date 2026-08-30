@@ -158,34 +158,6 @@ namespace NND
 	// Names Manager
 	namespace Distribution
 	{
-#ifdef DEV
-		std::string rawScopeName(const Scope scope) {
-			switch (scope) {
-			default:
-			case Scope::kName:
-				return "name";
-			case Scope::kTitle:
-				return "title";
-			case Scope::kObscurity:
-				return "obscure name";
-			}
-		}
-
-		std::string allScopeNames(const Scope scope) {
-			std::vector<std::string> names{};
-			if (has(scope, Scope::kName)) {
-				names.push_back("name");
-			}
-			if (has(scope, Scope::kTitle)) {
-				names.push_back("title");
-			}
-			if (has(scope, Scope::kObscurity)) {
-				names.push_back("obscuring");
-			}
-			return clib_util::string::join(names, ", ");
-		}
-#endif
-
 		namespace details
 		{
 			/// Sorts NameDefinitions by their priorities.
@@ -236,12 +208,11 @@ namespace NND
 
 				// Sort by priorities
 				std::ranges::sort(definitions, definitions_priority_greater());
-#ifdef DEV
-				std::vector<std::string> defNames;
 
+				std::vector<std::string> defNames;
 				std::ranges::transform(definitions.begin(), definitions.end(), std::back_inserter(defNames), [](const auto& d) { return d.get().name; });
-				logger::info("\t\tFrom: [{}]", clib_util::string::join(defNames, ", "));
-#endif
+				logger::debug("\t\tFrom: [{}]", clib_util::string::join(defNames, ", "));
+
 				// Assemble a name.
 				NameComponents comps;
 				const auto     sex = actor->GetActorBase()->GetSex();
@@ -313,37 +284,27 @@ namespace NND
 			Scope CreateName(Scope scope, Name* name, Name* shortened, const RE::Actor* actor) {
 				Scope commonScopes = scope;
 
-#ifdef DEV
-				std::string nameType = rawScopeName(scope);
-				logger::info("\tCreating {}:", nameType);
-#endif
+				logger::debug("\tCreating {}:", scope);
+
 				const auto components = MakeNameComponents(scope, actor, commonScopes);
 				if (components.has_value()) {
 					const auto fullName = components->Assemble();
 					if (fullName.has_value() && fullName != empty) {
-#ifdef DEV
-						logger::info("\t\tPicked: '{}'", *fullName);
-#endif
+						logger::debug("\t\tPicked: '{}'", *fullName);
 						*name = *fullName;
 
 						if (shortened) {
 							const auto shortName = components->AssembleShort();
 							if (shortName.has_value() && !shortName->empty() && *shortName != *fullName) {
-#ifdef DEV
-								logger::info("\t\tShort: '{}'", *shortName);
-#endif
+								logger::debug("\t\tShort: '{}'", *shortName);
 								*shortened = *shortName;
 							}
 						}
-#ifdef DEV
 					} else {
-						logger::info("\t\tDefault will be used");
-#endif
+						logger::debug("\t\tDefault will be used");
 					}
-#ifdef DEV
 				} else {
-					logger::info("\t\tDefault will be used");
-#endif
+					logger::debug("\t\tDefault will be used");
 				}
 				return commonScopes;
 			}
@@ -360,9 +321,7 @@ namespace NND
 					if (data.isObscured && actor->IsCommandedActor() && actor->GetCommandingActor().get() == RE::PlayerCharacter::GetSingleton()) {
 						data.isObscured = false;
 						NND::UpdateCrosshairs();
-#ifdef DEV
-						logger::info("Revealing [0x{:X}] ('{}') who is now a minion", actor->formID, data.name != empty ? data.displayName : actor->GetActorBase()->GetName());
-#endif
+						logger::debug("Revealing [0x{:X}] ('{}') who is now a minion", actor->formID, data.name != empty ? data.displayName : actor->GetActorBase()->GetName());
 					}
 
 					return data.GetName(style, actor);
@@ -370,9 +329,7 @@ namespace NND
 			}
 			// This is the case when user hit "Regenerate" name.
 			// Also this is called at the very beginning of the loading for some weird npcs.
-#ifdef DEV
-			logger::info("Pre-cached name for [0x{:X}] ('{}') not found. Maybe it's not the time for the name?", actor->formID, actor->GetActorBase()->GetName());
-#endif
+			logger::debug("Pre-cached name for [0x{:X}] ('{}') not found. Maybe it's not the time for the name?", actor->formID, actor->GetActorBase()->GetName());
 			return empty;
 		}
 
@@ -397,30 +354,24 @@ namespace NND
 				WriteLocker lock(_lock);
 				if (names.contains(actor->formID)) {
 					auto& data = names.at(actor->formID);
-#ifdef DEV
-					logger::info("An old actor touches the NND: [0x{:X}] ('{}'):", actor->formID, actor->GetActorBase()->GetName());
-#endif
+					logger::debug("An old actor touches the NND: [0x{:X}] ('{}'):", actor->formID, actor->GetActorBase()->GetName());
 					UpdateDataFlags(data, actor);
 					data.UpdateDisplayName(actor);
 					data.UpdateDefaultObscurityName(actor);
-#ifdef DEV
-					logger::info("\tIsUnique: {}", data.isUnique);
-					logger::info("\tAllowsDefaultTitle: {}", data.allowDefaultTitle);
-					logger::info("\tIsObscured: {}", data.isObscured);
-					logger::info("\tAllowsDefaultObscurity: {}", data.allowDefaultObscurity);
-					logger::info("\tCanBeObscured: {}", ActorSupportsObscurity(actor));
-					logger::info("\tName: '{}'", data.name);
-					logger::info("\tTitle: '{}'", data.title);
-					logger::info("\tObscuringName: '{}'", data.obscurity);
-					logger::info("\tShortName: '{}'", data.shortDisplayName);
-					logger::info("\tDisplayName: '{}'", data.displayName);
-#endif
+					logger::debug("\tIsUnique: {}", data.isUnique);
+					logger::debug("\tAllowsDefaultTitle: {}", data.allowDefaultTitle);
+					logger::debug("\tIsObscured: {}", data.isObscured);
+					logger::debug("\tAllowsDefaultObscurity: {}", data.allowDefaultObscurity);
+					logger::debug("\tCanBeObscured: {}", ActorSupportsObscurity(actor));
+					logger::debug("\tName: '{}'", data.name);
+					logger::debug("\tTitle: '{}'", data.title);
+					logger::debug("\tObscuringName: '{}'", data.obscurity);
+					logger::debug("\tShortName: '{}'", data.shortDisplayName);
+					logger::debug("\tDisplayName: '{}'", data.displayName);
 					return data;
 				}
 			}
-#ifdef DEV
-			logger::info("A new actor touches the NND: [0x{:X}] ('{}'):", actor->formID, actor->GetActorBase()->GetName());
-#endif
+			logger::debug("A new actor touches the NND: [0x{:X}] ('{}'):", actor->formID, actor->GetActorBase()->GetName());
 			const auto startTime = std::chrono::steady_clock::now();
 
 			NNDData data{};
@@ -430,13 +381,12 @@ namespace NND
 			// Enable obscurity by default if actor supports it. We do this only once during first data creation.
 			data.isObscured = ActorSupportsObscurity(actor);
 			UpdateDataFlags(data, actor);
-#ifdef DEV
-			logger::info("\tIsUnique: {}", data.isUnique);
-			logger::info("\tAllowsDefaultTitle: {}", data.allowDefaultTitle);
-			logger::info("\tIsObscured: {}", data.isObscured);
-			logger::info("\tAllowsDefaultObscurity: {}", data.allowDefaultObscurity);
-			logger::info("\tCanBeObscured: {}", ActorSupportsObscurity(actor));
-#endif
+			logger::debug("\tIsUnique: {}", data.isUnique);
+			logger::debug("\tAllowsDefaultTitle: {}", data.allowDefaultTitle);
+			logger::debug("\tIsObscured: {}", data.isObscured);
+			logger::debug("\tAllowsDefaultObscurity: {}", data.allowDefaultObscurity);
+			logger::debug("\tCanBeObscured: {}", ActorSupportsObscurity(actor));
+
 			MakeName(data, actor);
 			MakeTitle(data, actor);
 			MakeObscureName(data, actor);
@@ -446,40 +396,31 @@ namespace NND
 
 			const auto endTime = std::chrono::steady_clock::now();
 			const auto duration = std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime).count();
-#ifdef DEV
-			logger::info("\tName: '{}'", data.name);
-			logger::info("\tTitle: '{}'", data.title);
-			logger::info("\tObscuringName: '{}'", data.obscurity);
-			logger::info("\tShortName: '{}'", data.shortDisplayName);
-			logger::info("\tDisplayName: '{}'", data.displayName);
-			logger::info("\tDuration: {} ms", duration);
-#else
+			logger::debug("\tName: '{}'", data.name);
+			logger::debug("\tTitle: '{}'", data.title);
+			logger::debug("\tObscuringName: '{}'", data.obscurity);
+			logger::debug("\tShortName: '{}'", data.shortDisplayName);
+			logger::debug("\tDisplayName: '{}'", data.displayName);
+			logger::debug("\tDuration: {} ms", duration);
 			if (data.name != empty)
 				logger::info("Generated name '{}, {} data' for [0x{:X}] ('{}') in {} ms", data.name, data.title, actor->formID, actor->GetActorBase()->GetName(), duration);
-#endif
 			return SetData(data);
 		}
 
 		void Manager::DeleteData(const RE::Actor* actor) {
 			WriteLocker lock(_lock);
-#ifdef DEV
 			if (names.contains(actor->formID)) {
 				const NNDData data = names.at(actor->formID);
 				if (names.erase(actor->formID))
-					logger::info("Deleted cache for [0x{:X}] ('{}')", actor->formID, data.name != empty ? data.displayName : actor->GetActorBase()->GetFullName());
+					logger::debug("Deleted cache for [0x{:X}] ('{}')", actor->formID, data.name != empty ? data.displayName : actor->GetActorBase()->GetFullName());
 			}
-#else
-			names.erase(actor->formID);
-#endif
 		}
 
 		bool Manager::RevealName(const RE::Actor* actor) {
 			WriteLocker lock(_lock);
 			if (const auto& it = names.find(actor->formID); it != names.end() && it->second.isObscured) {
 				it->second.isObscured = false;
-#ifdef DEV
-				logger::info("Revealing [0x{:X}] ('{}')", actor->formID, it->second.name != empty ? it->second.name : actor->GetActorBase()->GetName());
-#endif
+				logger::debug("Revealing [0x{:X}] ('{}')", actor->formID, it->second.name != empty ? it->second.name : actor->GetActorBase()->GetName());
 				return true;
 			}
 
@@ -496,13 +437,11 @@ namespace NND
 			if (data.title == empty) {
 				const Scope titleScopes = details::CreateName(Scope::kTitle, &data.title, nullptr, actor);
 				data.isObscuringTitle = data.title != empty && has(titleScopes, Scope::kObscurity);
-#ifdef DEV
 				if (data.title != empty) {
-					std::string nameType = allScopeNames(titleScopes);
+					logger::debug("\t\tTitle scopes: [{}]", titleScopes);
 					if (has(titleScopes, Scope::kTitle))
-						logger::info("\t\tCan be used in obscurity");
+						logger::debug("\t\tCan be used in obscurity");
 				}
-#endif
 			}
 		}
 
@@ -514,28 +453,18 @@ namespace NND
 
 		void Manager::DeleteName(RE::FormID formId) {
 			WriteLocker lock(_lock);
-#ifdef DEV
 			if (names.contains(formId)) {
 				const NNDData data = names.at(formId);
 				if (names.erase(formId))
-					logger::info("Deleted name for [0x{:X}] ('')", formId, data.displayName);
+					logger::debug("Deleted name for [0x{:X}] ('')", formId, data.displayName);
 			}
-#else
-			names.erase(formId);
-#endif
 		}
 
-#ifdef DEV
 		NNDData& Manager::UpdateData(NNDData& data, RE::Actor* actor, bool definitionsChanged, bool silenceLog) const {
-#else
-		NNDData& Manager::UpdateData(NNDData& data, RE::Actor* actor, bool definitionsChanged) const {
-#endif
 			UpdateDataFlags(data, actor);
 
 			if (definitionsChanged) {
-#ifdef DEV
-				logger::info("\t\tUpdating name..");
-#endif
+				logger::debug("\t\tUpdating name..");
 				MakeName(data, actor);
 				MakeTitle(data, actor);
 				MakeObscureName(data, actor);
@@ -543,19 +472,17 @@ namespace NND
 
 			data.UpdateDisplayName(actor);
 			data.UpdateDefaultObscurityName(actor);
-#ifdef DEV
 			if (!silenceLog) {
-				logger::info("\t\tIsUnique: {}", data.isUnique);
-				logger::info("\t\tAllowsDefaultTitle: {}", data.allowDefaultTitle);
-				logger::info("\t\tIsObscured: {}", data.isObscured);
-				logger::info("\t\tAllowsDefaultObscurity: {}", data.allowDefaultObscurity);
-				logger::info("\t\tName: '{}'", data.name);
-				logger::info("\t\tTitle: '{}'", data.title);
-				logger::info("\t\tObscuringName: '{}'", data.obscurity);
-				logger::info("\t\tShortName: '{}'", data.shortDisplayName);
-				logger::info("\t\tDisplayName: '{}'", data.displayName);
+				logger::debug("\t\tIsUnique: {}", data.isUnique);
+				logger::debug("\t\tAllowsDefaultTitle: {}", data.allowDefaultTitle);
+				logger::debug("\t\tIsObscured: {}", data.isObscured);
+				logger::debug("\t\tAllowsDefaultObscurity: {}", data.allowDefaultObscurity);
+				logger::debug("\t\tName: '{}'", data.name);
+				logger::debug("\t\tTitle: '{}'", data.title);
+				logger::debug("\t\tObscuringName: '{}'", data.obscurity);
+				logger::debug("\t\tShortName: '{}'", data.shortDisplayName);
+				logger::debug("\t\tDisplayName: '{}'", data.displayName);
 			}
-#endif
 			return data;
 		}
 

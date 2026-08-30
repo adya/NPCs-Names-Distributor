@@ -223,3 +223,26 @@ struct enable_bitmask_operators<NND::NameSegmentType>
 {
 	static constexpr bool enable = true;
 };
+
+#ifdef FMT_VERSION
+template <>
+struct fmt::formatter<NND::NameDefinition::Scope> : fmt::formatter<std::string_view>
+{
+	auto format(const NND::NameDefinition::Scope a_scope, format_context& ctx) const -> format_context::iterator {
+		using Scope = NND::NameDefinition::Scope;
+
+		std::vector<std::string> names;
+		if (has(a_scope, Scope::kName)) {
+			names.push_back("name");
+		}
+		if (has(a_scope, Scope::kTitle)) {
+			names.push_back("title");
+		}
+		if (has(a_scope, Scope::kObscurity)) {
+			names.push_back("obscuring");
+		}
+
+		return fmt::formatter<std::string_view>::format(clib_util::string::join(names, ", "), ctx);
+	}
+};
+#endif

@@ -11,7 +11,7 @@ namespace NND
 			const auto prefix = variant.prefix.names.size();
 			const auto suffix = variant.suffix.names.size();
 			if (useCircumfix) {
-				const auto circumfix = min(prefix, suffix);
+				const auto circumfix = std::min(prefix, suffix);
 				if (circumfix > 0) {
 					const auto trimmedPrefixes = prefix - circumfix;
 					const auto trimmedSuffixes = suffix - circumfix;

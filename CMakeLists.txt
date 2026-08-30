@@ -1,14 +1,10 @@
 cmake_minimum_required(VERSION 3.20)
 set(NAME "NPCsNamesDistributor" CACHE STRING "")
 set(VERSION 2.6.2 CACHE STRING "")
-set(SE_VERSION 1597)
-set(AE_VERSION 16)
-set(VR_VERSION 1415)
 
 # ---- Options ----
 
 option(COPY_BUILD "Copy the build output to the Skyrim directory." TRUE)
-option(BUILD_SKYRIMAE "Build for Skyrim AE" OFF)
 
 
 # ---- Project ----
@@ -39,40 +35,21 @@ macro(set_from_environment VARIABLE)
 	endif ()
 endmacro()
 
-macro(find_commonlib_path)
-	if (CommonLibName AND NOT ${CommonLibName} STREQUAL "")
-		# Check extern
-		find_path(CommonLibPath
-		include/REL/Relocation.h
-		PATHS ${PROJECT_SOURCE_DIR}/extern/${CommonLibName})
-		if (${CommonLibPath} STREQUAL "CommonLibPath-NOTFOUND")
-			#Check path
-			set_from_environment(${CommonLibName}Path)
-			set(CommonLibPath ${${CommonLibName}Path})
-		endif()
-	endif()
-endmacro()
+set(ENABLE_SKYRIM_SE ON CACHE BOOL "" FORCE)
+set(ENABLE_SKYRIM_AE ON CACHE BOOL "" FORCE)
+set(ENABLE_SKYRIM_VR OFF CACHE BOOL "" FORCE)
+set(BUILD_TESTS OFF CACHE BOOL "" FORCE)
+
+set(SKSE_SUPPORT_XBYAK ON CACHE BOOL "" FORCE)
 
 set_from_environment(VCPKG_ROOT)
-if(BUILD_SKYRIMAE)
-	add_compile_definitions(SKYRIM_AE)
-	add_compile_definitions(SKYRIM_SUPPORT_AE)
-	set(CommonLibName "CommonLibSSE")
-	set_from_environment(SkyrimAEPath)
-	set(SkyrimPath ${SkyrimAEPath})
-	set(SkyrimVersion "Skyrim AE")
-	set(VERSION ${VERSION}.${AE_VERSION})
-else()
-	set(CommonLibName "CommonLibSSE")
-	set_from_environment(Skyrim64Path)
-	set(SkyrimPath ${Skyrim64Path})
-	set(SkyrimVersion "Skyrim SSE")
-	set(VERSION ${VERSION}.${SE_VERSION})
-endif()
-find_commonlib_path()
+set(SkyrimVersion "Skyrim SE/AE")
+set_from_environment(Skyrim64Path)
+set(SkyrimPath ${Skyrim64Path})
+set(CommonLibPath "${PROJECT_SOURCE_DIR}/extern/CommonLibSSE-NG")
 message(
 	STATUS
-	"Building ${NAME} ${VERSION} for ${SkyrimVersion} at ${SkyrimPath} with ${CommonLibName} at ${CommonLibPath}."
+	"Building ${NAME} ${VERSION} for ${SkyrimVersion} at ${SkyrimPath} with CommonLibSSE-NG at ${CommonLibPath}."
 )
 
 if (DEFINED VCPKG_ROOT)
@@ -99,19 +76,6 @@ endif()
 
 # ---- Globals ----
 
-# Configure Develop configuration to match Release but with DEV symbol
-set(CMAKE_CXX_FLAGS_DEVELOP "${CMAKE_CXX_FLAGS_RELEASE}" CACHE STRING "" FORCE)
-set(CMAKE_C_FLAGS_DEVELOP "${CMAKE_C_FLAGS_RELEASE}" CACHE STRING "" FORCE)
-set(CMAKE_EXE_LINKER_FLAGS_DEVELOP "${CMAKE_EXE_LINKER_FLAGS_RELEASE}" CACHE STRING "" FORCE)
-set(CMAKE_SHARED_LINKER_FLAGS_DEVELOP "${CMAKE_SHARED_LINKER_FLAGS_RELEASE}" CACHE STRING "" FORCE)
-set(CMAKE_STATIC_LINKER_FLAGS_DEVELOP "${CMAKE_STATIC_LINKER_FLAGS_RELEASE}" CACHE STRING "" FORCE)
-set(CMAKE_MODULE_LINKER_FLAGS_DEVELOP "${CMAKE_MODULE_LINKER_FLAGS_RELEASE}" CACHE STRING "" FORCE)
-
-# Tell vcpkg to use release libraries for Develop configuration
-if(CMAKE_BUILD_TYPE STREQUAL "Develop")
-	set(VCPKG_BUILD_TYPE "release" CACHE STRING "")
-endif()
-
 add_compile_definitions(
 	SKSE_SUPPORT_XBYAK
 )
@@ -131,12 +95,12 @@ set(Boost_USE_STATIC_LIBS ON)
 
 # ---- Dependencies ----
 
-if (DEFINED CommonLibPath AND NOT ${CommonLibPath} STREQUAL "" AND IS_DIRECTORY ${CommonLibPath})
-	add_subdirectory(${CommonLibPath} ${CommonLibName})
+if (IS_DIRECTORY ${CommonLibPath})
+	add_subdirectory(${CommonLibPath} CommonLibSSE-NG)
 else ()
 	message(
 		FATAL_ERROR
-		"Variable ${CommonLibName}Path is not set."
+		"CommonLibSSE-NG submodule not found at ${CommonLibPath}. Run 'git submodule update --init --recursive'."
 	)
 endif()
 
@@ -222,7 +186,6 @@ target_compile_definitions(
 	${PROJECT_NAME}
 	PRIVATE
 		_UNICODE
-		$<$<CONFIG:Develop>:DEV>
 )
 
 target_include_directories(
@@ -240,7 +203,7 @@ target_include_directories(
 target_link_libraries(
 	${PROJECT_NAME}
 	PRIVATE
-		${CommonLibName}::${CommonLibName}
+		CommonLibSSE::CommonLibSSE
 )
 
 target_precompile_headers(
@@ -264,7 +227,6 @@ if (MSVC)
 
 			"$<$<CONFIG:DEBUG>:>"
 			"$<$<CONFIG:RELEASE>:/Zc:inline;/JMC-;/Ob3>"
-			"$<$<CONFIG:DEVELOP>:/Zc:inline;/JMC-;/Ob3>"
 	)
 
 	target_link_options(
@@ -272,7 +234,6 @@ if (MSVC)
 		PRIVATE
 			"$<$<CONFIG:DEBUG>:/INCREMENTAL;/OPT:NOREF;/OPT:NOICF>"
 			"$<$<CONFIG:RELEASE>:/INCREMENTAL:NO;/OPT:REF;/OPT:ICF;/DEBUG:FULL>"
-			"$<$<CONFIG:DEVELOP>:/INCREMENTAL:NO;/OPT:REF;/OPT:ICF;/DEBUG:FULL>"
 	)
 endif ()
 

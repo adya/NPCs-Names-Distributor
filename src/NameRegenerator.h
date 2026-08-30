@@ -22,17 +22,14 @@ Proceed?
 
 				~GenerateNamesConfirmCallback() override = default;
 
-				void Run(Message a_msg) override {
-					const std::int32_t response = static_cast<std::int32_t>(a_msg) - 4;
-					if (response == 0) {
+				void Run(std::uint8_t a_button) override {
+					if (a_button == 4) {
 						logger::info("Resetting all names..");
 						for (const auto formId : Distribution::Manager::GetSingleton()->GetAllNames() | std::views::keys) {
 							if (const auto actor = RE::TESForm::LookupByID<RE::Actor>(formId); actor && !actor->IsPlayerRef()) {
 								Distribution::Manager::GetSingleton()->CreateData(actor, true);
-#ifdef DEV
 							} else {
-								logger::info("Failed to reset name for [0x{:X}]", formId);
-#endif
+								logger::debug("Failed to reset name for [0x{:X}]", formId);
 							}
 						}
 						NND::UpdateCrosshairs();  // In case we're looking at someone when reseting the cache..
@@ -47,8 +44,8 @@ Proceed?
 				if (factoryManager && uiStrHolder) {
 					if (const auto factory = factoryManager->GetCreator<RE::MessageBoxData>(uiStrHolder->messageBoxData)) {
 						if (const auto messageBox = factory->Create()) {
-							messageBox->optionIndexOffset = 4;
-							messageBox->type = 10;
+							messageBox->buttonPressOffset = 4;
+							messageBox->warningType = 10;
 							messageBox->bodyText = a_message;
 
 							return messageBox;

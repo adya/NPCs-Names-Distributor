@@ -106,12 +106,19 @@ namespace NND
 		return false;
 	}
 
-	void Options::Load() {
-		logger::info("{:*^30}", "OPTIONS");
+	void Options::Load(bool silent) {
+		if (!silent) {
+			logger::info("{:*^30}", "OPTIONS");
+		}
 		std::filesystem::path options = R"(Data\SKSE\Plugins\NPCsNamesDistributor.ini)";
 		CSimpleIniA           ini{};
 		ini.SetUnicode();
-		if (ini.LoadFile(options.string().c_str()) >= 0) {
+		const bool loaded = ini.LoadFile(options.string().c_str()) >= 0;
+
+		if (loaded) {
+			Log::level = ini.GetValue("Log", "sLogLevel", Log::level.c_str());
+			Log::truncate = ini.GetBoolValue("Log", "bTruncate", Log::truncate);
+
 			General::enabled = ini.GetBoolValue("General", "bEnabled", General::enabled);
 
 			Obscurity::enabled = ini.GetBoolValue("Obscurity", "bEnabled", Obscurity::enabled);
@@ -153,6 +160,15 @@ namespace NND
 			logger::info(R"(Data\SKSE\Plugins\NPCsNamesDistributor.ini not found. Default options will be used.)");
 			logger::info("");
 		}
+
+		if (silent) {
+			return;
+		}
+
+		logger::info("Log:");
+		logger::info("\tLevel: {}", Log::level);
+		logger::info("\tTruncate on launch: {}", Log::truncate ? "Yes" : "No");
+		logger::info("");
 
 		logger::info("General:");
 		logger::info("\tNames distribution {}", General::enabled ? "enabled" : "disabled");
@@ -196,6 +212,9 @@ namespace NND
 		CSimpleIniA                 ini{};
 		ini.SetUnicode();
 		ini.LoadFile(options.string().c_str());
+
+		SetOrDeleteValue(ini, "Log", "sLogLevel", custom.Log.level, defaults.Log.level);
+		SetOrDeleteValue(ini, "Log", "bTruncate", custom.Log.truncate, defaults.Log.truncate);
 
 		SetOrDeleteValue(ini, "General", "bEnabled", custom.General.enabled, defaults.General.enabled);
 

@@ -7,22 +7,6 @@
   },
   "configurePresets": [
     {
-      "name": "cmake-dev",
-      "hidden": true,
-      "cacheVariables": {
-        "CMAKE_CONFIGURATION_TYPES": "Debug;Release;Develop",
-        "CMAKE_CXX_FLAGS": "/EHsc /MP /W4 /external:anglebrackets /external:W0 $penv{CXXFLAGS}",
-        "CMAKE_MAP_IMPORTED_CONFIG_DEVELOP": "Release"
-      },
-      "errors": {
-        "deprecated": true
-      },
-      "warnings": {
-        "deprecated": true,
-        "dev": true
-      }
-    },
-    {
       "name": "vcpkg",
       "hidden": true,
       "toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
@@ -34,70 +18,42 @@
       "name": "windows",
       "hidden": true,
       "cacheVariables": {
-        "CMAKE_MSVC_RUNTIME_LIBRARY": "MultiThreaded$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Develop>:>",
+        "CMAKE_MSVC_RUNTIME_LIBRARY": "MultiThreaded$<$<CONFIG:Debug>:Debug>",
         "VCPKG_TARGET_TRIPLET": "x64-windows-static"
       }
     },
     {
-      "name": "vs2022",
+      "name": "vs2026",
       "hidden": true,
-      "generator": "Visual Studio 17 2022",
-      "toolset": "v143"
+      "generator": "Visual Studio 18 2026",
+      "toolset": "v145"
     },
     {
-      "name": "se",
-      "hidden": true,
-      "binaryDir": "${sourceDir}/build"
-    },
-    {
-      "name": "ae",
-      "hidden": true,
-      "binaryDir": "${sourceDir}/buildae",
+      "name": "vs2026-windows-vcpkg",
+      "binaryDir": "${sourceDir}/build",
+      "inherits": [
+        "vcpkg",
+        "windows",
+        "vs2026"
+      ],
       "cacheVariables": {
-        "BUILD_SKYRIMAE": true
+        "CMAKE_CONFIGURATION_TYPES": "Debug;Release",
+        "CMAKE_CXX_FLAGS": "/EHsc /MP /W4 /external:anglebrackets /external:W0 $penv{CXXFLAGS}"
+      },
+      "errors": {
+        "deprecated": true
+      },
+      "warnings": {
+        "deprecated": true,
+        "dev": true
       }
-    },
-    {
-      "name": "vs2022-windows-vcpkg-se",
-      "inherits": [
-        "cmake-dev",
-        "vcpkg",
-        "windows",
-        "vs2022",
-        "se"
-      ]
-    },
-    {
-      "name": "vs2022-windows-vcpkg-ae",
-      "inherits": [
-        "cmake-dev",
-        "vcpkg",
-        "windows",
-        "vs2022",
-        "ae"
-      ]
     }
   ],
   "buildPresets": [
     {
-      "name": "vs2022-windows-vcpkg-ae",
-      "configurePreset": "vs2022-windows-vcpkg-ae",
+      "name": "vs2026-windows-vcpkg",
+      "configurePreset": "vs2026-windows-vcpkg",
       "configuration": "Release"
-    },
-    {
-      "name": "vs2022-windows-vcpkg-se",
-      "configurePreset": "vs2022-windows-vcpkg-se",
-      "configuration": "Release"
-    },
-    {
-      "name": "vs2022-windows-vcpkg-ae-develop",
-      "configurePreset": "vs2022-windows-vcpkg-ae",
-      "configuration": "Develop"
-    },
-    {
-      "name": "vs2022-windows-vcpkg-se-develop",
-      "configurePreset": "vs2022-windows-vcpkg-se",
-      "configuration": "Develop"
     }
   ]
 }
