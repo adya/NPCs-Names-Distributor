@@ -195,7 +195,7 @@ namespace NND
 			}
 
 			void RegenerateAllNamesFromMenu() {
-				Regenerator::details::GenerateNamesConfirmCallback().Run(static_cast<RE::IMessageBoxCallback::Message>(4));
+				Regenerator::details::GenerateNamesConfirmCallback().Run(4);
 			}
 		}
 

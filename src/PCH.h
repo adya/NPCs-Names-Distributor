@@ -1,5 +1,8 @@
 #pragma once
 
+#define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
+
 #include "RE/Skyrim.h"
 #include "SKSE/SKSE.h"
 
@@ -20,11 +23,5 @@ namespace NND
 		});
 	}
 }
-
-#ifdef SKYRIM_AE
-#	define OFFSET(se, ae) ae
-#else
-#	define OFFSET(se, ae) se
-#endif
 
 #include "Version.h"

@@ -39,64 +39,31 @@
       }
     },
     {
-      "name": "vs2022",
+      "name": "vs2026",
       "hidden": true,
-      "generator": "Visual Studio 17 2022",
-      "toolset": "v143"
+      "generator": "Visual Studio 18 2026",
+      "toolset": "v145"
     },
     {
-      "name": "se",
-      "hidden": true,
-      "binaryDir": "${sourceDir}/build"
-    },
-    {
-      "name": "ae",
-      "hidden": true,
-      "binaryDir": "${sourceDir}/buildae",
-      "cacheVariables": {
-        "BUILD_SKYRIMAE": true
-      }
-    },
-    {
-      "name": "vs2022-windows-vcpkg-se",
+      "name": "vs2026-windows-vcpkg",
+      "binaryDir": "${sourceDir}/build",
       "inherits": [
         "cmake-dev",
         "vcpkg",
         "windows",
-        "vs2022",
-        "se"
-      ]
-    },
-    {
-      "name": "vs2022-windows-vcpkg-ae",
-      "inherits": [
-        "cmake-dev",
-        "vcpkg",
-        "windows",
-        "vs2022",
-        "ae"
+        "vs2026"
       ]
     }
   ],
   "buildPresets": [
     {
-      "name": "vs2022-windows-vcpkg-ae",
-      "configurePreset": "vs2022-windows-vcpkg-ae",
+      "name": "vs2026-windows-vcpkg",
+      "configurePreset": "vs2026-windows-vcpkg",
       "configuration": "Release"
     },
     {
-      "name": "vs2022-windows-vcpkg-se",
-      "configurePreset": "vs2022-windows-vcpkg-se",
-      "configuration": "Release"
-    },
-    {
-      "name": "vs2022-windows-vcpkg-ae-develop",
-      "configurePreset": "vs2022-windows-vcpkg-ae",
-      "configuration": "Develop"
-    },
-    {
-      "name": "vs2022-windows-vcpkg-se-develop",
-      "configurePreset": "vs2022-windows-vcpkg-se",
+      "name": "vs2026-windows-vcpkg-develop",
+      "configurePreset": "vs2026-windows-vcpkg",
       "configuration": "Develop"
     }
   ]

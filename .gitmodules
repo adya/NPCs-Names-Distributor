@@ -1,7 +1,3 @@
-[submodule "extern/CommonLibSSE"]
-	path = extern/CommonLibSSE
-	url = https://github.com/adya/CommonLibSSE
-	branch = dev
 [submodule "extern/CLibUtil"]
 	path = extern/CLibUtil
 	url = https://github.com/adya/CLibUtil.git
@@ -9,3 +5,7 @@
 [submodule "extern/SKSEHooking"]
 	path = extern/SKSEHooking
 	url = https://github.com/adya/SKSEHooking.git
+[submodule "extern/CommonLibSSE-NG"]
+	path = extern/CommonLibSSE-NG
+	url = https://github.com/adya/CommonLibSSE-NG
+	branch = ng
