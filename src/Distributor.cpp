@@ -1,6 +1,7 @@
 #include "Distributor.h"
 #include "LookupNameDefinitions.h"
 #include "NNDKeywords.h"
+#include "Persistency.h"
 
 namespace NND
 {
@@ -327,10 +328,13 @@ namespace NND
 					return data.GetName(style, actor);
 				}
 			}
-			// This is the case when user hit "Regenerate" name.
-			// Also this is called at the very beginning of the loading for some weird npcs.
-			logger::debug("Pre-cached name for [0x{:X}] ('{}') not found. Maybe it's not the time for the name?", actor->formID, actor->GetActorBase()->GetName());
-			return empty;
+
+			if (Persistency::Manager::GetSingleton()->IsLoadingGame()) {
+				logger::debug("Pre-cached name for [0x{:X}] ('{}') not found. Deferred: game is loading.", actor->formID, actor->GetActorBase()->GetName());
+				return empty;
+			}
+
+			return CreateData(actor).GetName(style, actor);
 		}
 
 		NNDData& Manager::SetData(const NNDData& data) {
