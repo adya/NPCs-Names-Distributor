@@ -691,7 +691,7 @@ namespace NND
 			Spacing();
 
 			if (Button("Generate Target Name", ImVec2(250, 0))) {
-				if (const auto actorRef = RE::CrosshairPickData::GetSingleton()->targetActor.get().get()) {
+				if (const auto actorRef = RE::CrosshairPickData::GetSingleton()->GetActiveTarget().get().get()) {
 					if (const auto actor = actorRef->As<RE::Actor>()) {
 						Regenerator::RegenerateTarget(actor);
 					}
@@ -725,7 +725,7 @@ namespace NND
 			Spacing();
 
 			if (Button("Fix Stuck Name (Target)", ImVec2(250, 0))) {
-				if (const auto actorRef = RE::CrosshairPickData::GetSingleton()->targetActor.get().get()) {
+				if (const auto actorRef = RE::CrosshairPickData::GetSingleton()->GetActiveTarget().get().get()) {
 					if (const auto actor = actorRef->As<RE::Actor>()) {
 						NameFixer::FixName(actor);
 						logger::info("Fixed stuck name for target NPC");
@@ -736,7 +736,7 @@ namespace NND
 			Spacing();
 
 			if (Button("Unsafe Fix Stuck Name (Target)", ImVec2(250, 0))) {
-				if (const auto actorRef = RE::CrosshairPickData::GetSingleton()->targetActor.get().get()) {
+				if (const auto actorRef = RE::CrosshairPickData::GetSingleton()->GetActiveTarget().get().get()) {
 					if (const auto actor = actorRef->As<RE::Actor>()) {
 						NameFixer::FixNameUnsafe(actor);
 						logger::warn("Unsafe fix applied to stuck name for target NPC");
