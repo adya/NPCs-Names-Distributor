@@ -28,6 +28,10 @@ namespace NND
 
 			static inline REL::Relocation<decltype(thunk)> func;
 
+			static void pre_hook() {
+				logger::debug("🪝Installing Character hook...");
+			}
+
 			static void post_hook() {
 				logger::info("🪝Installed Character hook");
 			}
@@ -66,8 +70,11 @@ namespace NND
 			{
 				static inline constexpr REL::RelocationID relocation{ 19354, 19781 };
 				static inline constexpr REL::VariantOffset offset{ 0x247, 0x23D };
+				static inline constexpr Signature signature{ "E8 ?? ?? ?? ?? 0F 28 74 24 ??" };
 
 				static void pre_hook() {
+					logger::debug("🪝Installing Default GetDisplayFullName hook...");
+
 					// Swaps 2nd argument in ExtraTextDisplayData::GetDisplayName_140145820(extraTextData, object->data.objectReference, temperFactor) to pass TESObjectREFR* obj instead of obj->GetBaseObject()
 					// mov rdx, [r15+40h] (49 8B 57 40)
 					//                     v  v  v   +
@@ -97,8 +104,11 @@ namespace NND
 			{
 				static inline constexpr REL::RelocationID relocation{ 19354, 19781 };
 				static inline constexpr REL::VariantOffset offset{ 0x236, 0x22C };
+				static inline constexpr Signature signature{ "E8 ?? ?? ?? ?? EB ?? 0F 28 ??" };
 
 				static void pre_hook() {
+					logger::debug("🪝Installing Default GetDisplayFullName hook...");
+
 					// Swaps the argument in TESForm::GetFormName_1401A38F0(object->data.objectReference) to pass TESObjectREFR* obj instead of obj->GetBaseObject()
 					// mov rcx, [r15+40h] (49 8B 4F 40)
 					//                     v  v  v  +
@@ -139,8 +149,11 @@ namespace NND
 				{
 					static inline constexpr REL::RelocationID relocation{ 24211, 24715 };
 					static inline constexpr REL::VariantOffset offset{ 0x6AB, 0x6CA };
+					static inline constexpr Signature signature{ "E8 ?? ?? ?? ?? 48 8D 88" };
 
 					static void pre_hook() {
+						logger::debug("🪝Installing Pickpocket Notification hook...");
+
 						// Erase the whole thing with TESFullName. Instead Actor::GetBaseObject_1406313C0 will return a name.
 						// lea	rcx, [rax+0D8h]
 						// mov  rax, [rcx]
@@ -171,12 +184,17 @@ namespace NND
 			{
 				static inline constexpr REL::RelocationID relocation{ 51761, 52637 };
 				static inline constexpr REL::VariantOffset offset{ 0x117, 0x110 };
+				static inline constexpr Signature signature{ "E8 ?? ?? ?? ?? 48 8B ?? 48 8B ??" };
 
 				static const char* thunk(RE::TESObjectREFR* a_this) {
 					const auto originalName = func(a_this);
 					return GetName(Options::NameContext::kSubtitles, a_this, originalName);
 				}
 				static inline REL::Relocation<decltype(thunk)> func;
+
+				static void pre_hook() {
+					logger::debug("🪝Installing DisplayNextSubtitle hook...");
+				}
 
 				static void post_hook() {
 					logger::info("🪝Installed DisplayNextSubtitle hook");
@@ -188,11 +206,16 @@ namespace NND
 			{
 				static inline constexpr REL::RelocationID relocation{ 51761, 52637 };
 				static inline constexpr REL::VariantOffset offset{ 0xEF, 0xE8 };
+				static inline constexpr Signature signature{ "E8 ?? ?? ?? ?? 48 85 C0 75 ?? 48 8B ??" };
 
 				static std::uintptr_t thunk(RE::ExtraDataList*) {
 					return 1;
 				}
 				static inline REL::Relocation<decltype(thunk)> func;
+
+				static void pre_hook() {
+					logger::debug("🪝Installing DisplayNextSubtitle aux hook...");
+				}
 
 				static void post_hook() {
 					logger::info("🪝Installed DisplayNextSubtitle aux hook");
@@ -218,10 +241,15 @@ namespace NND
 			{
 				static inline constexpr REL::RelocationID relocation{ 50776, 51671 };
 				static inline constexpr REL::VariantOffset offset{ 0x21B, 0x20E, 0x278 };
+				static inline constexpr Signature signature{ "E8 ?? ?? ?? ?? 49 8B CF 48 FF C1 80 3C 08 00" };
 
 				using Proxy = EnemyHealthUpdate_GetDisplayFullName_Base<EnemyHealthUpdate_GetDisplayFullName_NameLength>;
 
 				static inline REL::Relocation<decltype(Proxy::thunk)> func;
+
+				static inline void pre_hook() {
+					logger::debug("🪝Installing EnemyHUD length hook...");
+				}
 
 				static inline void post_hook() {
 					logger::info("🪝Installed EnemyHUD length hook");
@@ -232,10 +260,15 @@ namespace NND
 			{
 				static inline constexpr REL::RelocationID relocation{ 50776, 51671 };
 				static inline constexpr REL::VariantOffset offset{ 0x261, 0x254, 0x2BE };
+				static inline constexpr Signature signature{ "E8 ?? ?? ?? ?? 4C 89 6C 24 ?? 44 89 6C 24" };
 
 				using Proxy = EnemyHealthUpdate_GetDisplayFullName_Base<EnemyHealthUpdate_GetDisplayFullName_Name>;
 
 				static inline REL::Relocation<decltype(Proxy::thunk)> func;
+
+				static inline void pre_hook() {
+					logger::debug("🪝Installing EnemyHUD name hook...");
+				}
 
 				static inline void post_hook() {
 					logger::info("🪝Installed EnemyHUD name hook");
@@ -261,10 +294,15 @@ namespace NND
 			{
 				static inline constexpr REL::RelocationID relocation{ 24212, 24716 };
 				static inline constexpr REL::VariantOffset offset{ 0xB3, 0xB5 };
+				static inline constexpr Signature signature{ "E8 ?? ?? ?? ?? 48 8B F8 48 8B CB E8" };
 
 				using Proxy = ActivateText_GetDisplayFullName_Minion_Base<ActivateText_GetDisplayFullName_Minion_Call1>;
 
 				static inline REL::Relocation<decltype(Proxy::thunk)> func;
+
+				static inline void pre_hook() {
+					logger::debug("🪝Installing Crosshair Minion1 hook...");
+				}
 
 				static inline void post_hook() {
 					logger::info("🪝Installed Crosshair Minion1 hook");
@@ -275,10 +313,15 @@ namespace NND
 			{
 				static inline constexpr REL::RelocationID relocation{ 24212, 24716 };
 				static inline constexpr REL::VariantOffset offset{ 0xDA, 0xDC };
+				static inline constexpr Signature signature{ "E8 ?? ?? ?? ?? 48 8D 15 ?? ?? ?? ?? 4C 8B CF" };
 
 				using Proxy = ActivateText_GetDisplayFullName_Minion_Base<ActivateText_GetDisplayFullName_Minion_Call2>;
 
 				static inline REL::Relocation<decltype(Proxy::thunk)> func;
+
+				static inline void pre_hook() {
+					logger::debug("🪝Installing Crosshair Minion2 hook...");
+				}
 
 				static inline void post_hook() {
 					logger::info("🪝Installed Crosshair Minion2 hook");
@@ -301,10 +344,15 @@ namespace NND
 			{
 				static inline constexpr REL::RelocationID relocation{ 24212, 24716 };
 				static inline constexpr REL::VariantOffset offset{ 0x33A, 0x33A };
+				static inline constexpr Signature signature{ "E8 ?? ?? ?? ?? 4C 8B C8 4C 8B C3 48 8D 15" };
 
 				using Proxy = ActivateText_GetDisplayFullName_Base<ActivateText_GetDisplayFullName_Default>;
 
 				static inline REL::Relocation<decltype(Proxy::thunk)> func;
+
+				static inline void pre_hook() {
+					logger::debug("🪝Installing Crosshair Default1 hook...");
+				}
 
 				static inline void post_hook() {
 					logger::info("🪝Installed Crosshair Default1 hook");
@@ -318,8 +366,13 @@ namespace NND
 			{
 				static inline constexpr REL::RelocationID relocation{ 24212, 24716 };
 				static inline constexpr REL::VariantOffset offset{ 0x23D, 0x23D };
+				static inline constexpr Signature signature{ "E8 ?? ?? ?? ?? 4C 8B C8 48 89 74 24 ?? 48 89 5C 24" };
 
 				static inline REL::Relocation<decltype(thunk)> func;
+
+				static inline void pre_hook() {
+					logger::debug("🪝Installing Crosshair Default2 hook...");
+				}
 
 				static inline void post_hook() {
 					logger::info("🪝Installed Crosshair Default2 hook");
@@ -340,12 +393,17 @@ namespace NND
 			{
 				static inline constexpr REL::RelocationID relocation{ 24212, 24716 };
 				static inline constexpr REL::VariantOffset offset{ 0x1F2, 0x1F2 };
+				static inline constexpr Signature signature{ "E8 ?? ?? ?? ?? 48 8B D0 45 33 C0 49 8B CF" };
 
 				static const char* thunk(RE::TESObjectREFR* a_this) {
 					const auto originalName = func(a_this);
 					return GetName(Options::NameContext::kDialogue, a_this, originalName);
 				}
 				static inline REL::Relocation<decltype(thunk)> func;
+
+				static inline void pre_hook() {
+					logger::debug("🪝Installing ActivateText hook...");
+				}
 
 				static inline void post_hook() {
 					logger::info("🪝Installed ActivateText hook.");
@@ -359,12 +417,17 @@ namespace NND
 			{
 				static inline constexpr REL::RelocationID relocation{ 34455, 35282 };
 				static inline constexpr REL::VariantOffset offset{ 0x4AE, 0x587, 0x4B8 };
+				static inline constexpr Signature signature{ "E8 ?? ?? ?? ?? 48 8B C8 E8" };
 
 				static const char* thunk(RE::TESObjectREFR* a_this) {
 					const auto originalName = func(a_this);
 					return GetName(Options::NameContext::kDialogue, a_this, originalName);
 				}
 				static inline REL::Relocation<decltype(thunk)> func;
+
+				static inline void pre_hook() {
+					logger::debug("🪝Installing MenuTopicManager hook...");
+				}
 
 				static inline void post_hook() {
 					logger::info("🪝Installed MenuTopicManager hook.");
@@ -381,12 +444,17 @@ namespace NND
 			{
 				static inline constexpr REL::RelocationID relocation{ 50012, 50956 };
 				static inline constexpr REL::VariantOffset offset{ 0x4B, 0x94 };
+				static inline constexpr Signature signature{ "E8 ?? ?? ?? ?? 48 8B D0 41 B0 01 48 8D 4D" };
 
 				static const char* thunk(RE::TESObjectREFR* a_this) {
 					const auto originalName = func(a_this);
 					return GetName(Options::NameContext::kInventory, a_this, originalName);
 				}
 				static inline REL::Relocation<decltype(thunk)> func;
+
+				static inline void pre_hook() {
+					logger::debug("🪝Installing BarterMenu hook...");
+				}
 
 				static inline void post_hook() {
 					logger::info("🪝Installed BarterMenu hook.");
@@ -400,12 +468,17 @@ namespace NND
 			{
 				static inline constexpr REL::RelocationID relocation{ 50213, 51142 };
 				static inline constexpr REL::VariantOffset offset{ 0x50, 0x99 };
+				static inline constexpr Signature signature{ "E8 ?? ?? ?? ?? 48 89 05 ?? ?? ?? ?? EB" };
 
 				static const char* thunk(RE::TESObjectREFR* a_this) {
 					const auto originalName = func(a_this);
 					return GetName(Options::NameContext::kInventory, a_this, originalName);
 				}
 				static inline REL::Relocation<decltype(thunk)> func;
+
+				static inline void pre_hook() {
+					logger::debug("🪝Installing ContainerMenu hook...");
+				}
 
 				static inline void post_hook() {
 					logger::info("🪝Installed ContainerMenu hook.");
@@ -422,8 +495,11 @@ namespace NND
 			{
 				static inline constexpr REL::RelocationID relocation{ 50013, 50957 };
 				static inline constexpr REL::VariantOffset offset{ 0x20C, 0x20C };
+				static inline constexpr Signature signature{ "E8 ?? ?? ?? ?? 4C 8B C0 48 89 74 24" };
 
 				static void pre_hook() {
+					logger::debug("🪝Installing BarterMenu Gold hook...");
+
 					// Swaps the argument in TESNPC::GetShortName(character->data.objectReference) to pass TESObjectREFR* character instead of character->GetBaseObject()
 					// mov rcx, [rbx+40h] (48 8B 4B 40)
 					//                           v  v
@@ -466,6 +542,10 @@ namespace NND
 			}
 			static inline REL::Relocation<decltype(thunk)> func;
 
+			static inline void pre_hook() {
+				logger::debug("🪝Installing SetDialogueWithPlayer hook...");
+			}
+
 			static inline void post_hook() {
 				logger::info("🪝Installed SetDialogueWithPlayer hook");
 			}
@@ -475,6 +555,7 @@ namespace NND
 		{
 			static inline constexpr REL::RelocationID relocation{ 24211, 24715 };
 			static inline constexpr REL::VariantOffset offset{ 0x3D8, 0x3E7 };
+			static inline constexpr Signature signature{ "E8 ?? ?? ?? ?? 49 8D 95 ?? ?? ?? ?? 48 8B 0D" };
 
 			static const char* thunk(RE::Actor* a_this, RE::ContainerMenu::ContainerMode mode) {
 				if (a_this && Options::Obscurity::obituary) {
@@ -485,6 +566,10 @@ namespace NND
 			}
 			static inline REL::Relocation<decltype(thunk)> func;
 
+			static inline void pre_hook() {
+				logger::debug("🪝Installing Looting hook...");
+			}
+
 			static inline void post_hook() {
 				logger::info("🪝Installed Looting hook");
 			}
@@ -494,6 +579,7 @@ namespace NND
 		{
 			static inline constexpr REL::RelocationID relocation{ 24211, 24715 };
 			static inline constexpr REL::VariantOffset offset{ 0x69E, 0x6BB };
+			static inline constexpr VariantSignature<"E8 ?? ?? ?? ?? E9 ?? ?? ?? ?? 48 8B CE", "E8 ?? ?? ?? ?? B0 01 E9 ?? ?? ?? ?? 48 8B CE"> signature;
 
 			static const char* thunk(RE::Actor* a_this, RE::ContainerMenu::ContainerMode mode) {
 				if (a_this && Options::Obscurity::stealing) {
@@ -503,6 +589,10 @@ namespace NND
 				return func(a_this, mode);
 			}
 			static inline REL::Relocation<decltype(thunk)> func;
+
+			static inline void pre_hook() {
+				logger::debug("🪝Installing Pickpocket hook...");
+			}
 
 			static inline void post_hook() {
 				logger::info("🪝Installed Pickpocket hook");
