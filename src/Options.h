@@ -81,6 +81,13 @@ namespace NND
 			std::string unsafeFixStuckName = "RCtrl+RShift+Backspace";
 		};
 
+		struct LogSettings
+		{
+			std::string level = "info";
+
+			bool truncate = true;
+		};
+
 		struct OptionsData
 		{
 			GeneralSettings     General;
@@ -88,6 +95,7 @@ namespace NND
 			NameContextSettings NameContext;
 			DisplayNameSettings DisplayName;
 			HotkeysSettings     Hotkeys;
+			LogSettings         Log;
 		};
 
 		inline OptionsData defaults;
@@ -138,7 +146,13 @@ namespace NND
 			inline std::string& unsafeFixStuckName = custom.Hotkeys.unsafeFixStuckName;
 		}
 
+		namespace Log
+		{
+			inline std::string& level = custom.Log.level;
+			inline bool&        truncate = custom.Log.truncate;
+		}
+
 		void Save();
-		void Load();
+		void Load(bool silent = false);
 	}
 }

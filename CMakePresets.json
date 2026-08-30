@@ -7,22 +7,6 @@
   },
   "configurePresets": [
     {
-      "name": "cmake-dev",
-      "hidden": true,
-      "cacheVariables": {
-        "CMAKE_CONFIGURATION_TYPES": "Debug;Release;Develop",
-        "CMAKE_CXX_FLAGS": "/EHsc /MP /W4 /external:anglebrackets /external:W0 $penv{CXXFLAGS}",
-        "CMAKE_MAP_IMPORTED_CONFIG_DEVELOP": "Release"
-      },
-      "errors": {
-        "deprecated": true
-      },
-      "warnings": {
-        "deprecated": true,
-        "dev": true
-      }
-    },
-    {
       "name": "vcpkg",
       "hidden": true,
       "toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
@@ -34,7 +18,7 @@
       "name": "windows",
       "hidden": true,
       "cacheVariables": {
-        "CMAKE_MSVC_RUNTIME_LIBRARY": "MultiThreaded$<$<CONFIG:Debug>:Debug>$<$<CONFIG:Develop>:>",
+        "CMAKE_MSVC_RUNTIME_LIBRARY": "MultiThreaded$<$<CONFIG:Debug>:Debug>",
         "VCPKG_TARGET_TRIPLET": "x64-windows-static"
       }
     },
@@ -48,11 +32,21 @@
       "name": "vs2026-windows-vcpkg",
       "binaryDir": "${sourceDir}/build",
       "inherits": [
-        "cmake-dev",
         "vcpkg",
         "windows",
         "vs2026"
-      ]
+      ],
+      "cacheVariables": {
+        "CMAKE_CONFIGURATION_TYPES": "Debug;Release",
+        "CMAKE_CXX_FLAGS": "/EHsc /MP /W4 /external:anglebrackets /external:W0 $penv{CXXFLAGS}"
+      },
+      "errors": {
+        "deprecated": true
+      },
+      "warnings": {
+        "deprecated": true,
+        "dev": true
+      }
     }
   ],
   "buildPresets": [
@@ -60,11 +54,6 @@
       "name": "vs2026-windows-vcpkg",
       "configurePreset": "vs2026-windows-vcpkg",
       "configuration": "Release"
-    },
-    {
-      "name": "vs2026-windows-vcpkg-develop",
-      "configurePreset": "vs2026-windows-vcpkg",
-      "configuration": "Develop"
     }
   ]
 }

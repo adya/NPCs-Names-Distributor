@@ -28,10 +28,8 @@ Proceed?
 						for (const auto formId : Distribution::Manager::GetSingleton()->GetAllNames() | std::views::keys) {
 							if (const auto actor = RE::TESForm::LookupByID<RE::Actor>(formId); actor && !actor->IsPlayerRef()) {
 								Distribution::Manager::GetSingleton()->CreateData(actor, true);
-#ifdef DEV
 							} else {
-								logger::info("Failed to reset name for [0x{:X}]", formId);
-#endif
+								logger::debug("Failed to reset name for [0x{:X}]", formId);
 							}
 						}
 						NND::UpdateCrosshairs();  // In case we're looking at someone when reseting the cache..

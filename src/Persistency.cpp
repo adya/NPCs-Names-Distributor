@@ -180,9 +180,7 @@ namespace NND
 						Distribution::NNDData data{};
 						if (Data::Load(a_interface, data)) {
 							if (const auto actor = RE::TESForm::LookupByID(data.formId); actor && actor->formType == RE::FormType::ActorCharacter) {
-#ifdef DEV
-								logger::info("\tLoaded [0x{:X}] ('{}')", data.formId, actor->As<RE::Actor>()->GetActorBase()->GetFullName());
-#endif
+								logger::debug("\tLoaded [0x{:X}] ('{}')", data.formId, actor->As<RE::Actor>()->GetActorBase()->GetFullName());
 								manager->UpdateData(data, actor->As<RE::Actor>(), definitionsChanged);
 							}
 							names[data.formId] = data;
@@ -209,9 +207,7 @@ namespace NND
 					logger::error("Failed to save name for [0x{:X}]", data.formId);
 					continue;
 				}
-#ifdef DEV
-				logger::info("\tSaved [0x{:X}] {} ({})", data.formId, data.name, data.title);
-#endif
+				logger::debug("\tSaved [0x{:X}] {} ({})", data.formId, data.name, data.title);
 				++savedCount;
 			}
 

@@ -352,8 +352,8 @@ namespace NND
 				}
 			};
 
-			// Vanilla: Full.
-			///	   NND: Full.
+			/// Vanilla: Full.
+			///     NND: Full.
 			/// Name in Dialogue menu.
 			struct MenuTopicManager_GetDisplayFullName
 			{

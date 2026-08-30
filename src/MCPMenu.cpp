@@ -642,6 +642,41 @@ namespace NND
 			RenderHotkeyInput("Unsafe Fix Stuck Name", unsafeFixStuckNameBuffer, Options::Hotkeys::unsafeFixStuckName, manager->unsafeFixStuckName, "RCtrl+RShift+Backspace", "Force fix stuck name for targeted NPC (unsafe)");
 		}
 
+		void RenderLogSection() {
+			static const char* levelNames[] = { "trace", "debug", "info", "warn", "error", "critical", "off" };
+			static int         selectedLevel = -1;
+			static bool        initialized = false;
+
+			if (IsWindowAppearing() || !initialized) {
+				selectedLevel = -1;
+				for (size_t i = 0; i < std::size(levelNames); ++i) {
+					if (clib_util::string::iequals(Options::Log::level, levelNames[i])) {
+						selectedLevel = static_cast<int>(i);
+						break;
+					}
+				}
+				initialized = true;
+			}
+
+			Text("Log Level");
+			SameLine(200);
+			PushItemWidth(180);
+			if (Combo("##LogLevel", &selectedLevel, levelNames, static_cast<int>(std::size(levelNames)))) {
+				Options::Log::level = levelNames[selectedLevel];
+				Options::Save();
+				spdlog::default_logger()->set_level(spdlog::level::from_str(Options::Log::level));
+				logger::info("Log level changed to '{}'", Options::Log::level);
+			}
+			PopItemWidth();
+			ShowTooltip("Controls verbosity of the log file. Use 'debug' to enable verbose per-NPC name generation logging.");
+			Spacing();
+
+			if (Checkbox("Truncate Log on Launch", &Options::Log::truncate)) {
+				Options::Save();
+			}
+			ShowTooltip("Clears the log file on each game launch. Disable to keep accumulating logs across multiple play sessions in one file. Takes effect on the next game launch.");
+		}
+
 		void RenderActionsSection() {
 			bool isPlayerLoaded = RE::PlayerCharacter::GetSingleton() != nullptr && RE::PlayerCharacter::GetSingleton()->Is3DLoaded();
 
@@ -673,11 +708,7 @@ namespace NND
 					for (auto& pair : names) {
 						if (const auto actor = RE::TESForm::LookupByID(pair.first);
 						    actor && actor->formType == RE::FormType::ActorCharacter) {
-#ifdef DEV
 							manager->UpdateData(pair.second, actor->As<RE::Actor>(), false, true);
-#else
-							manager->UpdateData(pair.second, actor->As<RE::Actor>(), false);
-#endif
 						}
 					}
 				});
@@ -764,6 +795,7 @@ namespace NND
 			SKSEMenuFramework::AddSectionItem("General", RenderGeneralSection);
 			SKSEMenuFramework::AddSectionItem("Obscurity", RenderObscuritySection);
 			SKSEMenuFramework::AddSectionItem("Hotkeys", RenderHotkeysSection);
+			SKSEMenuFramework::AddSectionItem("Log", RenderLogSection);
 			SKSEMenuFramework::AddSectionItem("Actions", RenderActionsSection);
 
 			logger::info("Added section to SKSEMenuFramework");

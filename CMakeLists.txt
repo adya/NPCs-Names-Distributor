@@ -76,19 +76,6 @@ endif()
 
 # ---- Globals ----
 
-# Configure Develop configuration to match Release but with DEV symbol
-set(CMAKE_CXX_FLAGS_DEVELOP "${CMAKE_CXX_FLAGS_RELEASE}" CACHE STRING "" FORCE)
-set(CMAKE_C_FLAGS_DEVELOP "${CMAKE_C_FLAGS_RELEASE}" CACHE STRING "" FORCE)
-set(CMAKE_EXE_LINKER_FLAGS_DEVELOP "${CMAKE_EXE_LINKER_FLAGS_RELEASE}" CACHE STRING "" FORCE)
-set(CMAKE_SHARED_LINKER_FLAGS_DEVELOP "${CMAKE_SHARED_LINKER_FLAGS_RELEASE}" CACHE STRING "" FORCE)
-set(CMAKE_STATIC_LINKER_FLAGS_DEVELOP "${CMAKE_STATIC_LINKER_FLAGS_RELEASE}" CACHE STRING "" FORCE)
-set(CMAKE_MODULE_LINKER_FLAGS_DEVELOP "${CMAKE_MODULE_LINKER_FLAGS_RELEASE}" CACHE STRING "" FORCE)
-
-# Tell vcpkg to use release libraries for Develop configuration
-if(CMAKE_BUILD_TYPE STREQUAL "Develop")
-	set(VCPKG_BUILD_TYPE "release" CACHE STRING "")
-endif()
-
 add_compile_definitions(
 	SKSE_SUPPORT_XBYAK
 )
@@ -199,7 +186,6 @@ target_compile_definitions(
 	${PROJECT_NAME}
 	PRIVATE
 		_UNICODE
-		$<$<CONFIG:Develop>:DEV>
 )
 
 target_include_directories(
@@ -241,7 +227,6 @@ if (MSVC)
 
 			"$<$<CONFIG:DEBUG>:>"
 			"$<$<CONFIG:RELEASE>:/Zc:inline;/JMC-;/Ob3>"
-			"$<$<CONFIG:DEVELOP>:/Zc:inline;/JMC-;/Ob3>"
 	)
 
 	target_link_options(
@@ -249,7 +234,6 @@ if (MSVC)
 		PRIVATE
 			"$<$<CONFIG:DEBUG>:/INCREMENTAL;/OPT:NOREF;/OPT:NOICF>"
 			"$<$<CONFIG:RELEASE>:/INCREMENTAL:NO;/OPT:REF;/OPT:ICF;/DEBUG:FULL>"
-			"$<$<CONFIG:DEVELOP>:/INCREMENTAL:NO;/OPT:REF;/OPT:ICF;/DEBUG:FULL>"
 	)
 endif ()
 
