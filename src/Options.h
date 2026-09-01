@@ -65,6 +65,7 @@ namespace NND
 			/// Format string for DisplayName.
 			///	Supports placeholders:
 			///	- [name]: Substitutes full name
+			///	- [short]: Substitutes short name, falling back to full name if no short name is available
 			///	- [title]: Substitutes title
 			///	- [break]: Substitutes new line.
 			std::string format = "[name] ([title])";

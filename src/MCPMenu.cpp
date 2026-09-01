@@ -30,13 +30,19 @@ namespace NND
 				}
 			}
 
-			std::string ReplaceFormatTokens(const std::string& format, const std::string& name, const std::string& title) {
+			std::string ReplaceFormatTokens(const std::string& format, const std::string& name, const std::string& shortName, const std::string& title) {
 				std::string result = format;
 				size_t      pos = 0;
 
 				while ((pos = result.find("[name]", pos)) != std::string::npos) {
 					result.replace(pos, 6, name);
 					pos += name.length();
+				}
+
+				pos = 0;
+				while ((pos = result.find("[short]", pos)) != std::string::npos) {
+					result.replace(pos, 7, shortName);
+					pos += shortName.length();
 				}
 
 				pos = 0;
@@ -296,14 +302,14 @@ namespace NND
 						}
 					}
 					PopStyleColor();
-					ShowTooltip("Supports: [name], [title], [break] (newline). Leave empty for default format.");
+					ShowTooltip("Supports: [name], [short], [title], [break] (newline). Leave empty for default format.");
 					Spacing();
 				}
 
 				Text("Preview:");
 				SameLine();
 				std::string previewFormat = (strlen(formatBuffer) > 0) ? formatBuffer : "[name] ([title])";
-				std::string preview = ReplaceFormatTokens(previewFormat, "Torvar Stormcloak", "Whiterun Guard");
+				std::string preview = ReplaceFormatTokens(previewFormat, "Torvar Stormcloak", "Torvar", "Whiterun Guard");
 				TextWrapped("%s", preview.c_str());
 
 				if (!Options::General::enabled) {

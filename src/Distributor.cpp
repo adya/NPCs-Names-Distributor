@@ -14,9 +14,11 @@ namespace NND
 		void NNDData::UpdateDisplayName(RE::Actor* actor) {
 			const Name effectiveTitle(GetTitle(actor));
 			if (name != empty && effectiveTitle != empty) {
-				Name formattedDisplayName{ Options::DisplayName::format };
+				const NameRef effectiveShortName = shortDisplayName != empty ? shortDisplayName : name;
+				Name          formattedDisplayName{ Options::DisplayName::format };
 				if (formattedDisplayName != empty) {
 					clib_util::string::replace_first_instance(formattedDisplayName, "[name]", name);
+					clib_util::string::replace_first_instance(formattedDisplayName, "[short]", effectiveShortName);
 					clib_util::string::replace_first_instance(formattedDisplayName, "[title]", effectiveTitle);
 					clib_util::string::replace_first_instance(formattedDisplayName, "[break]", "\n");
 					displayName = formattedDisplayName;
@@ -31,9 +33,14 @@ namespace NND
 					// then we can attach that title to actor's original name.
 
 					const Name originalName = Naming::Default::GetDisplayFullName(actor);
-					Name       formattedDisplayName{ Options::DisplayName::format };
+
+					const auto npc = actor->GetActorBase();
+					const Name originalShortName = npc && !npc->shortName.empty() ? npc->shortName.c_str() : originalName;
+
+					Name formattedDisplayName{ Options::DisplayName::format };
 					if (formattedDisplayName != empty) {
 						clib_util::string::replace_first_instance(formattedDisplayName, "[name]", originalName);
+						clib_util::string::replace_first_instance(formattedDisplayName, "[short]", originalShortName);
 						clib_util::string::replace_first_instance(formattedDisplayName, "[title]", this->title);
 						clib_util::string::replace_first_instance(formattedDisplayName, "[break]", "\n");
 						displayName = formattedDisplayName;
