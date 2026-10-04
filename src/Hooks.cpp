@@ -241,7 +241,7 @@ namespace NND
 			{
 				static inline constexpr REL::RelocationID  relocation{ 50776, 51671 };
 				static inline constexpr REL::VariantOffset offset{ 0x21B, 0x20E, 0x278 };
-				static inline constexpr Signature          signature{ "E8 ?? ?? ?? ?? 49 8B CF 48 FF C1 80 3C 08 00" };
+				static inline constexpr VariantSignature<"E8 ?? ?? ?? ?? 49 8B CF 48 FF C1 80 3C 08 00", "E8 ?? ?? ?? ?? 49 8B CF 48 FF C1 80 3C 08 00", "E8 ?? ?? ?? ?? 49 8B CD 48 FF C1 44 38 34 08"> signature;
 
 				using Proxy = EnemyHealthUpdate_GetDisplayFullName_Base<EnemyHealthUpdate_GetDisplayFullName_NameLength>;
 
@@ -260,7 +260,7 @@ namespace NND
 			{
 				static inline constexpr REL::RelocationID  relocation{ 50776, 51671 };
 				static inline constexpr REL::VariantOffset offset{ 0x261, 0x254, 0x2BE };
-				static inline constexpr Signature          signature{ "E8 ?? ?? ?? ?? 4C 89 6C 24 ?? 44 89 6C 24" };
+				static inline constexpr VariantSignature<"E8 ?? ?? ?? ?? 4C 89 6C 24 ?? 44 89 6C 24", "E8 ?? ?? ?? ?? 4C 89 6C 24 ?? 44 89 6C 24", "E8 ?? ?? ?? ?? 4C 89 74 24 ?? 44 89 74 24"> signature;
 
 				using Proxy = EnemyHealthUpdate_GetDisplayFullName_Base<EnemyHealthUpdate_GetDisplayFullName_Name>;
 
@@ -579,7 +579,7 @@ namespace NND
 		{
 			static inline constexpr REL::RelocationID                                                                                          relocation{ 24211, 24715 };
 			static inline constexpr REL::VariantOffset                                                                                         offset{ 0x69E, 0x6BB };
-			static inline constexpr VariantSignature<"E8 ?? ?? ?? ?? E9 ?? ?? ?? ?? 48 8B CE", "E8 ?? ?? ?? ?? B0 01 E9 ?? ?? ?? ?? 48 8B CE"> signature;
+			static inline constexpr VariantSignature<"E8 ?? ?? ?? ?? E9 ?? ?? ?? ?? 48 8B CE", "E8 ?? ?? ?? ?? B0 01 E9 ?? ?? ?? ?? 48 8B CE", "E8 ?? ?? ?? ?? E9 ?? ?? ?? ?? 48 8B CE"> signature;
 
 			static const char* thunk(RE::Actor* a_this, RE::ContainerMenu::ContainerMode mode) {
 				if (a_this && Options::Obscurity::stealing) {
